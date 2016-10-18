@@ -1,0 +1,8 @@
+{
+    "GLASS": {
+        "refractiveIndex": 1.5
+    },
+    "AIR": {
+        "refractiveIndex": 1.000277
+    }
+}
