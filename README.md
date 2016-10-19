@@ -2,4 +2,4 @@
 
 #NOTE: STILL IN DEVELOPMENT#
 
-[[https://github.com/jcharry/SciPlay/tree/master/img/sun.jpg|alt=sumdemo]]
+![Sun Demo](https://github.com/jcharry/SciPlay/tree/master/img/sun.jpg)
