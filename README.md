@@ -2,4 +2,4 @@
 
 #NOTE: STILL IN DEVELOPMENT#
 
-[![Sun Demo](https://github.com/jcharry/SciPlay/blog/master/img/sun.png?raw=true)]
+![Sun Demo](https://github.com/jcharry/SciPlay/blob/master/img/sun.png)
