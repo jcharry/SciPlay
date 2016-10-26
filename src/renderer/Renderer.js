@@ -1,5 +1,6 @@
-import {degToRad, map} from '../math/math';
-let Renderer = {
+import {degToRad} from '../math/math';
+const Renderer = {};
+Renderer.prototype = {
     init: function(params) {
         this.clearBackground = true;
         this.debug = params.debug || false;
@@ -17,8 +18,8 @@ let Renderer = {
                 return c;
             })();
 
-        this.canvas.width = params.width || 600;
-        this.canvas.height = params.height || 300;
+        //this.canvas.width = params.width || 600;
+        //this.canvas.height = params.height || 300;
         this.ctx = this.canvas.getContext('2d');
     },
     /**
@@ -38,7 +39,7 @@ let Renderer = {
         });
 
         //system.rays.forEach(ray => {
-            //ray.draw(ctx);
+        //ray.draw(ctx);
         //});
     },
     drawBody: function(body) {
@@ -140,21 +141,16 @@ let Renderer = {
             this.ctx.stroke();
         }
     },
-    //draw: function(obj) {
-        //if (obj.type === 'rectangle' ||
-            //obj.type === 'circle' ||
-            //obj.type === 'polygon' ||
-            //obj.type === 'triangle') {
-                //this.drawBody(obj);
-        //}
-    //},
+
     render: function(system) {
         // The first time the system renders,
         // capture a local reference to it
         // to be used to restart the renderer later
         // if it's ever stopped
-        if (this.system) {
+        if (!this.system) {
             this.system = system;
+            this.canvas.width = this.system.width;
+            this.canvas.height = this.system.height;
         }
 
         // In order to pass 'system' into render
@@ -177,6 +173,7 @@ let Renderer = {
         // Update the system
         system.update();
 
+        // Draw all objects + waves
         system.objects.forEach(obj => {
             this.drawBody(obj);
         });
@@ -184,10 +181,34 @@ let Renderer = {
         system.waves.forEach(wave => {
             this.drawWave(wave);
         });
+
         system.childWaves.forEach(wave => {
             this.drawWave(wave);
         });
 
+        if (this.debug === true) {
+            let cellSize = system.hash.cellSize;
+            for (let i = 0; i < system.hash.width; i+=cellSize) {
+                for (let j = 0; j < system.hash.height; j+=cellSize) {
+                    this.ctx.beginPath();
+                    this.ctx.strokeStyle = 'green';
+                    this.ctx.rect(i, j, cellSize, cellSize);
+                    this.ctx.stroke();
+                }
+            }
+            Object.keys(system.hash.contents).forEach(row => {
+                Object.keys(system.hash.contents[row]).forEach(col => {
+                    // Draw all squares
+                    this.ctx.beginPath();
+                    this.ctx.strokeStyle = 'green';
+                    if (system.hash.contents[row][col].length !== 0) {
+                        this.ctx.strokeStyle = 'red';
+                    }
+                    this.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+                    this.ctx.stroke();
+                });
+            });
+        }
         // Render bodies
         //this.renderObjects(system);
     },
@@ -200,8 +221,8 @@ let Renderer = {
         this.canvas.width = width;
         this.canvas.height = height;
         //if (shouldUpdateStyle) {
-            //canvas.style.width = `${width}px`;
-            //canvas.style.height = `${height}px`;
+        //canvas.style.width = `${width}px`;
+        //canvas.style.height = `${height}px`;
         //}
     },
     /**
@@ -221,7 +242,7 @@ let Renderer = {
 };
 
 var renderer = function(params) {
-    let R = Object.create(Renderer);
+    let R = Object.create(Renderer.prototype);
     R.init(params);
     return R;
 };

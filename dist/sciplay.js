@@ -115,19 +115,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _System2 = _interopRequireDefault(_System);
 	
-	var _Renderer = __webpack_require__(7);
+	var _Renderer = __webpack_require__(8);
 	
 	var _Renderer2 = _interopRequireDefault(_Renderer);
 	
-	var _Rect = __webpack_require__(8);
+	var _Rect = __webpack_require__(9);
 	
 	var _Rect2 = _interopRequireDefault(_Rect);
 	
-	var _Wave = __webpack_require__(11);
+	var _Wave = __webpack_require__(13);
 	
 	var _Wave2 = _interopRequireDefault(_Wave);
 	
-	var _Circle = __webpack_require__(12);
+	var _Circle = __webpack_require__(14);
 	
 	var _Circle2 = _interopRequireDefault(_Circle);
 	
@@ -331,7 +331,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	/* eslint
+	    "no-unused-vars": "off",
+	    "no-debugger": "off"
+	 */
 	var Ray = {
+	    /**
+	     * Initialization
+	     * @param {number} x - origin x
+	     * @param {number} y - origin y
+	     * @param {number} dir - direction in radians (or degrees if 'degrees' param
+	     * = true)
+	     * @param {bool} degrees - optional flag, if true, then read direction as
+	     * degrees
+	     */
 	    init: function init(x, y, dir, degrees) {
 	        if (degrees) {
 	            dir = (0, _math.degToRad)(dir);
@@ -341,29 +354,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.direction = (0, _Vector2.default)(Math.cos(dir), Math.sin(dir));
 	        this.outerBodies = [];
 	        this.t = window.innerWidth > window.innerHeight ? window.innerWidth : window.innerHeight;
+	        var x0 = this.origin.x,
+	            y0 = this.origin.y,
+	            x1 = this.origin.x + this.direction.x * this.t,
+	            y1 = this.origin.y + this.direction.y * this.t;
+	        this.slope = (y1 - y0) / (x1 - x0);
+	        // TODO: Figure out a way to give each ray a unique ID
+	        this.rayID = Date.now();
 	    },
+	
+	    /**
+	     * Return the objects from spatial hash to perform collision detection on
+	     * @param {SpatialHash} hash - hash from the System
+	     */
+	
 	    trace: function trace(system) {
 	        var _this = this;
 	
 	        // Always use radians, regardless of mode
 	        // Also angle should be in range 0 <= angle <= 2PI
 	        //let angle = this.direction.getAngle();
-	        //angle = angle < 0 ? Math.PI * 2 + angle : angle;
 	        this.intersectionPoint = null;
 	        this.intersectingBody = null;
 	        this.intersectingSegment = null;
-	        //let children = [];
-	
-	        // Get ray vector -> p1 - p0 (end of ray - origin of ray)
-	        //let p0x = this.origin.x;
-	        //let p0y = this.origin.y;
-	
-	        // Abitrarily large number to ensure ray extends passed edge of canvas
-	        //let p1x = 2000 * Math.cos(angle) + this.origin.x;
-	        //let p1y = 2000 * Math.sin(angle) + this.origin.y;
-	        //let p = vector(props.x, props.y);
-	        //let r = vector(p1x - props.x, p1y - props.y);
-	        //this.rayVector = r.copy();
 	
 	        // Look through all bodies for segments
 	        // See if they intersect the ray
@@ -386,249 +399,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // if an intersection point was found...
 	        if (this.intersectionPoint) {
 	            return true;
-	            // Vector implementation of reflected and refracted waves here:
-	            // http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
-	            // Normalize ray vector
-	            //this.rayVector.normalize();
-	
-	            //// Find the normal vector (method of which depends on type of body)
-	            //// There are two possible normal vectors, but
-	            //// which one do we want?
-	            //// one which dot product with ray vector < 0 is what we want
-	            //// http://gamedev.stackexchange.com/questions/85850/collision-intersection-of-2d-ray-to-line-segment
-	            //let normal;
-	            //let bType = props.intersectingBody.get('type');
-	            //if (bType === 'rectangle') {
-	            //let intSeg = props.intersectingSegment.copy();
-	
-	            //intSeg.normalize();
-	            //let dot = intSeg.dot(this.rayVector);
-	            //let normals = [vector(-intSeg.getY(), intSeg.getX()), vector(intSeg.getY(), -intSeg.getX())];
-	
-	            //normals.forEach(n => {
-	            //if (n.dot(this.rayVector) < 0) {
-	            //normal = n;
-	            //}
-	            //});
-	            //} else if (bType === 'circle') {
-	            //let cx = props.intersectingBody.get('pos').getX();
-	            //let cy = props.intersectingBody.get('pos').getY();
-	            //let ix = props.intersectionPoint.x;
-	            //let iy = props.intersectionPoint.y;
-	            //let v1 = vector(ix - cx, iy - cy),
-	            //v2 = vector(cx - ix, cy - iy);
-	            //v1.normalize();
-	            //v2.normalize();
-	            //let normals = [
-	            //v1,
-	            //v2
-	            //];
-	            //normals.forEach(function(n) {
-	            ////n.normalize();
-	            //if (n.dot(this.rayVector) < 0) {
-	            //normal = n;
-	            //}
-	            //});
-	            //}
-	
-	            //// Get angle of incidence
-	            ////let intX = props.intersectingSegment.getX(),
-	            ////intY = props.intersectingSegment.getY(),
-	            ////intSeg = props.intersectingSegment.copy(),
-	            ////normal;
-	            //// XXX: Can probably take out the copy of intersectingSegment
-	            ////intSeg.normalize();
-	            ////let normals = [vector(-intSeg.getY(), intSeg.getX()), vector(intSeg.getY(), -intSeg.getX())];
-	            ////let dot = intSeg.dot(rayVector);
-	
-	            ////normals.forEach(n => {
-	            ////if (n.dot(rayVector) < 0) {
-	            ////normal = n;
-	            ////}
-	            ////});
-	
-	            //// child waves - reflected and refracted
-	            ////createChildren();
-	            //// Calculate reflected vector
-	            //// https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
-	            //// http://stackoverflow.com/questions/5454661/reflection-how-do-i-do-it
-	            //// Reflected vector looks like this:
-	            //// r = a - 2(a dot n) * n
-	            //let tmpTerm = 2 * this.rayVector.dot(normal);
-	            //let tmpVec = normal.copy();
-	            //tmpVec.multiply(2 * this.rayVector.dot(normal));
-	            //let rVec = this.rayVector.copy();
-	            //rVec.subtract(tmpVec);
-	
-	            //// Refracted vector
-	            //// Are we inside a body?
-	            //// get origin points of wave, check if they are interior to the
-	            //// intersecting body, if so, n1 = body.refractiveIndex, if not, n1
-	            //// takes on refractive index of outer context,
-	            //// which we can find from it's parent wave
-	            //// If we have a body to intersect with...
-	            //let n1 = props.n1,
-	            //n2 = props.n2;
-	            //if (props.type === 'incident' && this.outerBodies.length > 0) {
-	            ////Grab the last one (the body on top)
-	            //n1 = this.outerBodies[this.outerBodies.length - 1].get('refractiveIndex');
-	            //}
-	
-	            //// TODO: Figure out how to handle picking proper refractive index
-	            //// values
-	            //// for child rays
-	            //if (props.intersectingBody) {
-	            //switch (props.type) {
-	            //case 'refracted':
-	            //if (props.parent && props.parent.props.intersectingBody &&
-	            //props.parent.props.intersectingBody === props.intersectingBody) {
-	            //n1 = props.parent.get('n2');
-	            //n2 = props.parent.get('n1');
-	            //} else {
-	            //n1 = props.parent.get('n2');
-	            //n2 = props.intersectingBody.get('refractiveIndex');
-	            //}
-	            //break;
-	            //case 'reflected':
-	            //if (props.parent && props.parent.props.intersectingBody &&
-	            //props.parent.props.intersectingBody === props.intersectingBody) {
-	            //n1 = props.parent.get('n1');
-	            //n2 = props.parent.get('n2');
-	            //} else {
-	            //n1 = props.parent.get('n1');
-	            //n2 = props.intersectingBody.get('refractiveIndex');
-	            //}
-	            //break;
-	            //case 'incident':
-	            //n2 = props.intersectingBody.get('refractiveIndex');
-	            //break;
-	            //default:
-	            //break;
-	            //}
-	            //} else {
-	            //// There's no intersection point ahead of this ray, so it's
-	            //// refractive indices are irrelevant
-	            //n1 = 1;
-	            //n2 = 2;
-	            //// If the ray won't intersect another body,
-	            //// then it must be outside of a body
-	            ////n2 = 1;
-	
-	            //// n1 must take on the index of where the parent ray currently
-	            //// exists
-	            ////n1 = props.parent.intersectingBody.refractiveIndex;
-	            //}
-	
-	            //// Store on props so children have access
-	            //props.n1 = n1;
-	            //props.n2 = n2;
-	
-	            ////n1 = 1;
-	            ////n2 = intersectingBody ? intersectingBody.get('refractiveIndex') : 1;
-	            //let theta1 = Math.PI - this.rayVector.angleTo(normal);
-	            //let theta2 = Math.asin(n1 * Math.sin(theta1) / n2);
-	
-	            //// Vector formulation for refracted wave
-	            //// t = n1/n2 * rayVector + (n1/n2 * cos(theta1) - sqrt(1
-	            //// - sin2(theta2))) * normal
-	            //let sin2theta2 = (n1 / n2) * (n1 / n2) * (1 - (Math.cos(theta1) * Math.cos(theta1)));
-	            //let tVec = this.rayVector.copy();
-	            //tVec.multiply(n1 / n2);
-	            //let normCopy = normal.copy();
-	            //normCopy.multiply((n1 / n2) * Math.cos(theta1) - Math.sqrt(1 - sin2theta2));
-	            //tVec.add(normCopy);
-	
-	            //// Reflection Coefficient
-	            //// R = R0 + (1 - R0) * (1 - cos(theta1))^5 where R0 = (n1 - n2 / n1
-	            //// + n2)^2
-	            //let _r0 = (n1 - n2) / (n1 + n2);
-	            //let R0 = _r0 * _r0;
-	            //let _r0tmp;
-	
-	            //// Angles must be positive, so if we get a negative value for an
-	            //// angle, just flip it
-	            //if (n1 <= n2) {
-	            //_r0tmp = (1 - (Math.cos(theta1) < 0 ? -Math.cos(theta1) : Math.cos(theta1)));
-	            //} else if (n1 > n2) {
-	            //_r0tmp = (1 - (Math.cos(theta2) < 0 ? -Math.cos(theta2) : Math.cos(theta2)));
-	            //}
-	
-	            //let R = R0 + (1 - R0) * Math.pow(_r0tmp, 5);
-	            //let T = 1 - R;  // Refracion Coefficient
-	            //// Total Internal Reflection
-	            //if (Math.sin(theta1) > n2 / n1) {
-	            //R = 1;
-	            //T = 0;
-	            //}
-	            //let RI = props.intensity * R;
-	            //let TI = props.intensity * T;
-	
-	            //// Add 2 child waves - reflected and refracted
-	            //// Trace reflected wave
-	            //// Have to offset the waves by at least a pixel,
-	            //// otherwise we'll end up in a never ending
-	            //// call stack when each child wave always produces
-	            //// 2 new child waves, forever...
-	            //let rVecAngle = rVec.getAngle();
-	            //let tVecAngle = tVec.getAngle();
-	            //if (RI > 0.02) {
-	            //let reflectedWave = wave({
-	            //x: props.intersectionPoint.x + Math.cos(rVecAngle),
-	            //y: props.intersectionPoint.y + Math.sin(rVecAngle),
-	            //direction: rVecAngle,
-	            //intensity: RI,
-	            //type: 'reflected',
-	            //parent: this,
-	            //n1: props.n1,
-	            //n2: props.n2
-	            //});
-	            //this.children.push(reflectedWave);
-	            //}
-	
-	            //if (TI > 0.02) {
-	            //let refractedWave = wave({
-	            //x: props.intersectionPoint.x + Math.cos(tVecAngle),
-	            //y: props.intersectionPoint.y + Math.sin(tVecAngle),
-	            //direction: tVecAngle,
-	            //intensity: TI,
-	            //type: 'refracted',
-	            //parent: this,
-	            //n1: props.n1,
-	            //n2: props.n2
-	            //});
-	            //this.children.push(refractedWave);
-	            //}
-	            //drawChildren(system, ctx);
 	        }
 	    },
+	
 	    /**
-	    * Detect if ray intersects circle
-	    * http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
-	    *
-	    * Using the following formula
-	    * t^2 * (r DOT r) + 2t*( f DOT r ) + ( f DOT f - radius^2 ) = 0
-	    * at^2 + bt + c where a = d.dot(d), b = 2*f.dot(d), c = f.dot(f)
-	    * - radius^2
-	    *      where:
-	    *          d = end point of ray - start point of ray
-	    *          t = scalar value - what we're solving for
-	    *          r = ray vector
-	    *          f = vector from center of sphere to origin of ray
-	    *          radius = radius of circle
-	    *
-	    * 3x HIT cases:
-	    *  -o->                    --|-->  |            |  --|->
-	    * Impale(t1 hit,t2 hit), Poke(t1 hit,t2>1), ExitWound(t1<0, t2 hit),
-	    *
-	    * 3x MISS cases:
-	    *     ->  o                     o ->              | -> |
-	    * FallShort (t1>1,t2>1), Past (t1<0,t2<0), CompletelyInside(t1<0, t2>1)
-	    *
-	    * @param {Body} circle - circle body object
-	    * @param {Vector} p - point of origin
-	    * @param {Vector} r - ray vector
-	    * @return {boolean} true if intersection was found, false otherwise
-	    */
+	     * Detect if ray intersects circle
+	     * http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
+	     *
+	     * Using the following formula
+	     * t^2 * (r DOT r) + 2t*( f DOT r ) + ( f DOT f - radius^2 ) = 0
+	     * at^2 + bt + c where a = d.dot(d), b = 2*f.dot(d), c = f.dot(f)
+	     * - radius^2
+	     *      where:
+	     *          d = end point of ray - start point of ray
+	     *          t = scalar value - what we're solving for
+	     *          r = ray vector
+	     *          f = vector from center of sphere to origin of ray
+	     *          radius = radius of circle
+	     *
+	     * 3x HIT cases:
+	     *  -o->                    --|-->  |            |  --|->
+	     * Impale(t1 hit,t2 hit), Poke(t1 hit,t2>1), ExitWound(t1<0, t2 hit),
+	     *
+	     * 3x MISS cases:
+	     *     ->  o                     o ->              | -> |
+	     * FallShort (t1>1,t2>1), Past (t1<0,t2<0), CompletelyInside(t1<0, t2>1)
+	     *
+	     * @param {Body} circle - circle body object
+	     * @param {Vector} p - point of origin
+	     * @param {Vector} r - ray vector
+	     * @return {boolean} true if intersection was found, false otherwise
+	     */
 	    intersectCircle: function intersectCircle(circle) {
 	        var radius = circle.radius;
 	
@@ -676,44 +477,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    /**
-	     * Detect if ray intersects circle
-	     * see this skecth: http://www.openprocessing.org/sketch/45537
-	     *
-	     * @param {Body} circle - circle body object
-	     */
-	    //intersectCircle: function(circle) {
-	    //let radius = circle.radius;
-	
-	    ////let f = this.origin.copy();
-	    ////f.subtract(circle.get('pos'));
-	    //let f = Vector.subtract(circle.position, this.origin);
-	    //let lf = f.dot(this.direction);
-	    //let s = radius * radius - f.dot(f) + lf * lf;
-	
-	    //if (s < 0) {
-	    //return false;
-	    //}
-	
-	    //s = Math.sqrt(s);
-	    //if (lf < s) {
-	    //if (lf + s >= 0) {
-	    //s = -s;
-	    //this.outerBodies.push(circle);
-	    //}
-	    //}
-	
-	    //let t1 = Vector.multiply(this.direction, (lf - s));
-	    //t1.add(this.origin);
-	    //// That works!
-	    //this.updateIntersectionPoint({x: t1.x, y: t1.y}, null, circle);
-	    //return;
-	    //},
-	    /**
 	     * Handles case of ray-rectangle intersection
 	     * If an intersecting segment is found,
 	     * set the props accordingly
 	     * @private
 	     * @param {Rect} rect - rect body object
+	     * @return {bool} true if intersected, otherwise false
 	     */
 	    intersectRect: function intersectRect(rect) {
 	        var _this2 = this;
@@ -724,6 +493,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //let segs = rect.segments;
 	        var vertices = rect.vertices;
 	        var vertLength = vertices.length;
+	        var intersection = void 0;
 	        vertices.forEach(function (vert, index, verts) {
 	            var seg2 = void 0;
 	            if (index === vertLength - 1) {
@@ -732,20 +502,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                seg2 = verts[index + 1];
 	            }
 	            //let segVec = vector(vert, seg2);
-	            var intersection = _this2.intersectSegment([vert, seg2]);
+	            intersection = _this2.intersectSegment([vert, seg2]);
 	            if (intersection) {
 	                _this2.updateIntersectionPoint(intersection.intPoint, intersection.segVec, rect);
 	            }
 	        });
 	
-	        //segs.forEach(seg => {
-	        //var intersection = this.intersectSegment(seg);
-	        //if (intersection) {
-	        //this.updateIntersectionPoint(intersection.intPoint, intersection.segVec, rect);
-	        //}
-	        //});
+	        return typeof intersection !== 'undefined';
 	    },
 	    /**
+	     * Detects Ray-Segment intersection - Returns intersection coords
 	     * @param {Array} seg - segment vertices
 	     * @return {Object} returns intersection point with body, or false
 	     */
@@ -795,7 +561,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return {
 	                intPoint: (0, _Vector2.default)(ix, iy),
-	                segVec: s
+	                segVec: s,
+	                t: t
 	            };
 	        } else {
 	            // Line segments do not intersect
@@ -804,6 +571,216 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return false;
 	        }
 	    },
+	
+	    /**
+	     * Test for Ray-Hash bucket intersections
+	     * @param {SpatialHash} hash - system.hash object
+	     * @return {array} list of intersected buckets
+	     *
+	     * See here: http://www.cse.chalmers.se/edu/year/2011/course/TDA361_Computer_Graphics/grid.pdf
+	     */
+	    intersectHash: function intersectHash(hash) {
+	        var _this3 = this;
+	
+	        // Algorithm steps
+	        // Identify voxel where ray enters grid
+	
+	        /*
+	         * The traversal algorithm consists of two phases: initialization and incremental traversal. The initialization
+	            phase begins by identifying the voxel in which the ray origin, →
+	            u, is found. If the ray origin is outside
+	            the grid, we find the point in which the ray enters the grid and take the adjacent voxel. The integer
+	            variables X and Y are initialized to the starting voxel coordinates. In addition, the variables stepX and
+	            stepY are initialized to either 1 or -1 indicating whether X and Y are incremented or decremented as the
+	            ray crosses voxel boundaries (this is determined by the sign of the x and y components of →
+	            v).
+	            Next, we determine the value of t at which the ray crosses the first vertical voxel boundary and
+	            store it in variable tMaxX. We perform a similar computation in y and store the result in tMaxY. The
+	            minimum of these two values will indicate how much we can travel along the ray and still remain in the
+	            current voxel.
+	            Finally, we compute tDeltaX and tDeltaY. TDeltaX indicates how far along the ray we must move
+	            (in units of t) for the horizontal component of such a movement to equal the width of a voxel. Similarly,
+	            we store in tDeltaY the amount of movement along the ray which has a vertical component equal to the
+	            height of a voxel
+	        */
+	
+	        // Initialize variables
+	        var bucket = hash.hash(this.origin);
+	        var row = bucket.row;
+	        var col = bucket.col;
+	
+	        var X = col,
+	            Y = row;
+	        var tMaxX = void 0,
+	            tMaxY = void 0,
+	            tDeltaX = void 0,
+	            tDeltaY = void 0;
+	        var stepX = this.direction.x < 0 ? -1 : 1,
+	            stepY = this.direction.y < 0 ? -1 : 1;
+	        var cellSize = hash.cellSize;
+	
+	        // Step 1. Initialization - determine starting voxel
+	        //if (hash.contents[row] && hash.contents[row][col]) {
+	        //// Ray origin is inside a voxel that exists
+	        //X = col * cellSize;
+	        //Y = row * cellSize;
+	        //} else {
+	        //// TODO: Figure out how to find first voxel intersected by ray
+	        //// Create long vertical and horizontal vectors, but the starting
+	        //// point will depend on the direction of the ray
+	        //}
+	
+	        // Cast first ray!
+	        // TODO Finish this!
+	        // This should all be in a loop, right???
+	        var verticalSeg = [(0, _Vector2.default)((col + stepX) * cellSize, row * cellSize), (0, _Vector2.default)((col + stepX) * cellSize, hash.height)];
+	        var horizontalSeg = [(0, _Vector2.default)(col * cellSize, (row + stepY) * cellSize), (0, _Vector2.default)(hash.width, (row + stepY) * cellSize)];
+	
+	        var vInt = this.intersectSegment(verticalSeg);
+	        var hInt = this.intersectSegment(horizontalSeg);
+	        tMaxX = (0, _math.distance)(this.origin.x, this.origin.y, vInt.intPoint.x, vInt.intPoint.y);
+	        tMaxY = (0, _math.distance)(this.origin.x, this.origin.y, hInt.intPoint.x, hInt.intPoint.y);
+	        tDeltaX = tMaxX;
+	        tDeltaY = tMaxY;
+	        var counter = 0;
+	        while (counter < 50) {
+	            if (hash.contents[Y] && hash.contents[Y][X] && hash.contents[Y][X].length !== 0) {
+	                (function () {
+	                    // TODO: Here's where we need to check if the object is
+	                    // actually intersecting the ray
+	                    // Intersect all objects in this voxel only
+	                    var contents = hash.contents[Y][X];
+	                    var intersected = false;
+	                    var numTested = 0;
+	                    contents.forEach(function (body) {
+	                        numTested++;
+	                        if (body.intersectionPoints[_this3.rayID]) {
+	                            // Dont' perform intersection test, just grab the point
+	                            _this3.updateIntersectionPoint(body.intersectionPoints[_this3.rayID].intPoint, body.intersectionPoints[_this3.rayID].segVec, body);
+	                        }
+	                        switch (body.type) {
+	                            case 'rectangle':
+	                                _this3.intersectRect(body);
+	                                break;
+	                            case 'circle':
+	                                _this3.intersectCircle(body);
+	                                break;
+	                            default:
+	                                break;
+	                        }
+	                    });
+	
+	                    // TODO: Finish this!!!!!!
+	                    // If we've found an intersection point
+	                    if (_this3.intersectionPoint) {
+	                        // Make sure it's in this voxel
+	                        if (_this3.intersectionPoint.x > (X + 1) * cellSize) {
+	                            // Intersection could't have occured in the voxel
+	                            // So set this intersection point on the body itself,
+	                            // so we dont' have to perform the intersection test
+	                            // again
+	                            _this3.intersectingBody.intersectionPoints[_this3.rayID] = _this3.intersectionPoint;
+	                            debugger;
+	                        }
+	                        //if (this.intersectionPoint.x > X * cellSize &&
+	                        //this.intersectionPoint.x < (X + 1) * cellSize &&
+	                        //this.intersectionPoint.y > Y * cellSize &&
+	                        //this.intersectionPoint.y)
+	                    }
+	                    debugger;
+	                })();
+	            }
+	            // This should happen in a loop...
+	            if (tMaxX < tMaxY) {
+	                //distX = distance(this.origin.x
+	                tMaxX += tDeltaX;
+	                X += stepX;
+	            } else {
+	                tMaxY += tDeltaY;
+	                Y += stepY;
+	            }
+	
+	            counter++;
+	        }
+	
+	        //let distanceToVerticalBoundary = distance(this.origin.x, this.origin.y, vertIntPoint.intPoint.x, vertIntPoint.intPoint.y);
+	        //let distanceToHorizontalBoundary = distance(this.origin.x, this.origin.y, horIntPoint.intPoint.x, horIntPoint.intPoint.y);
+	        //if (distanceToVerticalBoundary < distanceToHorizontalBoundary) {
+	        //distanceToHorizontalBoundary
+	        //} else {
+	
+	        //}
+	
+	        var safetyCounter = 0;
+	        while (safetyCounter < 10000) {
+	            safetyCounter++;
+	        }
+	
+	        // Step 2. Find distances to nearest vertical and horizontal segments
+	        // of the voxel
+	        // Need to know what direction the ray is going in...
+	        if (this.direction.x > 0 && this.direction.y > 0) {
+	            // Down and to the right
+	            //let verticalSeg = [vector(X + cellSize),
+	            var verts = [(0, _Vector2.default)(X + cellSize, Y), (0, _Vector2.default)(X + cellSize, Y + cellSize)];
+	            var intersection = this.intersectSegment(verts);
+	        } else if (this.direction.x > 0 && this.direction.y < 0) {
+	            // Up and to the right
+	        } else if (this.direction.x < 0 && this.direction.y > 0) {
+	            // Down and to the left
+	        } else if (this.direction.x < 0 && this.direction.y < 0) {}
+	        // Up and to the left
+	
+	        //
+	        return [];
+	    },
+	
+	    /**
+	     * Simple Ray-AABB Test
+	     * Only returns if intersection exists, DOES NOT give distance to
+	     * intersection
+	     * 2D version of this: http://www.cg.cs.tu-bs.de/media/publications/fast-rayaxis-aligned-bounding-box-overlap-tests-using-ray-slopes.pdf
+	     * @param {AABB} aabb - axis-aligned bounding-box instance
+	     * @return {bool} did intersection occur
+	     */
+	    intersectAABB: function intersectAABB(aabb) {
+	        // Steps:
+	        // 1. Get slope of line from ray origin to aabb.min and aabb.max
+	        // 2. if slope of ray is between slopes generated in step 1, then
+	        // ray intersects
+	        //
+	        // Handle two cases : positive vs. negative slope
+	        // If slope is positive, use min + width and min + height as corners to
+	        // check
+	        // Otherwise use regular min and max
+	        var min = void 0,
+	            max = void 0;
+	        if (this.slope > 0) {
+	            min = { x: aabb.max.x, y: aabb.min.y };
+	            max = { x: aabb.min.x, y: aabb.max.y };
+	        } else {
+	            min = aabb.min;
+	            max = aabb.max;
+	        }
+	
+	        var s1 = (min.y - this.origin.y) / (min.x - this.origin.x);
+	        var s2 = (max.y - this.origin.y) / (max.x - this.origin.x);
+	        var smin = Math.min(s1, s2);
+	        var smax = Math.max(s1, s2);
+	
+	        if (this.slope < smax && this.slope > smin) {
+	            return true;
+	        }
+	        return false;
+	    },
+	
+	    /**
+	     * Internally used to update point of intersection property
+	     * @param {Point} intPoint - object with x and y properties representing
+	     * intersection point
+	     * @param {Vector} segVec - vector object that was intersected
+	     * @param {Body} body - body that was intersected
+	     */
 	    updateIntersectionPoint: function updateIntersectionPoint(intPoint, segVec, body) {
 	        var px = this.origin.x;
 	        var py = this.origin.y;
@@ -829,11 +806,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 	
+	/**
+	 * 'Constructor' function
+	 * @param {number} x - origin x
+	 * @param {number} y - origin y
+	 * @param {number} dir - direction in radians (or degrees if 'degrees' param
+	 * = true)
+	 * @param {bool} degrees - optional flag, if true, then read direction as
+	 * degrees
+	 *
+	 * @return {object} ray object
+	 */
 	var ray = function ray(x, y, dir, degrees) {
 	    var R = Object.create(Ray);
 	    R.init(x, y, dir, degrees);
 	    return R;
-	    //return new Ray(x, y, dir, degrees);
 	};
 	
 	exports.default = ray;
@@ -841,7 +828,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 6 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -851,14 +838,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
-	var System = function System() {
-	    this.frames = [];
-	    this.objects = [];
-	    this.waves = [];
-	    this.childWaves = [];
-	    this.rays = [];
-	};
+	var _SpatialHash = __webpack_require__(7);
+	
+	var _SpatialHash2 = _interopRequireDefault(_SpatialHash);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var System = {};
 	System.prototype = {
+	    init: function init(params) {
+	        this.frames = [];
+	        this.objects = [];
+	        this.waves = [];
+	        this.childWaves = [];
+	        this.rays = [];
+	        this.width = params.width || 600;
+	        this.height = params.height || 300;
+	
+	        var divisor = params.cellSize ? params.cellSize : 100;
+	
+	        var cellSize = this.width / Math.floor(this.width / divisor);
+	        this.hash = (0, _SpatialHash2.default)(cellSize, this.width, this.height);
+	    },
 	    addFrame: function addFrame(frame) {
 	        this.frames.push(frame);
 	    },
@@ -894,7 +895,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    update: function update() {
 	        var _this2 = this;
 	
+	        this.hash.clear();
 	        this.objects.forEach(function (body) {
+	            _this2.hash.insertBody(body);
 	            body.update();
 	        });
 	
@@ -916,14 +919,119 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 	
-	var system = function system() {
-	    return new System();
+	var system = function system(params) {
+	    var s = Object.create(System.prototype);
+	    s.init(params);
+	    return s;
 	};
+	
 	exports.default = system;
 	module.exports = exports['default'];
 
 /***/ },
 /* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var SpatialHash = {};
+	SpatialHash.prototype = {
+	    init: function init(cellSize, width, height) {
+	        this.cellSize = cellSize;
+	        this.width = width;
+	        this.height = height;
+	        this.numRows = Math.ceil(height / cellSize);
+	        this.numCols = width / cellSize;
+	    },
+	
+	    /**
+	     * Return location that should store this point
+	     * @param {object} point - object with x and y properties
+	     * @return {object} - bucket which th epoint falls into
+	     */
+	    hash: function hash(point) {
+	        return { col: Math.floor(point.x / this.cellSize), row: Math.floor(point.y / this.cellSize) };
+	    },
+	    insertBody: function insertBody(body) {
+	        // Hash the vertices of the AABB
+	        var min = this.hash(body.aabb.min);
+	        var max = this.hash(body.aabb.max);
+	
+	        // Iterate over rectangular region
+	        // And put the object in all buckets that
+	        // it hits
+	        for (var r = min.row; r < max.row + 1; r++) {
+	            for (var c = min.col; c < max.col + 1; c++) {
+	                if (this.contents[r]) {
+	                    if (this.contents[r][c]) {
+	                        this.contents[r][c].push(body);
+	                    } else {
+	                        this.contents[r][c] = [body];
+	                    }
+	                } else {
+	                    this.contents[r] = {};
+	                    this.contents[r][c] = [body];
+	                }
+	            }
+	        }
+	    },
+	    removeBody: function removeBody(body) {
+	        var min = this.hash(body.aabb.min);
+	        var max = this.hash(body.aabb.max);
+	
+	        // Iterate over rectangular region
+	        // And remove the object from all found buckets
+	        for (var r = min.row; r < max.row + 1; r++) {
+	            for (var c = min.col; c < max.col + 1; c++) {
+	                var idx = this.contents[r][c].indexOf(body);
+	                if (idx !== -1) {
+	                    this.contents[r][c].splice(idx, 1);
+	                }
+	            }
+	        }
+	    },
+	    queryBody: function queryBody(body) {
+	        var min = this.hash(body.aabb.min);
+	        var max = this.hash(body.aabb.max);
+	        var nearby = [];
+	
+	        // Iterate over rectangular region
+	        // And put the object in all buckets that
+	        // it hits
+	        for (var r = min.row; r < max.row + 1; r++) {
+	            for (var c = min.col; c < max.col + 1; c++) {
+	                this.contents[r][c].forEach(function (b) {
+	                    if (nearby.indexOf(b) === -1 && b !== body) {
+	                        nearby.push(b);
+	                    }
+	                });
+	            }
+	        }
+	        return nearby;
+	    },
+	    queryPoint: function queryPoint(point) {
+	        var hash = this.hash(point);
+	        return hash;
+	    },
+	    clear: function clear() {
+	        this.contents = {};
+	    }
+	};
+	
+	var hash = function hash(cellSize, width, height) {
+	    var h = Object.create(SpatialHash.prototype);
+	    h.init(cellSize, width, height);
+	    return h;
+	};
+	
+	exports.default = hash;
+	module.exports = exports["default"];
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -934,7 +1042,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _math = __webpack_require__(4);
 	
-	var Renderer = {
+	var Renderer = {};
+	Renderer.prototype = {
 	    init: function init(params) {
 	        this.clearBackground = true;
 	        this.debug = params.debug || false;
@@ -951,8 +1060,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return c;
 	        }();
 	
-	        this.canvas.width = params.width || 600;
-	        this.canvas.height = params.height || 300;
+	        //this.canvas.width = params.width || 600;
+	        //this.canvas.height = params.height || 300;
 	        this.ctx = this.canvas.getContext('2d');
 	    },
 	    /**
@@ -1082,14 +1191,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.ctx.stroke();
 	        }
 	    },
-	    //draw: function(obj) {
-	    //if (obj.type === 'rectangle' ||
-	    //obj.type === 'circle' ||
-	    //obj.type === 'polygon' ||
-	    //obj.type === 'triangle') {
-	    //this.drawBody(obj);
-	    //}
-	    //},
+	
 	    render: function render(system) {
 	        var _this2 = this;
 	
@@ -1097,8 +1199,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // capture a local reference to it
 	        // to be used to restart the renderer later
 	        // if it's ever stopped
-	        if (this.system) {
+	        if (!this.system) {
 	            this.system = system;
+	            this.canvas.width = this.system.width;
+	            this.canvas.height = this.system.height;
 	        }
 	
 	        // In order to pass 'system' into render
@@ -1121,6 +1225,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Update the system
 	        system.update();
 	
+	        // Draw all objects + waves
 	        system.objects.forEach(function (obj) {
 	            _this2.drawBody(obj);
 	        });
@@ -1128,10 +1233,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	        system.waves.forEach(function (wave) {
 	            _this2.drawWave(wave);
 	        });
+	
 	        system.childWaves.forEach(function (wave) {
 	            _this2.drawWave(wave);
 	        });
 	
+	        if (this.debug === true) {
+	            (function () {
+	                var cellSize = system.hash.cellSize;
+	                for (var i = 0; i < system.hash.width; i += cellSize) {
+	                    for (var j = 0; j < system.hash.height; j += cellSize) {
+	                        _this2.ctx.beginPath();
+	                        _this2.ctx.strokeStyle = 'green';
+	                        _this2.ctx.rect(i, j, cellSize, cellSize);
+	                        _this2.ctx.stroke();
+	                    }
+	                }
+	                Object.keys(system.hash.contents).forEach(function (row) {
+	                    Object.keys(system.hash.contents[row]).forEach(function (col) {
+	                        // Draw all squares
+	                        _this2.ctx.beginPath();
+	                        _this2.ctx.strokeStyle = 'green';
+	                        if (system.hash.contents[row][col].length !== 0) {
+	                            _this2.ctx.strokeStyle = 'red';
+	                        }
+	                        _this2.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+	                        _this2.ctx.stroke();
+	                    });
+	                });
+	            })();
+	        }
 	        // Render bodies
 	        //this.renderObjects(system);
 	    },
@@ -1165,7 +1296,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	var renderer = function renderer(params) {
-	    var R = Object.create(Renderer);
+	    var R = Object.create(Renderer.prototype);
 	    R.init(params);
 	    return R;
 	};
@@ -1174,7 +1305,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1183,12 +1314,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(9);
+	var _Body = __webpack_require__(10);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
+	var _AABB = __webpack_require__(12);
+	
+	var _AABB2 = _interopRequireDefault(_AABB);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	/* eslint
+	    "no-multi-spaces": "off"
+	 */
 	var rect = function rect(options) {
 	    var B = Object.create(_Body2.default);
 	    B.init(options);
@@ -1219,6 +1357,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    });
 	
+	    /**
+	     * Update location of vertices - used in update loop
+	     */
 	    B.updateVertices = function () {
 	        var w = this.width,
 	            h = this.height,
@@ -1243,6 +1384,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.vertices = [{ x: x, y: y }, { x: x + w, y: y }, { x: x + w, y: y + h }, { x: x, y: y + h }];
 	    };
 	
+	    /**
+	     * Update segments - used in update loop
+	     */
 	    B.updateSegments = function () {
 	        // What mode are we in?
 	        var x = void 0,
@@ -1273,25 +1417,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                break;
 	        }
 	
-	        //this.vertices = [
-	        //{x: x,     y: y},
-	        //{x: x + w, y: y},
-	        //{x: x + w, y: y + h},
-	        //{x: x,     y: y + h}
-	        //];
 	        this.segments = [[[x, y], [x + w, y]], [[x + w, y], [x + w, y + h]], [[x + w, y + h], [x, y + h]], [[x, y + h], [x, y]]];
 	    };
 	
 	    B.updateVertices();
+	    B.aabb = (0, _AABB2.default)(B);
 	    return B;
-	}; /* eslint
-	       "no-multi-spaces": "off"
-	    */
+	};
+	
 	exports.default = rect;
 	module.exports = exports['default'];
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1300,7 +1438,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _materials = __webpack_require__(10);
+	var _materials = __webpack_require__(11);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
@@ -1339,6 +1477,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.material = options.material || 'GLASS';
 	        this.materialColor = options.fillStyle || 'black';
 	        this.mirror = options.mirror || false;
+	        this.intersectionPoints = [];
 	
 	        // If the material is provided, set refractive index based on materials
 	        // database
@@ -1408,12 +1547,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.updateVertices();
 	        }
 	
+	        this.aabb.update();
 	        this.position.add(this.velocity);
-	    },
-	
-	    aabb: function aabb() {
-	        switch (this.type) {}
 	    }
+	
 	}; /* eslint "no-unused-vars": "off" */
 	// What should a body be able to do?
 	// 1. Attach to other bodies or surfaces
@@ -1424,7 +1561,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1437,7 +1574,127 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 11 */
+/* 12 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	/* eslint
+	    "no-else-return": "off"
+	 */
+	var AABB = {
+	    init: function init(body) {
+	        this.body = body;
+	        var bounds = this.findMinMax(body);
+	        this.max = bounds.max;
+	        this.min = bounds.min;
+	    },
+	    /**
+	     * Finds bounds of AABB
+	     * Does not set any properties
+	     * If you want to find and set, call AABB.update()
+	     * @return {object} bounds
+	     */
+	    findMinMax: function findMinMax() {
+	        var _this = this;
+	
+	        if (this.body.vertices) {
+	            var _ret = function () {
+	                var minx = void 0,
+	                    miny = void 0,
+	                    maxx = void 0,
+	                    maxy = void 0;
+	                _this.body.vertices.forEach(function (v) {
+	                    var x = v.x,
+	                        y = v.y;
+	
+	                    // If nothing has been set, then set it
+	                    if (typeof minx === 'undefined') {
+	                        minx = x;
+	                    } else if (typeof minx !== 'undefined' && x < minx) {
+	                        // Something's already there, only update if x < minx
+	                        minx = x;
+	                    }
+	
+	                    if (typeof miny === 'undefined') {
+	                        miny = y;
+	                    } else if (typeof miny !== 'undefined' && y < miny) {
+	                        miny = y;
+	                    }
+	
+	                    if (typeof maxx === 'undefined') {
+	                        maxx = x;
+	                    } else if (typeof maxx !== 'undefined' && x > maxx) {
+	                        maxx = x;
+	                    }
+	
+	                    if (typeof maxy === 'undefined') {
+	                        maxy = y;
+	                    } else if (typeof maxy !== 'undefined' && y > maxy) {
+	                        maxy = y;
+	                    }
+	                });
+	
+	                return {
+	                    v: {
+	                        max: {
+	                            x: maxx,
+	                            y: maxy
+	                        },
+	                        min: {
+	                            x: minx,
+	                            y: miny
+	                        }
+	                    }
+	                };
+	            }();
+	
+	            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	        } else {
+	            // Assume it's a circle
+	            var cx = this.body.position.x,
+	                cy = this.body.position.y,
+	                r = this.body.radius;
+	            return {
+	                max: {
+	                    x: cx + r,
+	                    y: cy + r
+	                },
+	                min: {
+	                    x: cx - r,
+	                    y: cy - r
+	                }
+	            };
+	        }
+	    },
+	
+	    /**
+	     * Updates the AABB
+	     */
+	    update: function update() {
+	        var bounds = this.findMinMax();
+	        this.max = bounds.max;
+	        this.min = bounds.min;
+	    }
+	};
+	
+	var aabb = function aabb(body) {
+	    var ab = Object.create(AABB);
+	    ab.init(body);
+	    return ab;
+	};
+	
+	exports.default = aabb;
+	module.exports = exports['default'];
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1498,7 +1755,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Remove children on every update
 	        this.children = [];
-	        if (this.ray.intersectionPoint && this.ray.intersectionPoint !== this.lastIntersection) {
+	        // If the ray intersected a point...
+	        if (this.ray.intersectionPoint) {
 	            this.lastIntersection = this.ray.intersectionPoint;
 	            this.children = this.createChildren();
 	
@@ -1564,22 +1822,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            })();
 	        }
-	
-	        // Get angle of incidence
-	        //let intX = props.intersectingSegment.getX(),
-	        //intY = props.intersectingSegment.getY(),
-	        //intSeg = props.intersectingSegment.copy(),
-	        //normal;
-	        // XXX: Can probably take out the copy of intersectingSegment
-	        //intSeg.normalize();
-	        //let normals = [vector(-intSeg.getY(), intSeg.getX()), vector(intSeg.getY(), -intSeg.getX())];
-	        //let dot = intSeg.dot(rayVector);
-	
-	        //normals.forEach(n => {
-	        //if (n.dot(rayVector) < 0) {
-	        //normal = n;
-	        //}
-	        //});
 	
 	        // child waves - reflected and refracted
 	        // Calculate reflected vector
@@ -1655,10 +1897,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // t = n1/n2 * rayVector + (n1/n2 * cos(theta1) - sqrt(1
 	        // - sin2(theta2))) * normal
 	        var sin2theta2 = this.n1 / this.n2 * (this.n1 / this.n2) * (1 - Math.cos(theta1) * Math.cos(theta1));
-	        //let tVec = this.rayVector.copy();
 	        var tVec = _Vector.Vector.multiply(this.n1 / this.n2, this.ray.direction);
-	        //tVec.multiply(n1 / n2);
-	        //let normCopy = normal.copy();
 	        var normCopy = _Vector.Vector.multiply(normal, this.n1 / this.n2 * Math.cos(theta1) - Math.sqrt(1 - sin2theta2));
 	        tVec.add(normCopy);
 	
@@ -1705,8 +1944,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var children = [];
 	        if (RI > 0.01) {
 	            var reflectedWave = wave({ // eslint-disable-line
-	                x: this.ray.intersectionPoint.x + Math.cos(rVecAngle), //normal.x,//Math.cos(rVecAngle),
-	                y: this.ray.intersectionPoint.y + Math.sin(rVecAngle), //normal.y, //Math.sin(rVecAngle),
+	                x: this.ray.intersectionPoint.x + Math.cos(rVecAngle),
+	                y: this.ray.intersectionPoint.y + Math.sin(rVecAngle),
 	                direction: rVecAngle,
 	                intensity: RI,
 	                type: 'reflected',
@@ -1749,7 +1988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 12 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1758,9 +1997,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(9);
+	var _Body = __webpack_require__(10);
 	
 	var _Body2 = _interopRequireDefault(_Body);
+	
+	var _AABB = __webpack_require__(12);
+	
+	var _AABB2 = _interopRequireDefault(_AABB);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1770,6 +2013,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    B.radius = options.radius || 0;
 	    B.type = 'circle';
+	    B.aabb = (0, _AABB2.default)(B);
 	
 	    return B;
 	};

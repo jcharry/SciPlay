@@ -2,6 +2,7 @@
     "no-multi-spaces": "off"
  */
 import Body from './Body';
+import aabb from '../geometries/AABB';
 
 var rect = function(options) {
     let B = Object.create(Body);
@@ -33,6 +34,9 @@ var rect = function(options) {
         }
     });
 
+    /**
+     * Update location of vertices - used in update loop
+     */
     B.updateVertices = function() {
         let w = this.width,
             h = this.height,
@@ -61,6 +65,9 @@ var rect = function(options) {
         ];
     };
 
+    /**
+     * Update segments - used in update loop
+     */
     B.updateSegments = function() {
         // What mode are we in?
         let x, y, w, h;
@@ -88,12 +95,6 @@ var rect = function(options) {
                 break;
         }
 
-        //this.vertices = [
-            //{x: x,     y: y},
-            //{x: x + w, y: y},
-            //{x: x + w, y: y + h},
-            //{x: x,     y: y + h}
-        //];
         this.segments = [
             [[x, y], [x + w, y]],
             [[x + w, y], [x + w, y + h]],
@@ -103,6 +104,7 @@ var rect = function(options) {
     };
 
     B.updateVertices();
+    B.aabb = aabb(B);
     return B;
 };
 

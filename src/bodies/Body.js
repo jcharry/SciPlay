@@ -34,6 +34,7 @@ let Body = {
         this.material = options.material || 'GLASS';
         this.materialColor = options.fillStyle || 'black';
         this.mirror = options.mirror || false;
+        this.intersectionPoints = [];
 
          // If the material is provided, set refractive index based on materials
          // database
@@ -106,14 +107,10 @@ let Body = {
             this.updateVertices();
         }
 
+        this.aabb.update();
         this.position.add(this.velocity);
-    },
-
-    aabb: function() {
-        switch (this.type) {
-
-        }
     }
+
 };
 
 export default Body;

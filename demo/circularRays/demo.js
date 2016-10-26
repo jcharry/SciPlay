@@ -3,24 +3,28 @@ window.addEventListener('load', function() {
     var sci = sciplay();
     window.sci = sci;
 
-    var system = sci.system();
+    var system = sci.system({
+        width: 860,
+        height: 600,
+        cellSize: 100
+    });
     window.system = system;
     var renderer = sci.renderer({
         canvas: 'canvas',
-        width: 900,
-        height: 600
-        //debug: true
+        debug: true
     });
 
+    window.renderer = renderer;
     renderer.render(system);
 
     var r = sci.rect({
         x: 10,
-        y: 10,
+        y: 90,
         width: 100,
-        mode: 'CENTER',
+        mode: 'LEFT',
         height: 100,
-        strokeStyle: 'transparent'
+        strokeStyle: 'white',
+        refractiveIndex: 2
     });
     var r2 = sci.rect({
         x: 300,
@@ -44,29 +48,47 @@ window.addEventListener('load', function() {
         c.freeze();
     }, 8000);
 
+    var w = sci.wave({
+        x: 10,
+        y: 20,
+        direction: 0.5,
+        lineWidth: 1,
+        strokeStyle: 'green'
+    });
     var w1 = sci.wave({
         x: 10,
-        y: 320,
-        direction: 0.5,
-        lineWidth: 3,
+        y: 520,
+        direction: -0.5,
+        lineWidth: 1,
         strokeStyle: 'white'
     });
-    var w = sci.wave({
-        x: 400,
-        y: 300,
-        direction: 0,
-        lineWidth: 4,
+    var w2 = sci.wave({
+        x: 800,
+        y: 20,
+        direction: 3.14 - 0.5,
+        lineWidth: 1,
+        strokeStyle: 'green'
+    });
+    var w3 = sci.wave({
+        x: 800,
+        y: 520,
+        direction: 3.14 + 0.5,
+        lineWidth: 1,
         strokeStyle: 'green'
     });
 
     window.w = w;
     window.w1 = w1;
+    window.w2 = w2;
+    window.w3 = w3;
     window.r = r;
-    //system.addObject(r);
+    system.addObject(r);
     //system.addObject(r2);
-    system.addObject(c);
-    //system.addWave(w);
+    //system.addObject(c);
+    system.addWave(w);
     //system.addWave(w1);
+    //system.addWave(w2);
+    //system.addWave(w3);
 
 
     var squareDown = false;

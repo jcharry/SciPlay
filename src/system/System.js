@@ -1,11 +1,21 @@
-const System = function() {
-    this.frames = [];
-    this.objects = [];
-    this.waves = [];
-    this.childWaves = [];
-    this.rays = [];
-};
+import hash from '../math/SpatialHash';
+
+const System = {};
 System.prototype = {
+    init: function(params) {
+        this.frames = [];
+        this.objects = [];
+        this.waves = [];
+        this.childWaves = [];
+        this.rays = [];
+        this.width = params.width || 600;
+        this.height = params.height || 300;
+
+        let divisor = params.cellSize ? params.cellSize : 100;
+
+        let cellSize = this.width / Math.floor(this.width / divisor);
+        this.hash = hash(cellSize, this.width, this.height);
+    },
     addFrame: function(frame) {
         this.frames.push(frame);
     },
@@ -37,7 +47,9 @@ System.prototype = {
         }
     },
     update: function() {
+        this.hash.clear();
         this.objects.forEach(body => {
+            this.hash.insertBody(body);
             body.update();
         });
 
@@ -57,7 +69,10 @@ System.prototype = {
     }
 };
 
-var system = function() {
-    return new System();
+const system = function(params) {
+    const s = Object.create(System.prototype);
+    s.init(params);
+    return s;
 };
+
 export default system;

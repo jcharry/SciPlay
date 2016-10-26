@@ -1,7 +1,20 @@
+/* eslint
+    "no-unused-vars": "off",
+    "no-debugger": "off"
+ */
 import {distance, degToRad} from './math';
 import vector, {Vector} from './Vector.js';
 
 let Ray = {
+    /**
+     * Initialization
+     * @param {number} x - origin x
+     * @param {number} y - origin y
+     * @param {number} dir - direction in radians (or degrees if 'degrees' param
+     * = true)
+     * @param {bool} degrees - optional flag, if true, then read direction as
+     * degrees
+     */
     init: function(x, y, dir, degrees) {
         if (degrees) {
             dir = degToRad(dir);
@@ -11,27 +24,27 @@ let Ray = {
         this.direction = vector(Math.cos(dir), Math.sin(dir));
         this.outerBodies = [];
         this.t = window.innerWidth > window.innerHeight ? window.innerWidth : window.innerHeight;
+        let x0 = this.origin.x,
+            y0 = this.origin.y,
+            x1 = this.origin.x + this.direction.x * this.t,
+            y1 = this.origin.y + this.direction.y * this.t;
+        this.slope = (y1 - y0) / (x1 - x0);
+        // TODO: Figure out a way to give each ray a unique ID
+        this.rayID = Date.now();
     },
+
+    /**
+     * Return the objects from spatial hash to perform collision detection on
+     * @param {SpatialHash} hash - hash from the System
+     */
+
     trace: function(system) {
         // Always use radians, regardless of mode
         // Also angle should be in range 0 <= angle <= 2PI
         //let angle = this.direction.getAngle();
-        //angle = angle < 0 ? Math.PI * 2 + angle : angle;
         this.intersectionPoint = null;
         this.intersectingBody = null;
         this.intersectingSegment = null;
-        //let children = [];
-
-        // Get ray vector -> p1 - p0 (end of ray - origin of ray)
-        //let p0x = this.origin.x;
-        //let p0y = this.origin.y;
-
-        // Abitrarily large number to ensure ray extends passed edge of canvas
-        //let p1x = 2000 * Math.cos(angle) + this.origin.x;
-        //let p1y = 2000 * Math.sin(angle) + this.origin.y;
-        //let p = vector(props.x, props.y);
-        //let r = vector(p1x - props.x, p1y - props.y);
-        //this.rayVector = r.copy();
 
         // Look through all bodies for segments
         // See if they intersect the ray
@@ -54,222 +67,10 @@ let Ray = {
         // if an intersection point was found...
         if (this.intersectionPoint) {
             return true;
-            // Vector implementation of reflected and refracted waves here:
-            // http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
-            // Normalize ray vector
-            //this.rayVector.normalize();
-
-            //// Find the normal vector (method of which depends on type of body)
-            //// There are two possible normal vectors, but
-            //// which one do we want?
-            //// one which dot product with ray vector < 0 is what we want
-            //// http://gamedev.stackexchange.com/questions/85850/collision-intersection-of-2d-ray-to-line-segment
-            //let normal;
-            //let bType = props.intersectingBody.get('type');
-            //if (bType === 'rectangle') {
-                //let intSeg = props.intersectingSegment.copy();
-
-                //intSeg.normalize();
-                //let dot = intSeg.dot(this.rayVector);
-                //let normals = [vector(-intSeg.getY(), intSeg.getX()), vector(intSeg.getY(), -intSeg.getX())];
-
-                //normals.forEach(n => {
-                    //if (n.dot(this.rayVector) < 0) {
-                        //normal = n;
-                    //}
-                //});
-            //} else if (bType === 'circle') {
-                //let cx = props.intersectingBody.get('pos').getX();
-                //let cy = props.intersectingBody.get('pos').getY();
-                //let ix = props.intersectionPoint.x;
-                //let iy = props.intersectionPoint.y;
-                //let v1 = vector(ix - cx, iy - cy),
-                    //v2 = vector(cx - ix, cy - iy);
-                //v1.normalize();
-                //v2.normalize();
-                //let normals = [
-                    //v1,
-                    //v2
-                //];
-                //normals.forEach(function(n) {
-                    ////n.normalize();
-                    //if (n.dot(this.rayVector) < 0) {
-                        //normal = n;
-                    //}
-                //});
-            //}
-
-            //// Get angle of incidence
-            ////let intX = props.intersectingSegment.getX(),
-                ////intY = props.intersectingSegment.getY(),
-                ////intSeg = props.intersectingSegment.copy(),
-                ////normal;
-            //// XXX: Can probably take out the copy of intersectingSegment
-            ////intSeg.normalize();
-            ////let normals = [vector(-intSeg.getY(), intSeg.getX()), vector(intSeg.getY(), -intSeg.getX())];
-            ////let dot = intSeg.dot(rayVector);
-
-            ////normals.forEach(n => {
-                ////if (n.dot(rayVector) < 0) {
-                    ////normal = n;
-                ////}
-            ////});
-
-            //// child waves - reflected and refracted
-            ////createChildren();
-            //// Calculate reflected vector
-            //// https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
-            //// http://stackoverflow.com/questions/5454661/reflection-how-do-i-do-it
-            //// Reflected vector looks like this:
-            //// r = a - 2(a dot n) * n
-            //let tmpTerm = 2 * this.rayVector.dot(normal);
-            //let tmpVec = normal.copy();
-            //tmpVec.multiply(2 * this.rayVector.dot(normal));
-            //let rVec = this.rayVector.copy();
-            //rVec.subtract(tmpVec);
-
-            //// Refracted vector
-            //// Are we inside a body?
-            //// get origin points of wave, check if they are interior to the
-            //// intersecting body, if so, n1 = body.refractiveIndex, if not, n1
-            //// takes on refractive index of outer context,
-            //// which we can find from it's parent wave
-            //// If we have a body to intersect with...
-            //let n1 = props.n1,
-                //n2 = props.n2;
-            //if (props.type === 'incident' && this.outerBodies.length > 0) {
-                ////Grab the last one (the body on top)
-                //n1 = this.outerBodies[this.outerBodies.length - 1].get('refractiveIndex');
-            //}
-
-            //// TODO: Figure out how to handle picking proper refractive index
-            //// values
-            //// for child rays
-            //if (props.intersectingBody) {
-                //switch (props.type) {
-                    //case 'refracted':
-                        //if (props.parent && props.parent.props.intersectingBody &&
-                            //props.parent.props.intersectingBody === props.intersectingBody) {
-                            //n1 = props.parent.get('n2');
-                            //n2 = props.parent.get('n1');
-                        //} else {
-                            //n1 = props.parent.get('n2');
-                            //n2 = props.intersectingBody.get('refractiveIndex');
-                        //}
-                        //break;
-                    //case 'reflected':
-                        //if (props.parent && props.parent.props.intersectingBody &&
-                            //props.parent.props.intersectingBody === props.intersectingBody) {
-                            //n1 = props.parent.get('n1');
-                            //n2 = props.parent.get('n2');
-                        //} else {
-                            //n1 = props.parent.get('n1');
-                            //n2 = props.intersectingBody.get('refractiveIndex');
-                        //}
-                        //break;
-                    //case 'incident':
-                        //n2 = props.intersectingBody.get('refractiveIndex');
-                        //break;
-                    //default:
-                        //break;
-                //}
-            //} else {
-                //// There's no intersection point ahead of this ray, so it's
-                //// refractive indices are irrelevant
-                //n1 = 1;
-                //n2 = 2;
-                //// If the ray won't intersect another body,
-                //// then it must be outside of a body
-                ////n2 = 1;
-
-                //// n1 must take on the index of where the parent ray currently
-                //// exists
-                ////n1 = props.parent.intersectingBody.refractiveIndex;
-            //}
-
-            //// Store on props so children have access
-            //props.n1 = n1;
-            //props.n2 = n2;
-
-            ////n1 = 1;
-            ////n2 = intersectingBody ? intersectingBody.get('refractiveIndex') : 1;
-            //let theta1 = Math.PI - this.rayVector.angleTo(normal);
-            //let theta2 = Math.asin(n1 * Math.sin(theta1) / n2);
-
-            //// Vector formulation for refracted wave
-            //// t = n1/n2 * rayVector + (n1/n2 * cos(theta1) - sqrt(1
-            //// - sin2(theta2))) * normal
-            //let sin2theta2 = (n1 / n2) * (n1 / n2) * (1 - (Math.cos(theta1) * Math.cos(theta1)));
-            //let tVec = this.rayVector.copy();
-            //tVec.multiply(n1 / n2);
-            //let normCopy = normal.copy();
-            //normCopy.multiply((n1 / n2) * Math.cos(theta1) - Math.sqrt(1 - sin2theta2));
-            //tVec.add(normCopy);
-
-            //// Reflection Coefficient
-            //// R = R0 + (1 - R0) * (1 - cos(theta1))^5 where R0 = (n1 - n2 / n1
-            //// + n2)^2
-            //let _r0 = (n1 - n2) / (n1 + n2);
-            //let R0 = _r0 * _r0;
-            //let _r0tmp;
-
-            //// Angles must be positive, so if we get a negative value for an
-            //// angle, just flip it
-            //if (n1 <= n2) {
-                //_r0tmp = (1 - (Math.cos(theta1) < 0 ? -Math.cos(theta1) : Math.cos(theta1)));
-            //} else if (n1 > n2) {
-                //_r0tmp = (1 - (Math.cos(theta2) < 0 ? -Math.cos(theta2) : Math.cos(theta2)));
-            //}
-
-            //let R = R0 + (1 - R0) * Math.pow(_r0tmp, 5);
-            //let T = 1 - R;  // Refracion Coefficient
-            //// Total Internal Reflection
-            //if (Math.sin(theta1) > n2 / n1) {
-                //R = 1;
-                //T = 0;
-            //}
-            //let RI = props.intensity * R;
-            //let TI = props.intensity * T;
-
-            //// Add 2 child waves - reflected and refracted
-            //// Trace reflected wave
-            //// Have to offset the waves by at least a pixel,
-            //// otherwise we'll end up in a never ending
-            //// call stack when each child wave always produces
-            //// 2 new child waves, forever...
-            //let rVecAngle = rVec.getAngle();
-            //let tVecAngle = tVec.getAngle();
-            //if (RI > 0.02) {
-                //let reflectedWave = wave({
-                    //x: props.intersectionPoint.x + Math.cos(rVecAngle),
-                    //y: props.intersectionPoint.y + Math.sin(rVecAngle),
-                    //direction: rVecAngle,
-                    //intensity: RI,
-                    //type: 'reflected',
-                    //parent: this,
-                    //n1: props.n1,
-                    //n2: props.n2
-                //});
-                //this.children.push(reflectedWave);
-            //}
-
-            //if (TI > 0.02) {
-                //let refractedWave = wave({
-                    //x: props.intersectionPoint.x + Math.cos(tVecAngle),
-                    //y: props.intersectionPoint.y + Math.sin(tVecAngle),
-                    //direction: tVecAngle,
-                    //intensity: TI,
-                    //type: 'refracted',
-                    //parent: this,
-                    //n1: props.n1,
-                    //n2: props.n2
-                //});
-                //this.children.push(refractedWave);
-            //}
-            //drawChildren(system, ctx);
         }
     },
-        /**
+
+    /**
      * Detect if ray intersects circle
      * http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
      *
@@ -343,44 +144,12 @@ let Ray = {
     },
 
     /**
-     * Detect if ray intersects circle
-     * see this skecth: http://www.openprocessing.org/sketch/45537
-     *
-     * @param {Body} circle - circle body object
-     */
-    //intersectCircle: function(circle) {
-        //let radius = circle.radius;
-
-        ////let f = this.origin.copy();
-        ////f.subtract(circle.get('pos'));
-        //let f = Vector.subtract(circle.position, this.origin);
-        //let lf = f.dot(this.direction);
-        //let s = radius * radius - f.dot(f) + lf * lf;
-
-        //if (s < 0) {
-            //return false;
-        //}
-
-        //s = Math.sqrt(s);
-        //if (lf < s) {
-            //if (lf + s >= 0) {
-                //s = -s;
-                //this.outerBodies.push(circle);
-            //}
-        //}
-
-        //let t1 = Vector.multiply(this.direction, (lf - s));
-        //t1.add(this.origin);
-        //// That works!
-        //this.updateIntersectionPoint({x: t1.x, y: t1.y}, null, circle);
-        //return;
-    //},
-    /**
      * Handles case of ray-rectangle intersection
      * If an intersecting segment is found,
      * set the props accordingly
      * @private
      * @param {Rect} rect - rect body object
+     * @return {bool} true if intersected, otherwise false
      */
     intersectRect: function(rect) {
         if (rect.isPointInterior(this.origin.x, this.origin.y)) {
@@ -389,6 +158,7 @@ let Ray = {
         //let segs = rect.segments;
         let vertices = rect.vertices;
         let vertLength = vertices.length;
+        let intersection;
         vertices.forEach((vert, index, verts) => {
             let seg2;
             if (index === vertLength - 1) {
@@ -397,20 +167,16 @@ let Ray = {
                 seg2 = verts[index + 1];
             }
             //let segVec = vector(vert, seg2);
-            let intersection = this.intersectSegment([vert, seg2]);
+            intersection = this.intersectSegment([vert, seg2]);
             if (intersection) {
                 this.updateIntersectionPoint(intersection.intPoint, intersection.segVec, rect);
             }
         });
 
-        //segs.forEach(seg => {
-            //var intersection = this.intersectSegment(seg);
-            //if (intersection) {
-                //this.updateIntersectionPoint(intersection.intPoint, intersection.segVec, rect);
-            //}
-        //});
+        return typeof intersection !== 'undefined';
     },
     /**
+     * Detects Ray-Segment intersection - Returns intersection coords
      * @param {Array} seg - segment vertices
      * @return {Object} returns intersection point with body, or false
      */
@@ -459,7 +225,8 @@ let Ray = {
 
             return {
                 intPoint: vector(ix, iy),
-                segVec: s
+                segVec: s,
+                t
             };
         } else {
             // Line segments do not intersect
@@ -468,6 +235,211 @@ let Ray = {
             return false;
         }
     },
+
+    /**
+     * Test for Ray-Hash bucket intersections
+     * @param {SpatialHash} hash - system.hash object
+     * @return {array} list of intersected buckets
+     *
+     * See here: http://www.cse.chalmers.se/edu/year/2011/course/TDA361_Computer_Graphics/grid.pdf
+     */
+    intersectHash: function(hash) {
+        // Algorithm steps
+        // Identify voxel where ray enters grid
+
+        /*
+         * The traversal algorithm consists of two phases: initialization and incremental traversal. The initialization
+            phase begins by identifying the voxel in which the ray origin, →
+            u, is found. If the ray origin is outside
+            the grid, we find the point in which the ray enters the grid and take the adjacent voxel. The integer
+            variables X and Y are initialized to the starting voxel coordinates. In addition, the variables stepX and
+            stepY are initialized to either 1 or -1 indicating whether X and Y are incremented or decremented as the
+            ray crosses voxel boundaries (this is determined by the sign of the x and y components of →
+            v).
+            Next, we determine the value of t at which the ray crosses the first vertical voxel boundary and
+            store it in variable tMaxX. We perform a similar computation in y and store the result in tMaxY. The
+            minimum of these two values will indicate how much we can travel along the ray and still remain in the
+            current voxel.
+            Finally, we compute tDeltaX and tDeltaY. TDeltaX indicates how far along the ray we must move
+            (in units of t) for the horizontal component of such a movement to equal the width of a voxel. Similarly,
+            we store in tDeltaY the amount of movement along the ray which has a vertical component equal to the
+            height of a voxel
+        */
+
+        // Initialize variables
+        let bucket = hash.hash(this.origin);
+        let {row, col} = bucket;
+        let X = col,
+            Y = row;
+        let tMaxX, tMaxY, tDeltaX, tDeltaY;
+        let stepX = this.direction.x < 0 ? -1 : 1,
+            stepY = this.direction.y < 0 ? -1 : 1;
+        let cellSize = hash.cellSize;
+
+        // Step 1. Initialization - determine starting voxel
+        //if (hash.contents[row] && hash.contents[row][col]) {
+            //// Ray origin is inside a voxel that exists
+            //X = col * cellSize;
+            //Y = row * cellSize;
+        //} else {
+            //// TODO: Figure out how to find first voxel intersected by ray
+            //// Create long vertical and horizontal vectors, but the starting
+            //// point will depend on the direction of the ray
+        //}
+
+        // Cast first ray!
+        // TODO Finish this!
+        // This should all be in a loop, right???
+        let verticalSeg = [
+            vector((col + stepX) * cellSize, row * cellSize),
+            vector((col + stepX) * cellSize, hash.height)];
+        let horizontalSeg = [
+            vector(col * cellSize, (row + stepY) * cellSize),
+            vector(hash.width, (row + stepY) * cellSize)];
+
+        let vInt = this.intersectSegment(verticalSeg);
+        let hInt = this.intersectSegment(horizontalSeg);
+        tMaxX = distance(this.origin.x, this.origin.y, vInt.intPoint.x, vInt.intPoint.y);
+        tMaxY = distance(this.origin.x, this.origin.y, hInt.intPoint.x, hInt.intPoint.y);
+        tDeltaX = tMaxX;
+        tDeltaY = tMaxY;
+        let counter = 0;
+        while (counter < 50) {
+            if (hash.contents[Y] && hash.contents[Y][X] && hash.contents[Y][X].length !== 0) {
+                // TODO: Here's where we need to check if the object is
+                // actually intersecting the ray
+                // Intersect all objects in this voxel only
+                let contents = hash.contents[Y][X];
+                let intersected = false;
+                let numTested = 0;
+                contents.forEach(body => {
+                    numTested++;
+                    if (body.intersectionPoints[this.rayID]) {
+                        // Dont' perform intersection test, just grab the point
+                        this.updateIntersectionPoint(body.intersectionPoints[this.rayID].intPoint, body.intersectionPoints[this.rayID].segVec, body);
+
+                    }
+                    switch (body.type) {
+                        case 'rectangle':
+                            this.intersectRect(body);
+                            break;
+                        case 'circle':
+                            this.intersectCircle(body);
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                // TODO: Finish this!!!!!!
+                // If we've found an intersection point
+                if (this.intersectionPoint) {
+                    // Make sure it's in this voxel
+                    if (this.intersectionPoint.x > (X + 1) * cellSize) {
+                        // Intersection could't have occured in the voxel
+                        // So set this intersection point on the body itself,
+                        // so we dont' have to perform the intersection test
+                        // again
+                        this.intersectingBody.intersectionPoints[this.rayID] = this.intersectionPoint;
+                        debugger;
+                    }
+                    //if (this.intersectionPoint.x > X * cellSize &&
+                        //this.intersectionPoint.x < (X + 1) * cellSize &&
+                        //this.intersectionPoint.y > Y * cellSize &&
+                        //this.intersectionPoint.y)
+                }
+                debugger;
+            }
+            // This should happen in a loop...
+            if (tMaxX < tMaxY) {
+                //distX = distance(this.origin.x
+                tMaxX += tDeltaX;
+                X += stepX;
+            } else {
+                tMaxY += tDeltaY;
+                Y += stepY;
+            }
+
+            counter++;
+        }
+
+        //let distanceToVerticalBoundary = distance(this.origin.x, this.origin.y, vertIntPoint.intPoint.x, vertIntPoint.intPoint.y);
+        //let distanceToHorizontalBoundary = distance(this.origin.x, this.origin.y, horIntPoint.intPoint.x, horIntPoint.intPoint.y);
+        //if (distanceToVerticalBoundary < distanceToHorizontalBoundary) {
+            //distanceToHorizontalBoundary
+        //} else {
+
+        //}
+
+        let safetyCounter = 0;
+        while (safetyCounter < 10000) {
+            safetyCounter++;
+        }
+
+        // Step 2. Find distances to nearest vertical and horizontal segments
+        // of the voxel
+        // Need to know what direction the ray is going in...
+        if (this.direction.x > 0 && this.direction.y > 0) {
+            // Down and to the right
+            //let verticalSeg = [vector(X + cellSize),
+            let verts = [vector(X + cellSize, Y), vector(X + cellSize, Y + cellSize)];
+            let intersection = this.intersectSegment(verts);
+        } else if (this.direction.x > 0 && this.direction.y < 0) {
+            // Up and to the right
+        } else if (this.direction.x < 0 && this.direction.y > 0) {
+            // Down and to the left
+        } else if (this.direction.x < 0 && this.direction.y < 0) {
+            // Up and to the left
+        }
+        //
+        return [];
+    },
+
+    /**
+     * Simple Ray-AABB Test
+     * Only returns if intersection exists, DOES NOT give distance to
+     * intersection
+     * 2D version of this: http://www.cg.cs.tu-bs.de/media/publications/fast-rayaxis-aligned-bounding-box-overlap-tests-using-ray-slopes.pdf
+     * @param {AABB} aabb - axis-aligned bounding-box instance
+     * @return {bool} did intersection occur
+     */
+    intersectAABB: function(aabb) {
+        // Steps:
+        // 1. Get slope of line from ray origin to aabb.min and aabb.max
+        // 2. if slope of ray is between slopes generated in step 1, then
+        // ray intersects
+        //
+        // Handle two cases : positive vs. negative slope
+        // If slope is positive, use min + width and min + height as corners to
+        // check
+        // Otherwise use regular min and max
+        let min, max;
+        if (this.slope > 0) {
+            min = {x: aabb.max.x, y: aabb.min.y};
+            max = {x: aabb.min.x, y: aabb.max.y};
+        } else {
+            min = aabb.min;
+            max = aabb.max;
+        }
+
+        let s1 = (min.y - this.origin.y) / (min.x - this.origin.x);
+        let s2 = (max.y - this.origin.y) / (max.x - this.origin.x);
+        let smin = Math.min(s1, s2);
+        let smax = Math.max(s1, s2);
+
+        if (this.slope < smax && this.slope > smin) {
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * Internally used to update point of intersection property
+     * @param {Point} intPoint - object with x and y properties representing
+     * intersection point
+     * @param {Vector} segVec - vector object that was intersected
+     * @param {Body} body - body that was intersected
+     */
     updateIntersectionPoint: function(intPoint, segVec, body) {
         let px = this.origin.x;
         let py = this.origin.y;
@@ -494,11 +466,21 @@ let Ray = {
     }
 };
 
+/**
+ * 'Constructor' function
+ * @param {number} x - origin x
+ * @param {number} y - origin y
+ * @param {number} dir - direction in radians (or degrees if 'degrees' param
+ * = true)
+ * @param {bool} degrees - optional flag, if true, then read direction as
+ * degrees
+ *
+ * @return {object} ray object
+ */
 var ray = function(x, y, dir, degrees) {
     let R = Object.create(Ray);
     R.init(x, y, dir, degrees);
     return R;
-    //return new Ray(x, y, dir, degrees);
 };
 
 export default ray;

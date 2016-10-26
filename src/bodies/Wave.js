@@ -43,7 +43,8 @@ let Wave = {
 
         // Remove children on every update
         this.children = [];
-        if (this.ray.intersectionPoint && this.ray.intersectionPoint !== this.lastIntersection) {
+        // If the ray intersected a point...
+        if (this.ray.intersectionPoint) {
             this.lastIntersection = this.ray.intersectionPoint;
             this.children = this.createChildren();
 
@@ -106,22 +107,6 @@ let Wave = {
                 normal = normals[0];
             }
         }
-
-        // Get angle of incidence
-        //let intX = props.intersectingSegment.getX(),
-            //intY = props.intersectingSegment.getY(),
-            //intSeg = props.intersectingSegment.copy(),
-            //normal;
-        // XXX: Can probably take out the copy of intersectingSegment
-        //intSeg.normalize();
-        //let normals = [vector(-intSeg.getY(), intSeg.getX()), vector(intSeg.getY(), -intSeg.getX())];
-        //let dot = intSeg.dot(rayVector);
-
-        //normals.forEach(n => {
-            //if (n.dot(rayVector) < 0) {
-                //normal = n;
-            //}
-        //});
 
         // child waves - reflected and refracted
         // Calculate reflected vector
@@ -199,10 +184,7 @@ let Wave = {
         // t = n1/n2 * rayVector + (n1/n2 * cos(theta1) - sqrt(1
         // - sin2(theta2))) * normal
         let sin2theta2 = (this.n1 / this.n2) * (this.n1 / this.n2) * (1 - (Math.cos(theta1) * Math.cos(theta1)));
-        //let tVec = this.rayVector.copy();
         let tVec = Vector.multiply((this.n1 / this.n2), this.ray.direction);
-        //tVec.multiply(n1 / n2);
-        //let normCopy = normal.copy();
         let normCopy = Vector.multiply(normal, (this.n1 / this.n2) * Math.cos(theta1) - Math.sqrt(1 - sin2theta2));
         tVec.add(normCopy);
 
@@ -249,8 +231,8 @@ let Wave = {
         let children = [];
         if (RI > 0.01) {
             let reflectedWave = wave({ // eslint-disable-line
-                x: this.ray.intersectionPoint.x + Math.cos(rVecAngle), //normal.x,//Math.cos(rVecAngle),
-                y: this.ray.intersectionPoint.y + Math.sin(rVecAngle), //normal.y, //Math.sin(rVecAngle),
+                x: this.ray.intersectionPoint.x + Math.cos(rVecAngle),
+                y: this.ray.intersectionPoint.y + Math.sin(rVecAngle),
                 direction: rVecAngle,
                 intensity: RI,
                 type: 'reflected',
