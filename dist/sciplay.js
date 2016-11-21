@@ -131,8 +131,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Circle2 = _interopRequireDefault(_Circle);
 	
+	var _Polygon = __webpack_require__(15);
+	
+	var _Polygon2 = _interopRequireDefault(_Polygon);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	/* BODIES */
+	
+	
+	/* CORE OBJECTS */
+	/* MATH OBJECTS */
 	var sciplay = function sciplay() {
 	    return {
 	        Vector: _Vector.Vector, // for operations that return a new vector
@@ -142,15 +151,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        system: _System2.default,
 	        wave: _Wave2.default,
 	        rect: _Rect2.default,
+	        polygon: _Polygon2.default,
 	        circle: _Circle2.default
 	    };
 	};
 	
-	/* BODIES */
-	
-	
-	/* CORE OBJECTS */
-	/* MATH OBJECTS */
 	exports.default = sciplay;
 	module.exports = exports['default'];
 
@@ -212,6 +217,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    magnitudeSq: function magnitudeSq() {
 	        return this.x * this.x + this.y * this.y;
+	    },
+	    negate: function negate() {
+	        this.x = -this.x;
+	        this.y = -this.y;
+	        return this;
 	    },
 	    dot: function dot(vec) {
 	        return this.x * vec.x + this.y * vec.y;
@@ -333,7 +343,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/* eslint
 	    "no-unused-vars": "off",
-	    "no-debugger": "off"
 	 */
 	var Ray = {
 	    /**
@@ -352,6 +361,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        this.origin = (0, _Vector2.default)(x, y);
 	        this.direction = (0, _Vector2.default)(Math.cos(dir), Math.sin(dir));
+	        this.invDirection = (0, _Vector2.default)(1 / this.direction.x, 1 / this.direction.y);
 	        this.outerBodies = [];
 	        this.t = window.innerWidth > window.innerHeight ? window.innerWidth : window.innerHeight;
 	        var x0 = this.origin.x,
@@ -360,7 +370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            y1 = this.origin.y + this.direction.y * this.t;
 	        this.slope = (y1 - y0) / (x1 - x0);
 	        // TODO: Figure out a way to give each ray a unique ID
-	        this.rayID = Date.now();
+	        this.numTests = 0;
 	    },
 	
 	    /**
@@ -369,8 +379,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	
 	    trace: function trace(system) {
-	        var _this = this;
-	
 	        // Always use radians, regardless of mode
 	        // Also angle should be in range 0 <= angle <= 2PI
 	        //let angle = this.direction.getAngle();
@@ -378,22 +386,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.intersectingBody = null;
 	        this.intersectingSegment = null;
 	
-	        // Look through all bodies for segments
-	        // See if they intersect the ray
-	        system.objects.forEach(function (body) {
-	            switch (body.type) {
-	                case 'rectangle':
-	                    _this.intersectRect(body);
-	                    break;
-	                case 'circle':
-	                    _this.intersectCircle(body);
-	                    break;
-	                case 'polygon':
-	                    break;
-	                default:
-	                    break;
-	            }
-	        });
+	        // Iterate the rayID to ensure no duplicates
+	        this.rayID = system.currentRayId++;
+	        this.numTests = 0; // debugging param - how many tests are run
+	        this.intersectHash(system.hash);
 	
 	        // After going through all bodies and segments,
 	        // if an intersection point was found...
@@ -431,6 +427,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {boolean} true if intersection was found, false otherwise
 	     */
 	    intersectCircle: function intersectCircle(circle) {
+	        this.numTests += 1;
 	        var radius = circle.radius;
 	
 	        var d = (0, _Vector2.default)(this.direction.x * this.t, this.direction.y * this.t);
@@ -477,21 +474,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    /**
-	     * Handles case of ray-rectangle intersection
+	     * Handles case of ray-polygon intersection
 	     * If an intersecting segment is found,
 	     * set the props accordingly
 	     * @private
-	     * @param {Rect} rect - rect body object
+	     * @param {Polygon} poly - rect body object
 	     * @return {bool} true if intersected, otherwise false
 	     */
-	    intersectRect: function intersectRect(rect) {
-	        var _this2 = this;
+	    intersectPolygon: function intersectPolygon(poly) {
+	        var _this = this;
 	
-	        if (rect.isPointInterior(this.origin.x, this.origin.y)) {
-	            this.outerBodies.push(rect);
+	        this.numTests += 1;
+	        if (poly.isPointInterior(this.origin)) {
+	            this.outerBodies.push(poly);
 	        }
-	        //let segs = rect.segments;
-	        var vertices = rect.vertices;
+	        //let segs = poly.segments;
+	        var vertices = poly.vertices;
 	        var vertLength = vertices.length;
 	        var intersection = void 0;
 	        vertices.forEach(function (vert, index, verts) {
@@ -501,10 +499,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            } else {
 	                seg2 = verts[index + 1];
 	            }
-	            //let segVec = vector(vert, seg2);
-	            intersection = _this2.intersectSegment([vert, seg2]);
+	
+	            intersection = _this.intersectSegment([vert, seg2]);
 	            if (intersection) {
-	                _this2.updateIntersectionPoint(intersection.intPoint, intersection.segVec, rect);
+	                _this.updateIntersectionPoint(intersection.intPoint, intersection.segVec, poly);
 	            }
 	        });
 	
@@ -513,28 +511,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	    /**
 	     * Detects Ray-Segment intersection - Returns intersection coords
 	     * @param {Array} seg - segment vertices
+	     * @param {Vector} dir - optional direction to use, otherwise use
+	     * this.direction
 	     * @return {Object} returns intersection point with body, or false
 	     */
-	    intersectSegment: function intersectSegment(seg) {
-	        //let t1 = Math.abs(v2.cross(v1)) / (v2.dot(v3));
-	        //let t2 = (v1.dot(v3)) / (v2.dot(v3));
-	        var r = (0, _Vector2.default)(this.t * this.direction.x, this.t * this.direction.y);
-	        var p = (0, _Vector2.default)(this.origin.x, this.origin.y);
-	        var q = (0, _Vector2.default)(seg[0].x, seg[0].y);
-	        var s = (0, _Vector2.default)(seg[1].x - seg[0].x, seg[1].y - seg[0].y);
-	        //let q = vector(seg[0][0], seg[0][1]);
-	        //let s = vector(seg[1][0] - seg[0][0], seg[1][1] - seg[0][1]);
+	    intersectSegment: function intersectSegment(seg, dir) {
+	        var r = dir ? (0, _Vector2.default)(dir.x * this.t, dir.y * this.t) : // Dir passed to fn
+	        (0, _Vector2.default)(this.t * this.direction.x, this.t * this.direction.y); // Use ray dir
+	        var p = (0, _Vector2.default)(this.origin.x, this.origin.y); // Ray origin
+	        var q = (0, _Vector2.default)(seg[0].x, seg[0].y); // Segment start point
+	        var s = (0, _Vector2.default)(seg[1].x - seg[0].x, seg[1].y - seg[0].y); // Segment vector
 	
 	        // check for intersection
 	        // t = (q − p) x s / (r x s)
 	        // u = (q − p) x r / (r x s)
 	        var rxs = r.cross(s);
-	        //tmp = q.copy();
 	        var tmp = _Vector.Vector.subtract(q, p);
-	        //tmp.subtract(p);
 	        var tNum = tmp.cross(s),
 	            uNum = tmp.cross(r);
 	
+	        // t, u are distances traveled along vector
 	        var t = void 0,
 	            u = void 0;
 	        if (rxs !== 0) {
@@ -545,9 +541,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // TODO: handle collinear case
 	        if (rxs === 0 && uNum === 0) {
 	            // lines are collinear
+	            return;
 	        } else if (rxs === 0 && uNum !== 0) {
 	            // lines are parallel and non-intersecting
-	            return;
+	            return false;
 	        } else if (rxs !== 0 && t >= 0 && t <= 1 && u >= 0 && u <= 1) {
 	            // Two lines intersect,
 	            // and meet at the point
@@ -564,12 +561,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                segVec: s,
 	                t: t
 	            };
-	        } else {
-	            // Line segments do not intersect
-	            // if we've gone through all the segments of the body,
-	            //intersectionPoint = null;
-	            return false;
 	        }
+	
+	        // Line segments do not intersect
+	        // if we've gone through all the segments of the body,
+	        //intersectionPoint = null;
+	        return false;
 	    },
 	
 	    /**
@@ -578,14 +575,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {array} list of intersected buckets
 	     *
 	     * See here: http://www.cse.chalmers.se/edu/year/2011/course/TDA361_Computer_Graphics/grid.pdf
-	     */
-	    intersectHash: function intersectHash(hash) {
-	        var _this3 = this;
-	
-	        // Algorithm steps
-	        // Identify voxel where ray enters grid
-	
-	        /*
 	         * The traversal algorithm consists of two phases: initialization and incremental traversal. The initialization
 	            phase begins by identifying the voxel in which the ray origin, →
 	            u, is found. If the ray origin is outside
@@ -602,9 +591,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            (in units of t) for the horizontal component of such a movement to equal the width of a voxel. Similarly,
 	            we store in tDeltaY the amount of movement along the ray which has a vertical component equal to the
 	            height of a voxel
-	        */
+	        *
+	     */
+	    intersectHash: function intersectHash(hash) {
+	        var _this2 = this;
+	
+	        // TODO: Handle case where ray starts outside bounds
 	
 	        // Initialize variables
+	        // Step 1. Initialization - determine starting voxel
 	        var bucket = hash.hash(this.origin);
 	        var row = bucket.row;
 	        var col = bucket.col;
@@ -619,122 +614,288 @@ return /******/ (function(modules) { // webpackBootstrap
 	            stepY = this.direction.y < 0 ? -1 : 1;
 	        var cellSize = hash.cellSize;
 	
-	        // Step 1. Initialization - determine starting voxel
-	        //if (hash.contents[row] && hash.contents[row][col]) {
-	        //// Ray origin is inside a voxel that exists
-	        //X = col * cellSize;
-	        //Y = row * cellSize;
-	        //} else {
-	        //// TODO: Figure out how to find first voxel intersected by ray
-	        //// Create long vertical and horizontal vectors, but the starting
-	        //// point will depend on the direction of the ray
-	        //}
+	        // Row and Col offset for picking which horizontal or veritcal segments
+	        // to use for intersection tests
+	        var rowOffset = stepY < 1 ? 0 : 1,
+	            colOffset = stepX < 1 ? 0 : 1;
 	
-	        // Cast first ray!
-	        // TODO Finish this!
-	        // This should all be in a loop, right???
-	        var verticalSeg = [(0, _Vector2.default)((col + stepX) * cellSize, row * cellSize), (0, _Vector2.default)((col + stepX) * cellSize, hash.height)];
-	        var horizontalSeg = [(0, _Vector2.default)(col * cellSize, (row + stepY) * cellSize), (0, _Vector2.default)(hash.width, (row + stepY) * cellSize)];
+	        // FIXME: There's an issue when the ray starts inside a voxel -> it's
+	        // tMaxX and tMaxY values should represent the distance to cross an
+	        // entire voxel, not the distance from the origin to the nearest edge.
+	        // To solve this, we could project backwards until we hit the opposite
+	        // edges of the voxel, get the starting coordinates, then go from there
 	
-	        var vInt = this.intersectSegment(verticalSeg);
-	        var hInt = this.intersectSegment(horizontalSeg);
-	        tMaxX = (0, _math.distance)(this.origin.x, this.origin.y, vInt.intPoint.x, vInt.intPoint.y);
-	        tMaxY = (0, _math.distance)(this.origin.x, this.origin.y, hInt.intPoint.x, hInt.intPoint.y);
+	        // Project Backwards
+	        var backDir = this.direction.clone().negate();
+	        var backSegH = void 0,
+	            backSegV = void 0;
+	        if (stepX === 1 && stepY === 1) {
+	            // Right and Down
+	            // Intersect backDir with col and row, as is
+	            backSegV = [(0, _Vector2.default)(col * cellSize, 0), (0, _Vector2.default)(col * cellSize, hash.height)];
+	            backSegH = [(0, _Vector2.default)(0, row * cellSize), (0, _Vector2.default)(hash.width, row * cellSize)];
+	        } else if (stepX === 1 && stepY === -1) {
+	            // Right and Up
+	            // Intersect backDir with col and row + 1
+	            backSegV = [(0, _Vector2.default)(col * cellSize, 0), (0, _Vector2.default)(col * cellSize, hash.height)];
+	            backSegH = [(0, _Vector2.default)(0, (row + 1) * cellSize), (0, _Vector2.default)(hash.width, (row + 1) * cellSize)];
+	        } else if (stepX === -1 && stepY === 1) {
+	            // Left and Down
+	            // Intersect with col and row
+	            backSegV = [(0, _Vector2.default)((col + 1) * cellSize, 0), (0, _Vector2.default)((col + 1) * cellSize, hash.height)];
+	            backSegH = [(0, _Vector2.default)(0, row * cellSize), (0, _Vector2.default)(hash.width, row * cellSize)];
+	        } else if (stepX === -1 && stepY === -1) {
+	            // Left and Up
+	            // intersect with col + 1 and row + 1
+	            backSegV = [(0, _Vector2.default)((col + 1) * cellSize, 0), (0, _Vector2.default)((col + 1) * cellSize, hash.height)];
+	            backSegH = [(0, _Vector2.default)(0, (row + 1) * cellSize), (0, _Vector2.default)(hash.width, (row + 1) * cellSize)];
+	        }
+	
+	        // Trace backwards
+	        var backVInt = this.intersectSegment(backSegV, backDir);
+	        var backHInt = this.intersectSegment(backSegH, backDir);
+	        var tMaxOrigin = void 0;
+	
+	        // Which is closer - backH or backV segment?
+	        if (backVInt.intPoint === undefined && backHInt.intPoint === undefined) {
+	            return;
+	            // FIXME: Handle the case where ray is outside and pointing at the
+	            // grid
+	        } else if (backVInt.intPoint === undefined && backHInt.intPoint) {
+	            tMaxOrigin = backHInt.intPoint;
+	        } else if (backHInt.intPoint === undefined && backVInt.intPoint) {
+	            tMaxOrigin = backVInt.intPoint;
+	        } else if (backHInt.intPoint && backVInt.intPoint) {
+	            var vDist = (0, _math.distance)(this.origin.x, this.origin.y, backVInt.intPoint.x, backVInt.intPoint.y);
+	            var hDist = (0, _math.distance)(this.origin.x, this.origin.y, backHInt.intPoint.x, backHInt.intPoint.y);
+	            if (vDist >= hDist) {
+	                tMaxOrigin = backHInt.intPoint;
+	            } else {
+	                tMaxOrigin = backVInt.intPoint;
+	            }
+	        }
+	
+	        // Hash segments to test for distance to intersection
+	        var verticalSeg = [(0, _Vector2.default)((col + colOffset) * cellSize, 0), (0, _Vector2.default)((col + colOffset) * cellSize, hash.height)],
+	            horizontalSeg = [(0, _Vector2.default)(0, (row + rowOffset) * cellSize), (0, _Vector2.default)(hash.width, (row + rowOffset) * cellSize)];
+	
+	        // Step 2. Get distance to both vertical and horizontal hash segments
+	        // Run hash intersection tests
+	        var vInt = this.intersectSegment(verticalSeg),
+	            hInt = this.intersectSegment(horizontalSeg);
+	
+	        if (window.sciDebug) {
+	            if (vInt.intPoint && hInt.intPoint) {
+	                window.ctx.beginPath();
+	                window.ctx.strokeStyle = 'yellow';
+	                window.ctx.ellipse(vInt.intPoint.x, vInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
+	                window.ctx.stroke();
+	                window.ctx.beginPath();
+	                window.ctx.strokeStyle = 'red';
+	                window.ctx.ellipse(hInt.intPoint.x, hInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
+	                window.ctx.stroke();
+	            }
+	
+	            if (backVInt.intPoint && backHInt.intPoint) {
+	                window.ctx.beginPath();
+	                window.ctx.strokeStyle = 'yellow';
+	                window.ctx.ellipse(backVInt.intPoint.x, backVInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
+	                window.ctx.stroke();
+	                window.ctx.beginPath();
+	                window.ctx.strokeStyle = 'red';
+	                window.ctx.ellipse(backHInt.intPoint.x, backHInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
+	                window.ctx.stroke();
+	                window.ctx.beginPath();
+	                window.ctx.ellipse(tMaxOrigin.x, tMaxOrigin.y, 8, 8, 0, 0, Math.PI * 2);
+	                window.ctx.stroke();
+	            }
+	        }
+	
+	        // It's possible that ray doesn't intersect a segment, so doublecheck
+	        // Then get distance to intersection point
+	        var tx = void 0,
+	            ty = void 0;
+	        if (vInt) {
+	            tMaxX = (0, _math.distance)(tMaxOrigin.x, tMaxOrigin.y, vInt.intPoint.x, vInt.intPoint.y);
+	            // tx = distance(tMaxOrigin.x, tMaxOrigin.y, vInt.intPoint.x, vInt.intPoint.y);
+	            // tMaxX = distance(this.origin.x, this.origin.y, vInt.intPoint.x, vInt.intPoint.y);
+	        }
+	        if (hInt) {
+	            tMaxY = (0, _math.distance)(tMaxOrigin.x, tMaxOrigin.y, hInt.intPoint.x, hInt.intPoint.y);
+	            // ty = distance(tMaxOrigin.x, tMaxOrigin.y, hInt.intPoint.x, hInt.intPoint.y);
+	            // tMaxY = distance(this.origin.x, this.origin.y, hInt.intPoint.x, hInt.intPoint.y);
+	        }
+	
+	        // FIXME: Left here on 11/21 - Somethings' not working and I'm not sure
+	        // what.......
+	        // Store distances on separate var to hold onto values
 	        tDeltaX = tMaxX;
 	        tDeltaY = tMaxY;
-	        var counter = 0;
-	        while (counter < 50) {
+	
+	        // Step 3. Loop - step through hash, only if X and Y are within the right range
+	        // TODO: Fix this - negative rays are not tracing
+	        // FIXME: see todo
+	        // through hash properly....not sure why
+	        while (Y < hash.numRows && Y > -1 && X < hash.numCols && X > -1) {
+	            // Draw buckets that ray overlaps
+	            if (window.sciDebug) {
+	                window.ctx.beginPath();
+	                window.ctx.strokeStyle = 'orange';
+	                window.ctx.lineWidth = 3;
+	                window.ctx.strokeRect(X * cellSize, Y * cellSize, cellSize, cellSize);
+	            }
+	
+	            // If we've found some contents in that hash bucket...
 	            if (hash.contents[Y] && hash.contents[Y][X] && hash.contents[Y][X].length !== 0) {
-	                (function () {
-	                    // TODO: Here's where we need to check if the object is
-	                    // actually intersecting the ray
-	                    // Intersect all objects in this voxel only
-	                    var contents = hash.contents[Y][X];
-	                    var intersected = false;
-	                    var numTested = 0;
-	                    contents.forEach(function (body) {
-	                        numTested++;
-	                        if (body.intersectionPoints[_this3.rayID]) {
-	                            // Dont' perform intersection test, just grab the point
-	                            _this3.updateIntersectionPoint(body.intersectionPoints[_this3.rayID].intPoint, body.intersectionPoints[_this3.rayID].segVec, body);
+	                // TODO: Here's where we need to check if the object is
+	                // actually intersecting the ray
+	                // Intersect all objects in this voxel only
+	                var contents = hash.contents[Y][X];
+	                contents.forEach(function (body) {
+	                    if (body.intersectionPoints[_this2.rayID]) {
+	                        // Already tested this body
+	                        // It either hit or missed, if it hit, grab the point
+	                        if (body.intersectionPoints[_this2.rayID].status === 'hit') {
+	                            _this2.updateIntersectionPoint(body.intersectionPoints[_this2.rayID].intPoint, body.intersectionPoints[_this2.rayID].segVec, body);
+	                            return;
 	                        }
+	
+	                        // It missed, so do nothing;
+	                        return;
+	                    }
+	
+	                    // If ray and body haven't been tested, then test
+	                    // If it hits the AABB, then perform
+	                    // actual intersection tests
+	                    var hitsAABB = _this2.intersectAABB(body.aabb);
+	                    if (hitsAABB) {
 	                        switch (body.type) {
+	                            case 'polygon':
 	                            case 'rectangle':
-	                                _this3.intersectRect(body);
+	                                _this2.intersectPolygon(body);
 	                                break;
 	                            case 'circle':
-	                                _this3.intersectCircle(body);
+	                                _this2.intersectCircle(body);
 	                                break;
 	                            default:
 	                                break;
 	                        }
-	                    });
-	
-	                    // TODO: Finish this!!!!!!
-	                    // If we've found an intersection point
-	                    if (_this3.intersectionPoint) {
-	                        // Make sure it's in this voxel
-	                        if (_this3.intersectionPoint.x > (X + 1) * cellSize) {
-	                            // Intersection could't have occured in the voxel
-	                            // So set this intersection point on the body itself,
-	                            // so we dont' have to perform the intersection test
-	                            // again
-	                            _this3.intersectingBody.intersectionPoints[_this3.rayID] = _this3.intersectionPoint;
-	                            debugger;
-	                        }
-	                        //if (this.intersectionPoint.x > X * cellSize &&
-	                        //this.intersectionPoint.x < (X + 1) * cellSize &&
-	                        //this.intersectionPoint.y > Y * cellSize &&
-	                        //this.intersectionPoint.y)
 	                    }
-	                    debugger;
-	                })();
+	
+	                    // Flag body to know we've already tested this ray-body
+	                    // combo
+	                    if (_this2.intersectionPoint) {
+	                        body.intersectionPoints[_this2.rayID] = {
+	                            status: 'hit',
+	                            intPoint: _this2.intersectionPoint,
+	                            segVeg: _this2.intersectingSegment
+	                        };
+	                    } else {
+	                        // If we missed, flag the body without
+	                        // intersectionPoint
+	                        body.intersectionPoints[_this2.rayID] = { status: 'miss' };
+	                    }
+	                });
 	            }
-	            // This should happen in a loop...
-	            if (tMaxX < tMaxY) {
-	                //distX = distance(this.origin.x
+	
+	            // Increment X or Y step
+	            if (tMaxX === undefined && tMaxY === undefined) {
+	                break;
+	            } else if (tMaxX === undefined) {
+	                tMaxY += tDeltaY;
+	                Y += stepY;
+	            } else if (tMaxY === undefined) {
 	                tMaxX += tDeltaX;
 	                X += stepX;
-	            } else {
+	            } else if (tMaxX < tMaxY) {
+	                // tMaxY += tDeltaY;
+	                // Y += stepY;
+	                tMaxX += tDeltaX;
+	                X += stepX;
+	            } else if (tMaxX >= tMaxY) {
+	                // tMaxX += tDeltaX;
+	                // X += stepX;
 	                tMaxY += tDeltaY;
 	                Y += stepY;
 	            }
-	
-	            counter++;
 	        }
 	
-	        //let distanceToVerticalBoundary = distance(this.origin.x, this.origin.y, vertIntPoint.intPoint.x, vertIntPoint.intPoint.y);
-	        //let distanceToHorizontalBoundary = distance(this.origin.x, this.origin.y, horIntPoint.intPoint.x, horIntPoint.intPoint.y);
-	        //if (distanceToVerticalBoundary < distanceToHorizontalBoundary) {
-	        //distanceToHorizontalBoundary
-	        //} else {
-	
-	        //}
-	
-	        var safetyCounter = 0;
-	        while (safetyCounter < 10000) {
-	            safetyCounter++;
-	        }
-	
-	        // Step 2. Find distances to nearest vertical and horizontal segments
-	        // of the voxel
-	        // Need to know what direction the ray is going in...
-	        if (this.direction.x > 0 && this.direction.y > 0) {
-	            // Down and to the right
-	            //let verticalSeg = [vector(X + cellSize),
-	            var verts = [(0, _Vector2.default)(X + cellSize, Y), (0, _Vector2.default)(X + cellSize, Y + cellSize)];
-	            var intersection = this.intersectSegment(verts);
-	        } else if (this.direction.x > 0 && this.direction.y < 0) {
-	            // Up and to the right
-	        } else if (this.direction.x < 0 && this.direction.y > 0) {
-	            // Down and to the left
-	        } else if (this.direction.x < 0 && this.direction.y < 0) {}
-	        // Up and to the left
-	
-	        //
-	        return [];
+	        return {
+	            hashCoordinates: {
+	                x: X,
+	                y: Y
+	            },
+	            intPoint: this.intersectionPoint
+	        };
 	    },
 	
+	    intersectAABB: function intersectAABB(aabb) {
+	        //let tmin, tmax, tymin, tymax;
+	
+	        //let divx = this.invDirection.x;
+	        //let divy = this.invDirection.y;
+	        //if (divx >= 0) {
+	        //tmin = (aabb.min.x - this.origin.x) * divx;
+	        //tmax = (aabb.max.x - this.origin.x) * divx;
+	        //} else {
+	        //tmin = (aabb.max.x - this.origin.x) * divx;
+	        //tmax = (aabb.min.x - this.origin.x) * divx;
+	        //}
+	        //if (divy >= 0) {
+	        //tymin = (aabb.min.y - this.origin.y) * divy;
+	        //tymax = (aabb.max.y - this.origin.y) * divy;
+	        //} else {
+	        //tymin = (aabb.max.y - this.origin.y) * divy;
+	        //tymax = (aabb.min.y - this.origin.y) * divy;
+	        //}
+	        var tx1 = (aabb.min.x - this.origin.x) * this.invDirection.x;
+	        var tx2 = (aabb.max.x - this.origin.x) * this.invDirection.x;
+	
+	        var tmin = Math.min(tx1, tx2);
+	        var tmax = Math.max(tx1, tx2);
+	
+	        var ty1 = (aabb.min.y - this.origin.y) * this.invDirection.y;
+	        var ty2 = (aabb.max.y - this.origin.y) * this.invDirection.y;
+	
+	        tmin = Math.max(tmin, Math.min(ty1, ty2));
+	        tmax = Math.min(tmax, Math.max(ty1, ty2));
+	        var hit = tmax >= tmin && tmax >= 0;
+	        return hit;
+	    },
+	    /*AABB.prototype.intersectSegment = function(pos, delta) {
+	          var farTime, farTimeX, farTimeY, hit, nearTime, nearTimeX, nearTimeY, scaleX, scaleY, signX, signY;
+	    
+	          scaleX = 1.0 / delta.x;
+	          scaleY = 1.0 / delta.y;
+	          signX = sign(scaleX);
+	          signY = sign(scaleY);
+	          nearTimeX = (this.pos.x - signX * (this.half.x + paddingX) - pos.x) * scaleX;
+	          nearTimeY = (this.pos.y - signY * (this.half.y + paddingY) - pos.y) * scaleY;
+	          farTimeX = (this.pos.x + signX * (this.half.x + paddingX) - pos.x) * scaleX;
+	          farTimeY = (this.pos.y + signY * (this.half.y + paddingY) - pos.y) * scaleY;
+	          if (nearTimeX > farTimeY || nearTimeY > farTimeX) {
+	            return null;
+	          }
+	          nearTime = nearTimeX > nearTimeY ? nearTimeX : nearTimeY;
+	          farTime = farTimeX < farTimeY ? farTimeX : farTimeY;
+	          if (nearTime >= 1 || farTime <= 0) {
+	            return null;
+	          }
+	          hit = new Hit(this);
+	          hit.time = clamp(nearTime, 0, 1);
+	          if (nearTimeX > nearTimeY) {
+	            hit.normal.x = -signX;
+	            hit.normal.y = 0;
+	          } else {
+	            hit.normal.x = 0;
+	            hit.normal.y = -signY;
+	          }
+	          hit.delta.x = hit.time * delta.x;
+	          hit.delta.y = hit.time * delta.y;
+	          hit.pos.x = pos.x + hit.delta.x;
+	          hit.pos.y = pos.y + hit.delta.y;
+	          return hit;
+	        };*/
 	    /**
 	     * Simple Ray-AABB Test
 	     * Only returns if intersection exists, DOES NOT give distance to
@@ -743,36 +904,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {AABB} aabb - axis-aligned bounding-box instance
 	     * @return {bool} did intersection occur
 	     */
-	    intersectAABB: function intersectAABB(aabb) {
-	        // Steps:
-	        // 1. Get slope of line from ray origin to aabb.min and aabb.max
-	        // 2. if slope of ray is between slopes generated in step 1, then
-	        // ray intersects
-	        //
-	        // Handle two cases : positive vs. negative slope
-	        // If slope is positive, use min + width and min + height as corners to
-	        // check
-	        // Otherwise use regular min and max
-	        var min = void 0,
-	            max = void 0;
-	        if (this.slope > 0) {
-	            min = { x: aabb.max.x, y: aabb.min.y };
-	            max = { x: aabb.min.x, y: aabb.max.y };
-	        } else {
-	            min = aabb.min;
-	            max = aabb.max;
-	        }
+	    //intersectAABB: function(aabb) {
+	    //// Low hanging fruit, if ray origin is inside aabb, then automatic
+	    //// intersection
+	    //if (aabb.contains(this.origin)) {
+	    //return true;
+	    //}
 	
-	        var s1 = (min.y - this.origin.y) / (min.x - this.origin.x);
-	        var s2 = (max.y - this.origin.y) / (max.x - this.origin.x);
-	        var smin = Math.min(s1, s2);
-	        var smax = Math.max(s1, s2);
+	    //// Steps:
+	    //// 1. Get slope of line from ray origin to aabb.min and aabb.max
+	    //// 2. if slope of ray is between slopes generated in step 1, then
+	    //// ray intersects
+	    ////
+	    //// Handle two cases : positive vs. negative slope
+	    //// If slope is positive, use min + width and min + height as corners to
+	    //// check
+	    //// Otherwise use regular min and max
+	    //let min, max;
+	    //if (this.slope > 0) {
+	    //min = {x: aabb.max.x, y: aabb.min.y};
+	    //max = {x: aabb.min.x, y: aabb.max.y};
+	    //} else {
+	    //min = aabb.min;
+	    //max = aabb.max;
+	    //}
 	
-	        if (this.slope < smax && this.slope > smin) {
-	            return true;
-	        }
-	        return false;
-	    },
+	    //let s1 = (min.y - this.origin.y) / (min.x - this.origin.x);
+	    //let s2 = (max.y - this.origin.y) / (max.x - this.origin.x);
+	    //let smin = Math.min(s1, s2);
+	    //let smax = Math.max(s1, s2);
+	
+	    //if (this.slope < smax && this.slope > smin) {
+	    //return true;
+	    //}
+	    //return false;
+	    //},
 	
 	    /**
 	     * Internally used to update point of intersection property
@@ -859,6 +1025,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        var cellSize = this.width / Math.floor(this.width / divisor);
 	        this.hash = (0, _SpatialHash2.default)(cellSize, this.width, this.height);
+	        this.currentRayId = 0;
 	    },
 	    addFrame: function addFrame(frame) {
 	        this.frames.push(frame);
@@ -901,6 +1068,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            body.update();
 	        });
 	
+	        // Reset currentRayID during each update loop so we can reuse these
+	        // ID's
+	        this.currentRayId = 0;
 	        this.childWaves = [];
 	        this.waves.forEach(function (wave) {
 	            wave.update(_this2);
@@ -1042,12 +1212,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _math = __webpack_require__(4);
 	
+	var math = _interopRequireWildcard(_math);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
 	var Renderer = {};
 	Renderer.prototype = {
 	    init: function init(params) {
 	        this.clearBackground = true;
 	        this.debug = params.debug || false;
 	        this.background = params.background || 'black';
+	
+	        // Pardon the ugly ternary...
 	        this.canvas = typeof params.canvas === 'undefined' ? function () {
 	            var c = document.createElement('canvas');
 	            c.id = 'canvas';
@@ -1060,6 +1236,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return c;
 	        }();
 	
+	        if (this.debug) {
+	            window.sciDebug = true;window.ctx = this.canvas.getContext('2d');
+	        }
+	
 	        //this.canvas.width = params.width || 600;
 	        //this.canvas.height = params.height || 300;
 	        this.ctx = this.canvas.getContext('2d');
@@ -1069,64 +1249,75 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @private
 	     * @param {object} system - phys.system object containing all objects
 	     */
-	    renderObjects: function renderObjects(system) {
-	        var _this = this;
+	    //renderObjects: function(system) {
+	    //system.objects.forEach(body => {
+	    //this.draw(body);
+	    ////body.draw(this.ctx);
+	    //});
 	
-	        system.objects.forEach(function (body) {
-	            _this.draw(body);
-	            //body.draw(this.ctx);
-	        });
+	    //system.waves.forEach(wave => {
+	    //wave.trace(system, this.ctx);
+	    ////wave.draw(this.ctx);
+	    //});
 	
-	        system.waves.forEach(function (wave) {
-	            wave.trace(system, _this.ctx);
-	            wave.draw(_this.ctx);
-	        });
-	
-	        //system.rays.forEach(ray => {
-	        //ray.draw(ctx);
-	        //});
-	    },
+	    ////system.rays.forEach(ray => {
+	    ////ray.draw(ctx);
+	    ////});
+	    //},
 	    drawBody: function drawBody(body) {
+	        if (this.debug) {
+	            this.ctx.beginPath();
+	            this.ctx.strokeStyle = 'red';
+	            this.ctx.lineWidth = 1;
+	
+	            var aabb = body.aabb;
+	            var x = aabb.min.x;
+	            var y = aabb.min.y;
+	            var w = aabb.max.x - x;
+	            var h = aabb.max.y - y;
+	            this.ctx.rect(x, y, w, h);
+	            this.ctx.stroke();
+	        }
 	        switch (body.type) {
 	            case 'rectangle':
 	                {
 	                    this.ctx.fillStyle = body.style.fillStyle;
 	                    this.ctx.lineWidth = body.style.lineWidth;
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
-	                    var x = void 0,
-	                        y = void 0,
-	                        w = void 0,
-	                        h = void 0;
+	                    var _x = void 0,
+	                        _y = void 0,
+	                        _w = void 0,
+	                        _h = void 0;
 	                    switch (body._mode) {
 	                        case 'LEFT':
 	                            {
-	                                x = body.position.x;
-	                                y = body.position.y;
-	                                w = body.width;
-	                                h = body.height;
+	                                _x = body.position.x;
+	                                _y = body.position.y;
+	                                _w = body.width;
+	                                _h = body.height;
 	                                break;
 	                            }
 	                        case 'CENTER':
-	                            w = body.width;
-	                            h = body.height;
-	                            x = body.position.x - w / 2;
-	                            y = body.position.y - h / 2;
+	                            _w = body.width;
+	                            _h = body.height;
+	                            _x = body.position.x - _w / 2;
+	                            _y = body.position.y - _h / 2;
 	                            break;
 	                        case 'RIGHT':
-	                            w = body.width;
-	                            h = body.height;
-	                            x = body.position.x - w;
-	                            y = body.position.y;
+	                            _w = body.width;
+	                            _h = body.height;
+	                            _x = body.position.x - _w;
+	                            _y = body.position.y;
 	                            break;
 	                        default:
 	                            break;
 	                    }
 	                    this.ctx.lineJoin = 'miter';
 	                    this.ctx.beginPath();
-	                    this.ctx.moveTo(x, y);
-	                    this.ctx.lineTo(x + w, y);
-	                    this.ctx.lineTo(x + w, y + h);
-	                    this.ctx.lineTo(x, y + h);
+	                    this.ctx.moveTo(_x, _y);
+	                    this.ctx.lineTo(_x + _w, _y);
+	                    this.ctx.lineTo(_x + _w, _y + _h);
+	                    this.ctx.lineTo(_x, _y + _h);
 	                    this.ctx.closePath();
 	                    this.ctx.stroke();
 	                    break;
@@ -1144,13 +1335,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this.ctx.fill();
 	                }
 	                break;
+	            case 'polygon':
+	                {
+	                    this.ctx.fillStyle = body.style.fillStyle;
+	                    this.ctx.lineWidth = body.style.lineWidth;
+	                    this.ctx.strokeStyle = body.style.strokeStyle;
+	                    this.ctx.beginPath();
+	                    this.ctx.lineJoin = 'miter';
+	                    this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
+	                    for (var i = 1; i < body.vertices.length; i++) {
+	                        var v = body.vertices[i];
+	                        this.ctx.lineTo(v.x, v.y);
+	                    }
+	                    this.ctx.closePath();
+	                    this.ctx.fill();
+	                    this.ctx.stroke();
+	                    break;
+	                }
 	            default:
 	                break;
 	        }
 	    },
 	    drawWave: function drawWave(wave) {
 	        // No matter what the angle mode, always use radians
-	        var angle = wave.mode === 'DEGREES' ? (0, _math.degToRad)(wave.direction) : wave.direction;
+	        var angle = wave.mode === 'DEGREES' ? math.degToRad(wave.direction) : wave.direction;
 	        this.ctx.fillStyle = wave.style.fillStyle;
 	        this.ctx.lineWidth = wave.style.lineWidth;
 	        this.ctx.strokeStyle = wave.style.strokeStyle;
@@ -1160,7 +1368,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.debug) {
 	            if (wave.type === 'incident') {
 	                // Draw starting circle
-	                this.ctx.strokeStyle = 'yellow';
 	                this.ctx.fillStyle = 'yellow';
 	                this.ctx.beginPath();
 	                this.ctx.ellipse(wave.position.x, wave.y, 3, 3, 0, 0, Math.PI * 2);
@@ -1174,7 +1381,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	
-	        //this.ctx.globalAlpha = map(wave.intensity, 0, 1, 0.3, 1);
+	        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
 	        this.ctx.moveTo(wave.position.x, wave.position.y);
 	
 	        // If the wave intersects an object ahead, then
@@ -1182,18 +1389,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (wave.ray.intersectionPoint) {
 	            this.ctx.lineTo(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y);
 	            this.ctx.stroke();
-	            this.ctx.beginPath();
-	            this.ctx.strokeStyle = 'red';
-	            this.ctx.ellipse(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y, 3, 3, 0, 0, Math.PI * 2);
-	            //this.ctx.stroke();
+	
+	            // Draw intersection points as circles
+	            // when in debug mode
+	            if (this.debug === true) {
+	                this.ctx.beginPath();
+	                this.ctx.strokeStyle = 'red';
+	                this.ctx.ellipse(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y, 3, 3, 0, 0, Math.PI * 2);
+	                this.ctx.stroke();
+	            }
 	        } else {
 	            this.ctx.lineTo(2000 * Math.cos(angle) + wave.position.x, 2000 * Math.sin(angle) + wave.position.y);
 	            this.ctx.stroke();
 	        }
+	        this.ctx.globalAlpha = 1;
 	    },
 	
 	    render: function render(system) {
-	        var _this2 = this;
+	        var _this = this;
 	
 	        // The first time the system renders,
 	        // capture a local reference to it
@@ -1227,45 +1440,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Draw all objects + waves
 	        system.objects.forEach(function (obj) {
-	            _this2.drawBody(obj);
+	            _this.drawBody(obj);
 	        });
 	
 	        system.waves.forEach(function (wave) {
-	            _this2.drawWave(wave);
+	            _this.drawWave(wave);
 	        });
 	
 	        system.childWaves.forEach(function (wave) {
-	            _this2.drawWave(wave);
+	            _this.drawWave(wave);
 	        });
 	
+	        // If in debug mode, draw spatial hash
+	        // and highlight nodes that contain items in red
 	        if (this.debug === true) {
 	            (function () {
 	                var cellSize = system.hash.cellSize;
 	                for (var i = 0; i < system.hash.width; i += cellSize) {
 	                    for (var j = 0; j < system.hash.height; j += cellSize) {
-	                        _this2.ctx.beginPath();
-	                        _this2.ctx.strokeStyle = 'green';
-	                        _this2.ctx.rect(i, j, cellSize, cellSize);
-	                        _this2.ctx.stroke();
+	                        _this.ctx.beginPath();
+	                        _this.ctx.strokeStyle = 'green';
+	                        _this.ctx.rect(i, j, cellSize, cellSize);
+	                        _this.ctx.stroke();
 	                    }
 	                }
 	                Object.keys(system.hash.contents).forEach(function (row) {
 	                    Object.keys(system.hash.contents[row]).forEach(function (col) {
 	                        // Draw all squares
-	                        _this2.ctx.beginPath();
-	                        _this2.ctx.strokeStyle = 'green';
+	                        _this.ctx.beginPath();
+	                        _this.ctx.strokeStyle = 'green';
 	                        if (system.hash.contents[row][col].length !== 0) {
-	                            _this2.ctx.strokeStyle = 'red';
+	                            _this.ctx.strokeStyle = 'red';
 	                        }
-	                        _this2.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
-	                        _this2.ctx.stroke();
+	                        _this.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+	                        _this.ctx.stroke();
 	                    });
 	                });
 	            })();
 	        }
-	        // Render bodies
-	        //this.renderObjects(system);
 	    },
+	
 	    /**
 	     * Set's size of renderers canvas
 	     * @param {number} width - width of canvas
@@ -1281,7 +1495,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    /**
 	     * Stop animation cycle
-	     * @public
 	     */
 	    stop: function stop() {
 	        cancelAnimationFrame(this.requestID);
@@ -1328,6 +1541,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    "no-multi-spaces": "off"
 	 */
 	var rect = function rect(options) {
+	    options = options || {};
+	
 	    var B = Object.create(_Body2.default);
 	    B.init(options);
 	    B.type = 'rectangle';
@@ -1420,6 +1635,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.segments = [[[x, y], [x + w, y]], [[x + w, y], [x + w, y + h]], [[x + w, y + h], [x, y + h]], [[x, y + h], [x, y]]];
 	    };
 	
+	    B.isPointInterior = function (x, y) {
+	        var bx = B.position.x,
+	            by = B.position.y;
+	
+	        if (x >= bx && x <= bx + B.width && y >= by && y <= by + B.height) {
+	            return true;
+	        }
+	        return false;
+	    };
+	
 	    B.updateVertices();
 	    B.aabb = (0, _AABB2.default)(B);
 	    return B;
@@ -1463,6 +1688,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Body = {
 	    init: function init(options) {
 	        options = options || {};
+	
+	        // Warn user if a body object is initialized with nothing or an empty
+	        // object
+	        if (Object.keys(options).length === 0 && options.constructor === Object) {
+	            console.warn('You probably should initialize body objects with some values...just sayin');
+	        }
+	
 	        this.style = {
 	            fillStyle: options.fillStyle || 'rgba(0,0,0,0)',
 	            lineWidth: options.lineWidth || 2,
@@ -1477,7 +1709,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.material = options.material || 'GLASS';
 	        this.materialColor = options.fillStyle || 'black';
 	        this.mirror = options.mirror || false;
-	        this.intersectionPoints = [];
+	        this.intersectionPoints = {};
 	
 	        // If the material is provided, set refractive index based on materials
 	        // database
@@ -1503,26 +1735,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 	
-	    // Should use a raycasting technique to accomodate
-	    // arbitrary polygons
-	    isPointInterior: function isPointInterior(x, y) {
-	        var bx = this.position.x;
-	        var by = this.position.y;
-	        switch (this.type) {
-	            case 'rectangle':
-	                if (x >= bx && x <= bx + this.width && y >= by && y <= by + this.height) {
-	                    return true;
-	                }
-	                return false;
-	            case 'circle':
-	                if (math.distance(x, y, bx, by) <= this.radius) {
-	                    return true;
-	                }
-	                return false;
-	            default:
-	                break;
-	        }
-	    },
 	    freeze: function freeze() {
 	        this._cachedVelocity = this.velocity.clone();
 	        this.velocity.x = 0;
@@ -1539,6 +1751,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    update: function update() {
+	        this.position.add(this.velocity);
+	
 	        if (this.updateSegments) {
 	            this.updateSegments();
 	        }
@@ -1547,8 +1761,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.updateVertices();
 	        }
 	
+	        // For each update loop, reset intersection points to zero
+	        this.intersectionPoints = {};
+	
 	        this.aabb.update();
-	        this.position.add(this.velocity);
 	    }
 	
 	}; /* eslint "no-unused-vars": "off" */
@@ -1604,6 +1820,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    findMinMax: function findMinMax() {
 	        var _this = this;
 	
+	        // Only deal with two types of bodies...Those with vertices, and
+	        // circles
 	        if (this.body.vertices) {
 	            var _ret = function () {
 	                var minx = void 0,
@@ -1675,6 +1893,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    /**
+	     * Returns true of point is inside AABB
+	     * @param {Point} point - must contain x and y props
+	     * @return {bool} true if point is inside AABB
+	     */
+	    contains: function contains(point) {
+	        var x = point.x,
+	            y = point.y;
+	        if (x >= this.min.x && x <= this.max.x && y >= this.min.y && y <= this.max.y) {
+	            return true;
+	        }
+	
+	        return false;
+	    },
+	
+	    /**
 	     * Updates the AABB
 	     */
 	    update: function update() {
@@ -1738,13 +1971,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.intensity = options.intensity || 1;
 	        this.type = options.type || 'incident';
 	        this.parent = options.parent || null;
-	        //this.intersectingBody = {};
-	        //this.intersectionPoint = {};
-	        //this.intersectingSegment = {};
 	        this.n1 = options.n1 || 1;
 	        this.n2 = options.n2 || 1;
 	        this.lastIntersection = {};
-	        //this.type = 'wave';
 	
 	        // create ray for detecting body intersections
 	        this.ray = (0, _Ray2.default)(this.position.x, this.y, this.direction, this.mode === 'DEGREES' || null);
@@ -1782,7 +2011,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //selectNormal();
 	        // TODO: Wrap this in it's own function (i.e. findNormal function)
 	        var bType = this.ray.intersectingBody.type;
-	        if (bType === 'rectangle') {
+	        if (bType === 'rectangle' || bType === 'polygon') {
 	            (function () {
 	                var intSeg = _this.ray.intersectingSegment;
 	
@@ -1916,11 +2145,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _r0tmp = 1 - (Math.cos(theta2) < 0 ? -Math.cos(theta2) : Math.cos(theta2));
 	        }
 	
+	        // TODO: Refactor this to eliminate some checks if body is a mirror
 	        var R = R0 + (1 - R0) * Math.pow(_r0tmp, 5);
 	        var T = 1 - R; // Refracion Coefficient
 	        // Total Internal Reflection
 	        if (Math.sin(theta1) > this.n2 / this.n1) {
-	            R = 1;
+	            R = 0.95;
 	            T = 0;
 	        }
 	
@@ -2005,9 +2235,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
+	var _math = __webpack_require__(4);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var circle = function circle(options) {
+	    options = options || {};
 	    var B = Object.create(_Body2.default);
 	    B.init(options);
 	
@@ -2015,10 +2248,102 @@ return /******/ (function(modules) { // webpackBootstrap
 	    B.type = 'circle';
 	    B.aabb = (0, _AABB2.default)(B);
 	
+	    B.isPointInterior = function (x, y) {
+	        var bx = B.position.x,
+	            by = B.position.y;
+	        if ((0, _math.distance)(x, y, bx, by) <= B.radius) {
+	            return true;
+	        }
+	        return false;
+	    };
+	
 	    return B;
 	};
 	
 	exports.default = circle;
+	module.exports = exports['default'];
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _Body = __webpack_require__(10);
+	
+	var _Body2 = _interopRequireDefault(_Body);
+	
+	var _AABB = __webpack_require__(12);
+	
+	var _AABB2 = _interopRequireDefault(_AABB);
+	
+	var _Vector = __webpack_require__(3);
+	
+	var _Vector2 = _interopRequireDefault(_Vector);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var polygon = function polygon(options) {
+	    options = options || {};
+	
+	    var B = Object.create(_Body2.default);
+	    if (!options.vertices) {
+	        throw new Error('Polygons MUST be initialized with vertices. See docs.');
+	    }
+	    B.init(options);
+	
+	    //Initialize vetices as vectors
+	    // private vertices, relative to x and y
+	    B._relativeVertices = [];
+	
+	    // public vertices, (contain world coords);
+	    B.vertices = [];
+	    options.vertices.forEach(function (vert) {
+	        B._relativeVertices.push((0, _Vector2.default)(vert.x, vert.y));
+	        B.vertices.push((0, _Vector2.default)(options.x + vert.x, options.y + vert.y));
+	    });
+	
+	    // Set type
+	    B.type = 'polygon';
+	
+	    // Update all vertices based on position
+	    B.updateVertices = function () {
+	        B.vertices.forEach(function (vert, index) {
+	            var relVert = B._relativeVertices[index];
+	            vert.x = relVert.x + B.position.x;
+	            vert.y = relVert.y + B.position.y;
+	        });
+	    };
+	
+	    B.isPointInterior = function (x, y) {
+	        var inside = false;
+	        for (var i = 0, j = B.vertices.length - 1; i < B.vertices.length; j = i++) {
+	            var vi = B.vertices[i];
+	            var vj = B.vertices[j];
+	            var xi = vi.x,
+	                yi = vi.y;
+	            var xj = vj.x,
+	                yj = vj.y;
+	
+	            var intersect = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+	            if (intersect) {
+	                inside = !inside;
+	            }
+	        }
+	        return inside;
+	    };
+	
+	    // Initialize...
+	    B.updateVertices();
+	    B.aabb = (0, _AABB2.default)(B);
+	    return B;
+	};
+	
+	exports.default = polygon;
 	module.exports = exports['default'];
 
 /***/ }

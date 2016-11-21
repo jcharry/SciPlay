@@ -1,10 +1,12 @@
-import {degToRad} from '../math/math';
+import * as math from '../math/math';
 const Renderer = {};
 Renderer.prototype = {
     init: function(params) {
         this.clearBackground = true;
         this.debug = params.debug || false;
         this.background = params.background || 'black';
+
+        // Pardon the ugly ternary...
         this.canvas = (typeof params.canvas === 'undefined') ?
             (function() {
                 let c = document.createElement('canvas');
@@ -18,6 +20,10 @@ Renderer.prototype = {
                 return c;
             })();
 
+        if (this.debug) {
+            window.sciDebug = true; window.ctx = this.canvas.getContext('2d');
+        }
+
         //this.canvas.width = params.width || 600;
         //this.canvas.height = params.height || 300;
         this.ctx = this.canvas.getContext('2d');
@@ -27,22 +33,35 @@ Renderer.prototype = {
      * @private
      * @param {object} system - phys.system object containing all objects
      */
-    renderObjects: function(system) {
-        system.objects.forEach(body => {
-            this.draw(body);
-            //body.draw(this.ctx);
-        });
-
-        system.waves.forEach(wave => {
-            wave.trace(system, this.ctx);
-            wave.draw(this.ctx);
-        });
-
-        //system.rays.forEach(ray => {
-        //ray.draw(ctx);
+    //renderObjects: function(system) {
+        //system.objects.forEach(body => {
+            //this.draw(body);
+            ////body.draw(this.ctx);
         //});
-    },
+
+        //system.waves.forEach(wave => {
+            //wave.trace(system, this.ctx);
+            ////wave.draw(this.ctx);
+        //});
+
+        ////system.rays.forEach(ray => {
+        ////ray.draw(ctx);
+        ////});
+    //},
     drawBody: function(body) {
+        if (this.debug) {
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = 'red';
+            this.ctx.lineWidth = 1;
+
+            let aabb = body.aabb;
+            let x = aabb.min.x;
+            let y = aabb.min.y;
+            let w = aabb.max.x - x;
+            let h = aabb.max.y - y;
+            this.ctx.rect(x, y, w, h);
+            this.ctx.stroke();
+        }
         switch (body.type) {
             case 'rectangle': {
                 this.ctx.fillStyle = body.style.fillStyle;
@@ -94,13 +113,29 @@ Renderer.prototype = {
                 this.ctx.fill();
             }
                 break;
+            case 'polygon': {
+                this.ctx.fillStyle = body.style.fillStyle;
+                this.ctx.lineWidth = body.style.lineWidth;
+                this.ctx.strokeStyle = body.style.strokeStyle;
+                this.ctx.beginPath();
+                this.ctx.lineJoin = 'miter';
+                this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
+                for (let i = 1; i < body.vertices.length; i++) {
+                    let v = body.vertices[i];
+                    this.ctx.lineTo(v.x, v.y);
+                }
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+                break;
+            }
             default:
                 break;
         }
     },
     drawWave: function(wave) {
         // No matter what the angle mode, always use radians
-        let angle = wave.mode === 'DEGREES' ? degToRad(wave.direction) : wave.direction;
+        let angle = wave.mode === 'DEGREES' ? math.degToRad(wave.direction) : wave.direction;
         this.ctx.fillStyle = wave.style.fillStyle;
         this.ctx.lineWidth = wave.style.lineWidth;
         this.ctx.strokeStyle = wave.style.strokeStyle;
@@ -110,7 +145,6 @@ Renderer.prototype = {
         if (this.debug) {
             if (wave.type === 'incident') {
                 // Draw starting circle
-                this.ctx.strokeStyle = 'yellow';
                 this.ctx.fillStyle = 'yellow';
                 this.ctx.beginPath();
                 this.ctx.ellipse(wave.position.x, wave.y, 3, 3, 0, 0, Math.PI * 2);
@@ -124,7 +158,7 @@ Renderer.prototype = {
             }
         }
 
-        //this.ctx.globalAlpha = map(wave.intensity, 0, 1, 0.3, 1);
+        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
         this.ctx.moveTo(wave.position.x, wave.position.y);
 
         // If the wave intersects an object ahead, then
@@ -132,14 +166,20 @@ Renderer.prototype = {
         if (wave.ray.intersectionPoint) {
             this.ctx.lineTo(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y);
             this.ctx.stroke();
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = 'red';
-            this.ctx.ellipse(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y, 3, 3, 0, 0, Math.PI * 2);
-            //this.ctx.stroke();
+
+            // Draw intersection points as circles
+            // when in debug mode
+            if (this.debug === true) {
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = 'red';
+                this.ctx.ellipse(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y, 3, 3, 0, 0, Math.PI * 2);
+                this.ctx.stroke();
+            }
         } else {
             this.ctx.lineTo(2000 * Math.cos(angle) + wave.position.x, 2000 * Math.sin(angle) + wave.position.y);
             this.ctx.stroke();
         }
+        this.ctx.globalAlpha = 1;
     },
 
     render: function(system) {
@@ -186,10 +226,12 @@ Renderer.prototype = {
             this.drawWave(wave);
         });
 
+        // If in debug mode, draw spatial hash
+        // and highlight nodes that contain items in red
         if (this.debug === true) {
             let cellSize = system.hash.cellSize;
-            for (let i = 0; i < system.hash.width; i+=cellSize) {
-                for (let j = 0; j < system.hash.height; j+=cellSize) {
+            for (let i = 0; i < system.hash.width; i += cellSize) {
+                for (let j = 0; j < system.hash.height; j += cellSize) {
                     this.ctx.beginPath();
                     this.ctx.strokeStyle = 'green';
                     this.ctx.rect(i, j, cellSize, cellSize);
@@ -209,9 +251,8 @@ Renderer.prototype = {
                 });
             });
         }
-        // Render bodies
-        //this.renderObjects(system);
     },
+
     /**
      * Set's size of renderers canvas
      * @param {number} width - width of canvas
@@ -227,7 +268,6 @@ Renderer.prototype = {
     },
     /**
      * Stop animation cycle
-     * @public
      */
     stop: function() {
         cancelAnimationFrame(this.requestID);

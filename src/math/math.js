@@ -13,4 +13,3 @@ export const distance = function(x1, y1, x2, y2) {
 export const map = function(value, low1, high1, low2, high2) {
     return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 };
-

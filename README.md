@@ -1,4 +1,4 @@
-#A Playground to learn about physics and Javascript#
+#A Marriage of Science and Javascript#
 
 #NOTE: STILL IN DEVELOPMENT#
 

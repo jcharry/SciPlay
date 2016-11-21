@@ -15,6 +15,8 @@ let AABB = {
      * @return {object} bounds
      */
     findMinMax: function() {
+        // Only deal with two types of bodies...Those with vertices, and
+        // circles
         if (this.body.vertices) {
             let minx,
                 miny,
@@ -77,6 +79,24 @@ let AABB = {
                 }
             };
         }
+    },
+
+    /**
+     * Returns true of point is inside AABB
+     * @param {Point} point - must contain x and y props
+     * @return {bool} true if point is inside AABB
+     */
+    contains: function(point) {
+        let x = point.x,
+            y = point.y;
+        if (x >= this.min.x &&
+            x <= this.max.x &&
+            y >= this.min.y &&
+            y <= this.max.y) {
+            return true;
+        }
+
+        return false;
     },
 
     /**

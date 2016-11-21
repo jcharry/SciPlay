@@ -1,7 +1,7 @@
 /* eslint "no-unused-vars": "off" */
 import {degToRad, radToDeg, crossProduct2D, dotProduct2D, distance, map} from '../math/math';
 import vector, {Vector} from '../math/Vector';
-import ray from '../math/Ray';
+import ray from '../geometries/Ray';
 
 let Wave = {
     init: function(options) {
@@ -26,13 +26,9 @@ let Wave = {
         this.intensity = options.intensity || 1;
         this.type = options.type || 'incident';
         this.parent = options.parent || null;
-        //this.intersectingBody = {};
-        //this.intersectionPoint = {};
-        //this.intersectingSegment = {};
         this.n1 = options.n1 || 1;
         this.n2 = options.n2 || 1;
         this.lastIntersection = {};
-        //this.type = 'wave';
 
         // create ray for detecting body intersections
         this.ray = ray(this.position.x, this.y, this.direction, this.mode === 'DEGREES' || null);
@@ -68,7 +64,7 @@ let Wave = {
         //selectNormal();
         // TODO: Wrap this in it's own function (i.e. findNormal function)
         let bType = this.ray.intersectingBody.type;
-        if (bType === 'rectangle') {
+        if (bType === 'rectangle' || bType === 'polygon') {
             let intSeg = this.ray.intersectingSegment;
 
             intSeg.normalize();
@@ -203,11 +199,12 @@ let Wave = {
             _r0tmp = (1 - (Math.cos(theta2) < 0 ? -Math.cos(theta2) : Math.cos(theta2)));
         }
 
+        // TODO: Refactor this to eliminate some checks if body is a mirror
         let R = R0 + (1 - R0) * Math.pow(_r0tmp, 5);
         let T = 1 - R;  // Refracion Coefficient
         // Total Internal Reflection
         if (Math.sin(theta1) > this.n2 / this.n1) {
-            R = 1;
+            R = 0.95;
             T = 0;
         }
 

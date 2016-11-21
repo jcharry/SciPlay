@@ -17,6 +17,13 @@ import * as math from '../math/math';
 let Body = {
     init: function(options) {
         options = options || {};
+
+        // Warn user if a body object is initialized with nothing or an empty
+        // object
+        if (Object.keys(options).length === 0 && options.constructor === Object) {
+            console.warn('You probably should initialize body objects with some values...just sayin');
+        }
+
         this.style = {
             fillStyle: options.fillStyle || 'rgba(0,0,0,0)',
             lineWidth: options.lineWidth || 2,
@@ -34,7 +41,7 @@ let Body = {
         this.material = options.material || 'GLASS';
         this.materialColor = options.fillStyle || 'black';
         this.mirror = options.mirror || false;
-        this.intersectionPoints = [];
+        this.intersectionPoints = {};
 
          // If the material is provided, set refractive index based on materials
          // database
@@ -60,29 +67,6 @@ let Body = {
         }
     },
 
-    // Should use a raycasting technique to accomodate
-    // arbitrary polygons
-    isPointInterior: function(x, y) {
-        let bx = this.position.x;
-        let by = this.position.y;
-        switch (this.type) {
-            case 'rectangle':
-                if (x >= bx &&
-                    x <= bx + this.width &&
-                    y >= by &&
-                    y <= by + this.height) {
-                    return true;
-                }
-                return false;
-            case 'circle':
-                if (math.distance(x, y, bx, by) <= this.radius) {
-                    return true;
-                }
-                return false;
-            default:
-                break;
-        }
-    },
     freeze: function() {
         this._cachedVelocity = this.velocity.clone();
         this.velocity.x = 0;
@@ -99,6 +83,8 @@ let Body = {
     },
 
     update: function() {
+        this.position.add(this.velocity);
+
         if (this.updateSegments) {
             this.updateSegments();
         }
@@ -107,8 +93,10 @@ let Body = {
             this.updateVertices();
         }
 
+        // For each update loop, reset intersection points to zero
+        this.intersectionPoints = {};
+
         this.aabb.update();
-        this.position.add(this.velocity);
     }
 
 };

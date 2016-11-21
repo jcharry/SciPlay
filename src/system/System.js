@@ -1,4 +1,4 @@
-import hash from '../math/SpatialHash';
+import hash from '../geometries/SpatialHash';
 
 const System = {};
 System.prototype = {
@@ -15,6 +15,7 @@ System.prototype = {
 
         let cellSize = this.width / Math.floor(this.width / divisor);
         this.hash = hash(cellSize, this.width, this.height);
+        this.currentRayId = 0;
     },
     addFrame: function(frame) {
         this.frames.push(frame);
@@ -53,6 +54,9 @@ System.prototype = {
             body.update();
         });
 
+        // Reset currentRayID during each update loop so we can reuse these
+        // ID's
+        this.currentRayId = 0;
         this.childWaves = [];
         this.waves.forEach(wave => {
             wave.update(this);

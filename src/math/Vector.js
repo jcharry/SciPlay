@@ -44,6 +44,11 @@ Vector.prototype = {
     magnitudeSq: function() {
         return this.x * this.x + this.y * this.y;
     },
+    negate: function() {
+        this.x = -this.x;
+        this.y = -this.y;
+        return this;
+    },
     dot: function(vec) {
         return this.x * vec.x + this.y * vec.y;
     },

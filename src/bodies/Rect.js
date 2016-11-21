@@ -5,6 +5,8 @@ import Body from './Body';
 import aabb from '../geometries/AABB';
 
 var rect = function(options) {
+    options = options || {};
+
     let B = Object.create(Body);
     B.init(options);
     B.type = 'rectangle';
@@ -101,6 +103,19 @@ var rect = function(options) {
             [[x + w, y + h], [x, y + h]],
             [[x, y + h], [x, y]]
         ];
+    };
+
+    B.isPointInterior = function(x, y) {
+        let bx = B.position.x,
+            by = B.position.y;
+
+        if (x >= bx &&
+            x <= bx + B.width &&
+            y >= by &&
+            y <= by + B.height) {
+            return true;
+        }
+        return false;
     };
 
     B.updateVertices();
