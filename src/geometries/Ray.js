@@ -6,7 +6,8 @@ import vector, {Vector} from '../math/Vector.js';
 
 let Ray = {
     /**
-     * Initialization
+     * Ray object for tracing
+     * @constructs
      * @param {number} x - origin x
      * @param {number} y - origin y
      * @param {number} dir - direction in radians (or degrees if 'degrees' param
@@ -232,23 +233,7 @@ let Ray = {
      * @return {array} list of intersected buckets
      *
      * See here: http://www.cse.chalmers.se/edu/year/2011/course/TDA361_Computer_Graphics/grid.pdf
-         * The traversal algorithm consists of two phases: initialization and incremental traversal. The initialization
-            phase begins by identifying the voxel in which the ray origin, →
-            u, is found. If the ray origin is outside
-            the grid, we find the point in which the ray enters the grid and take the adjacent voxel. The integer
-            variables X and Y are initialized to the starting voxel coordinates. In addition, the variables stepX and
-            stepY are initialized to either 1 or -1 indicating whether X and Y are incremented or decremented as the
-            ray crosses voxel boundaries (this is determined by the sign of the x and y components of →
-            v).
-            Next, we determine the value of t at which the ray crosses the first vertical voxel boundary and
-            store it in variable tMaxX. We perform a similar computation in y and store the result in tMaxY. The
-            minimum of these two values will indicate how much we can travel along the ray and still remain in the
-            current voxel.
-            Finally, we compute tDeltaX and tDeltaY. TDeltaX indicates how far along the ray we must move
-            (in units of t) for the horizontal component of such a movement to equal the width of a voxel. Similarly,
-            we store in tDeltaY the amount of movement along the ray which has a vertical component equal to the
-            height of a voxel
-        *
+     * THIS WORKED -> http://www.playchilla.com/ray-casting-spatial-hash-dda
      */
     intersectHash: function(hash) {
         // TODO: Handle case where ray starts outside bounds
@@ -266,137 +251,32 @@ let Ray = {
 
         // Row and Col offset for picking which horizontal or veritcal segments
         // to use for intersection tests
-        let rowOffset = stepY < 1 ? 0 : 1,
-            colOffset = stepX < 1 ? 0 : 1;
+        // let rowOffset = stepY < 1 ? 0 : 1,
+        //     colOffset = stepX < 1 ? 0 : 1;
 
-        // FIXME: There's an issue when the ray starts inside a voxel -> it's
-        // tMaxX and tMaxY values should represent the distance to cross an
-        // entire voxel, not the distance from the origin to the nearest edge.
-        // To solve this, we could project backwards until we hit the opposite
-        // edges of the voxel, get the starting coordinates, then go from there
+        tDeltaX = cellSize / Math.abs(this.direction.x);
+        tDeltaY = cellSize / Math.abs(this.direction.y);
 
-        // Project Backwards
-        let backDir = this.direction.clone().negate();
-        let backSegH, backSegV;
-        if (stepX === 1 && stepY === 1) {
-            // Right and Down
-            // Intersect backDir with col and row, as is
-            backSegV = [vector(col * cellSize, 0), vector(col * cellSize, hash.height)];
-            backSegH = [vector(0, row * cellSize), vector(hash.width, row * cellSize)];
-        } else if (stepX === 1 && stepY === -1) {
-            // Right and Up
-            // Intersect backDir with col and row + 1
-            backSegV = [vector(col * cellSize, 0), vector(col * cellSize, hash.height)];
-            backSegH = [vector(0, (row + 1) * cellSize), vector(hash.width, (row + 1) * cellSize)];
-        } else if (stepX === -1 && stepY === 1) {
-            // Left and Down
-            // Intersect with col and row
-            backSegV = [vector((col + 1) * cellSize, 0), vector((col + 1) * cellSize, hash.height)];
-            backSegH = [vector(0, row * cellSize), vector(hash.width, row * cellSize)];
-        } else if (stepX === -1 && stepY === -1) {
-            // Left and Up
-            // intersect with col + 1 and row + 1
-            backSegV = [vector((col + 1) * cellSize, 0), vector((col + 1) * cellSize, hash.height)];
-            backSegH = [vector(0, (row + 1) * cellSize), vector(hash.width, (row + 1) * cellSize)];
+        tMaxX = X * cellSize - this.origin.x;
+        tMaxY = Y * cellSize - this.origin.y;
+        if (this.direction.x >= 0) {
+            tMaxX += cellSize;
+        }
+        if (this.direction.y >= 0) {
+            tMaxY += cellSize;
         }
 
-        // Trace backwards
-        let backVInt = this.intersectSegment(backSegV, backDir);
-        let backHInt = this.intersectSegment(backSegH, backDir);
-        let tMaxOrigin;
+        tMaxX /= this.direction.x;
+        tMaxY /= this.direction.y;
 
-        // Which is closer - backH or backV segment?
-        if (backVInt.intPoint === undefined && backHInt.intPoint === undefined) {
-            return;
-            // FIXME: Handle the case where ray is outside and pointing at the
-            // grid
-        } else if (backVInt.intPoint === undefined && backHInt.intPoint) {
-            tMaxOrigin = backHInt.intPoint;
-        } else if (backHInt.intPoint === undefined && backVInt.intPoint) {
-            tMaxOrigin = backVInt.intPoint;
-        } else if (backHInt.intPoint && backVInt.intPoint) {
-            let vDist = distance(this.origin.x, this.origin.y, backVInt.intPoint.x, backVInt.intPoint.y);
-            let hDist = distance(this.origin.x, this.origin.y, backHInt.intPoint.x, backHInt.intPoint.y);
-            if (vDist >= hDist) {
-                tMaxOrigin = backHInt.intPoint;
-            } else {
-                tMaxOrigin = backVInt.intPoint;
-            }
-        }
-
-        // Hash segments to test for distance to intersection
-        let verticalSeg = [
-                vector((col + colOffset) * cellSize, 0),
-                vector((col + colOffset) * cellSize, hash.height)
-            ],
-            horizontalSeg = [
-                vector(0, (row + rowOffset) * cellSize),
-                vector(hash.width, (row + rowOffset) * cellSize)
-            ];
-
-        // Step 2. Get distance to both vertical and horizontal hash segments
-        // Run hash intersection tests
-        let vInt = this.intersectSegment(verticalSeg),
-            hInt = this.intersectSegment(horizontalSeg);
-
-        if (window.sciDebug) {
-            if (vInt.intPoint && hInt.intPoint) {
-                window.ctx.beginPath();
-                window.ctx.strokeStyle = 'yellow';
-                window.ctx.ellipse(vInt.intPoint.x, vInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-                window.ctx.stroke();
-                window.ctx.beginPath();
-                window.ctx.strokeStyle = 'red';
-                window.ctx.ellipse(hInt.intPoint.x, hInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-                window.ctx.stroke();
-            }
-
-            if (backVInt.intPoint && backHInt.intPoint) {
-                window.ctx.beginPath();
-                window.ctx.strokeStyle = 'yellow';
-                window.ctx.ellipse(backVInt.intPoint.x, backVInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-                window.ctx.stroke();
-                window.ctx.beginPath();
-                window.ctx.strokeStyle = 'red';
-                window.ctx.ellipse(backHInt.intPoint.x, backHInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-                window.ctx.stroke();
-                window.ctx.beginPath();
-                window.ctx.ellipse(tMaxOrigin.x, tMaxOrigin.y, 8, 8, 0, 0, Math.PI * 2);
-                window.ctx.stroke();
-            }
-        }
-
-        // It's possible that ray doesn't intersect a segment, so doublecheck
-        // Then get distance to intersection point
-        let tx, ty;
-        if (vInt) {
-            tMaxX = distance(tMaxOrigin.x, tMaxOrigin.y, vInt.intPoint.x, vInt.intPoint.y);
-            // tx = distance(tMaxOrigin.x, tMaxOrigin.y, vInt.intPoint.x, vInt.intPoint.y);
-            // tMaxX = distance(this.origin.x, this.origin.y, vInt.intPoint.x, vInt.intPoint.y);
-        }
-        if (hInt) {
-            tMaxY = distance(tMaxOrigin.x, tMaxOrigin.y, hInt.intPoint.x, hInt.intPoint.y);
-            // ty = distance(tMaxOrigin.x, tMaxOrigin.y, hInt.intPoint.x, hInt.intPoint.y);
-            // tMaxY = distance(this.origin.x, this.origin.y, hInt.intPoint.x, hInt.intPoint.y);
-        }
-
-        // FIXME: Left here on 11/21 - Somethings' not working and I'm not sure
-        // what.......
-        // Store distances on separate var to hold onto values
-        tDeltaX = tMaxX;
-        tDeltaY = tMaxY;
-
-        // Step 3. Loop - step through hash, only if X and Y are within the right range
-        // TODO: Fix this - negative rays are not tracing
-        // FIXME: see todo
-        // through hash properly....not sure why
         while (Y < hash.numRows &&
                 Y > -1 &&
                 X < hash.numCols &&
                 X > -1) {
-            // Draw buckets that ray overlaps
-            if (window.sciDebug) {
+            // In debug mode - Draw buckets that ray overlaps
+            if (window.renderer.debug) {
                 window.ctx.beginPath();
+                window.ctx.globalAlpha = 1;
                 window.ctx.strokeStyle = 'orange';
                 window.ctx.lineWidth = 3;
                 window.ctx.strokeRect(X * cellSize, Y * cellSize, cellSize, cellSize);
@@ -469,13 +349,9 @@ let Ray = {
                 tMaxX += tDeltaX;
                 X += stepX;
             } else if (tMaxX < tMaxY) {
-                // tMaxY += tDeltaY;
-                // Y += stepY;
                 tMaxX += tDeltaX;
                 X += stepX;
             } else if (tMaxX >= tMaxY) {
-                // tMaxX += tDeltaX;
-                // X += stepX;
                 tMaxY += tDeltaY;
                 Y += stepY;
             }
@@ -490,25 +366,12 @@ let Ray = {
         };
     },
 
+    /**
+     * Axis-Aligned Bounding Box Intersection test
+     * @param {AABB} aabb - the box to test
+     * @return {boolean} true for hit, false for miss
+     */
     intersectAABB: function(aabb) {
-        //let tmin, tmax, tymin, tymax;
-
-        //let divx = this.invDirection.x;
-        //let divy = this.invDirection.y;
-        //if (divx >= 0) {
-            //tmin = (aabb.min.x - this.origin.x) * divx;
-            //tmax = (aabb.max.x - this.origin.x) * divx;
-        //} else {
-            //tmin = (aabb.max.x - this.origin.x) * divx;
-            //tmax = (aabb.min.x - this.origin.x) * divx;
-        //}
-        //if (divy >= 0) {
-            //tymin = (aabb.min.y - this.origin.y) * divy;
-            //tymax = (aabb.max.y - this.origin.y) * divy;
-        //} else {
-            //tymin = (aabb.max.y - this.origin.y) * divy;
-            //tymax = (aabb.min.y - this.origin.y) * divy;
-        //}
         let tx1 = (aabb.min.x - this.origin.x) * this.invDirection.x;
         let tx2 = (aabb.max.x - this.origin.x) * this.invDirection.x;
 
@@ -520,89 +383,13 @@ let Ray = {
 
         tmin = Math.max(tmin, Math.min(ty1, ty2));
         tmax = Math.min(tmax, Math.max(ty1, ty2));
-        let hit = tmax >= tmin && tmax >= 0;
-        return hit;
+        let didHit = tmax >= tmin && tmax >= 0;
+        return didHit;
     },
-/*AABB.prototype.intersectSegment = function(pos, delta) {
-      var farTime, farTimeX, farTimeY, hit, nearTime, nearTimeX, nearTimeY, scaleX, scaleY, signX, signY;
-
-      scaleX = 1.0 / delta.x;
-      scaleY = 1.0 / delta.y;
-      signX = sign(scaleX);
-      signY = sign(scaleY);
-      nearTimeX = (this.pos.x - signX * (this.half.x + paddingX) - pos.x) * scaleX;
-      nearTimeY = (this.pos.y - signY * (this.half.y + paddingY) - pos.y) * scaleY;
-      farTimeX = (this.pos.x + signX * (this.half.x + paddingX) - pos.x) * scaleX;
-      farTimeY = (this.pos.y + signY * (this.half.y + paddingY) - pos.y) * scaleY;
-      if (nearTimeX > farTimeY || nearTimeY > farTimeX) {
-        return null;
-      }
-      nearTime = nearTimeX > nearTimeY ? nearTimeX : nearTimeY;
-      farTime = farTimeX < farTimeY ? farTimeX : farTimeY;
-      if (nearTime >= 1 || farTime <= 0) {
-        return null;
-      }
-      hit = new Hit(this);
-      hit.time = clamp(nearTime, 0, 1);
-      if (nearTimeX > nearTimeY) {
-        hit.normal.x = -signX;
-        hit.normal.y = 0;
-      } else {
-        hit.normal.x = 0;
-        hit.normal.y = -signY;
-      }
-      hit.delta.x = hit.time * delta.x;
-      hit.delta.y = hit.time * delta.y;
-      hit.pos.x = pos.x + hit.delta.x;
-      hit.pos.y = pos.y + hit.delta.y;
-      return hit;
-    };*/
-    /**
-     * Simple Ray-AABB Test
-     * Only returns if intersection exists, DOES NOT give distance to
-     * intersection
-     * 2D version of this: http://www.cg.cs.tu-bs.de/media/publications/fast-rayaxis-aligned-bounding-box-overlap-tests-using-ray-slopes.pdf
-     * @param {AABB} aabb - axis-aligned bounding-box instance
-     * @return {bool} did intersection occur
-     */
-    //intersectAABB: function(aabb) {
-        //// Low hanging fruit, if ray origin is inside aabb, then automatic
-        //// intersection
-        //if (aabb.contains(this.origin)) {
-            //return true;
-        //}
-
-        //// Steps:
-        //// 1. Get slope of line from ray origin to aabb.min and aabb.max
-        //// 2. if slope of ray is between slopes generated in step 1, then
-        //// ray intersects
-        ////
-        //// Handle two cases : positive vs. negative slope
-        //// If slope is positive, use min + width and min + height as corners to
-        //// check
-        //// Otherwise use regular min and max
-        //let min, max;
-        //if (this.slope > 0) {
-            //min = {x: aabb.max.x, y: aabb.min.y};
-            //max = {x: aabb.min.x, y: aabb.max.y};
-        //} else {
-            //min = aabb.min;
-            //max = aabb.max;
-        //}
-
-        //let s1 = (min.y - this.origin.y) / (min.x - this.origin.x);
-        //let s2 = (max.y - this.origin.y) / (max.x - this.origin.x);
-        //let smin = Math.min(s1, s2);
-        //let smax = Math.max(s1, s2);
-
-        //if (this.slope < smax && this.slope > smin) {
-            //return true;
-        //}
-        //return false;
-    //},
 
     /**
      * Internally used to update point of intersection property
+     * @private
      * @param {Point} intPoint - object with x and y properties representing
      * intersection point
      * @param {Vector} segVec - vector object that was intersected
@@ -636,6 +423,7 @@ let Ray = {
 
 /**
  * 'Constructor' function
+ * @public
  * @param {number} x - origin x
  * @param {number} y - origin y
  * @param {number} dir - direction in radians (or degrees if 'degrees' param

@@ -11,7 +11,8 @@ let Wave = {
         //this.outerBodies = [];
         this.style = {
             lineWidth: options.lineWidth || 1,
-            strokeStyle: options.strokeStyle || '#456abc'
+            strokeStyle: options.strokeStyle || '#456abc',
+            opacity: options.opacity || 1.0
         };
 
         this.x = options.x || 10;

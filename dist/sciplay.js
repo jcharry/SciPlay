@@ -249,6 +249,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var mag = this.magnitude();
 	        this.x /= mag;
 	        this.y /= mag;
+	    },
+	    distanceTo: function distanceTo(vec) {
+	        return Math.sqrt((vec.x - this.x) * (vec.x - this.x) + (vec.y - this.y) * (vec.y - this.y));
 	    }
 	};
 	
@@ -346,7 +349,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var Ray = {
 	    /**
-	     * Initialization
+	     * Ray object for tracing
+	     * @constructs
 	     * @param {number} x - origin x
 	     * @param {number} y - origin y
 	     * @param {number} dir - direction in radians (or degrees if 'degrees' param
@@ -575,23 +579,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {array} list of intersected buckets
 	     *
 	     * See here: http://www.cse.chalmers.se/edu/year/2011/course/TDA361_Computer_Graphics/grid.pdf
-	         * The traversal algorithm consists of two phases: initialization and incremental traversal. The initialization
-	            phase begins by identifying the voxel in which the ray origin, →
-	            u, is found. If the ray origin is outside
-	            the grid, we find the point in which the ray enters the grid and take the adjacent voxel. The integer
-	            variables X and Y are initialized to the starting voxel coordinates. In addition, the variables stepX and
-	            stepY are initialized to either 1 or -1 indicating whether X and Y are incremented or decremented as the
-	            ray crosses voxel boundaries (this is determined by the sign of the x and y components of →
-	            v).
-	            Next, we determine the value of t at which the ray crosses the first vertical voxel boundary and
-	            store it in variable tMaxX. We perform a similar computation in y and store the result in tMaxY. The
-	            minimum of these two values will indicate how much we can travel along the ray and still remain in the
-	            current voxel.
-	            Finally, we compute tDeltaX and tDeltaY. TDeltaX indicates how far along the ray we must move
-	            (in units of t) for the horizontal component of such a movement to equal the width of a voxel. Similarly,
-	            we store in tDeltaY the amount of movement along the ray which has a vertical component equal to the
-	            height of a voxel
-	        *
+	     * THIS WORKED -> http://www.playchilla.com/ray-casting-spatial-hash-dda
 	     */
 	    intersectHash: function intersectHash(hash) {
 	        var _this2 = this;
@@ -616,130 +604,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Row and Col offset for picking which horizontal or veritcal segments
 	        // to use for intersection tests
-	        var rowOffset = stepY < 1 ? 0 : 1,
-	            colOffset = stepX < 1 ? 0 : 1;
+	        // let rowOffset = stepY < 1 ? 0 : 1,
+	        //     colOffset = stepX < 1 ? 0 : 1;
 	
-	        // FIXME: There's an issue when the ray starts inside a voxel -> it's
-	        // tMaxX and tMaxY values should represent the distance to cross an
-	        // entire voxel, not the distance from the origin to the nearest edge.
-	        // To solve this, we could project backwards until we hit the opposite
-	        // edges of the voxel, get the starting coordinates, then go from there
+	        tDeltaX = cellSize / Math.abs(this.direction.x);
+	        tDeltaY = cellSize / Math.abs(this.direction.y);
 	
-	        // Project Backwards
-	        var backDir = this.direction.clone().negate();
-	        var backSegH = void 0,
-	            backSegV = void 0;
-	        if (stepX === 1 && stepY === 1) {
-	            // Right and Down
-	            // Intersect backDir with col and row, as is
-	            backSegV = [(0, _Vector2.default)(col * cellSize, 0), (0, _Vector2.default)(col * cellSize, hash.height)];
-	            backSegH = [(0, _Vector2.default)(0, row * cellSize), (0, _Vector2.default)(hash.width, row * cellSize)];
-	        } else if (stepX === 1 && stepY === -1) {
-	            // Right and Up
-	            // Intersect backDir with col and row + 1
-	            backSegV = [(0, _Vector2.default)(col * cellSize, 0), (0, _Vector2.default)(col * cellSize, hash.height)];
-	            backSegH = [(0, _Vector2.default)(0, (row + 1) * cellSize), (0, _Vector2.default)(hash.width, (row + 1) * cellSize)];
-	        } else if (stepX === -1 && stepY === 1) {
-	            // Left and Down
-	            // Intersect with col and row
-	            backSegV = [(0, _Vector2.default)((col + 1) * cellSize, 0), (0, _Vector2.default)((col + 1) * cellSize, hash.height)];
-	            backSegH = [(0, _Vector2.default)(0, row * cellSize), (0, _Vector2.default)(hash.width, row * cellSize)];
-	        } else if (stepX === -1 && stepY === -1) {
-	            // Left and Up
-	            // intersect with col + 1 and row + 1
-	            backSegV = [(0, _Vector2.default)((col + 1) * cellSize, 0), (0, _Vector2.default)((col + 1) * cellSize, hash.height)];
-	            backSegH = [(0, _Vector2.default)(0, (row + 1) * cellSize), (0, _Vector2.default)(hash.width, (row + 1) * cellSize)];
+	        tMaxX = X * cellSize - this.origin.x;
+	        tMaxY = Y * cellSize - this.origin.y;
+	        if (this.direction.x >= 0) {
+	            tMaxX += cellSize;
+	        }
+	        if (this.direction.y >= 0) {
+	            tMaxY += cellSize;
 	        }
 	
-	        // Trace backwards
-	        var backVInt = this.intersectSegment(backSegV, backDir);
-	        var backHInt = this.intersectSegment(backSegH, backDir);
-	        var tMaxOrigin = void 0;
+	        tMaxX /= this.direction.x;
+	        tMaxY /= this.direction.y;
 	
-	        // Which is closer - backH or backV segment?
-	        if (backVInt.intPoint === undefined && backHInt.intPoint === undefined) {
-	            return;
-	            // FIXME: Handle the case where ray is outside and pointing at the
-	            // grid
-	        } else if (backVInt.intPoint === undefined && backHInt.intPoint) {
-	            tMaxOrigin = backHInt.intPoint;
-	        } else if (backHInt.intPoint === undefined && backVInt.intPoint) {
-	            tMaxOrigin = backVInt.intPoint;
-	        } else if (backHInt.intPoint && backVInt.intPoint) {
-	            var vDist = (0, _math.distance)(this.origin.x, this.origin.y, backVInt.intPoint.x, backVInt.intPoint.y);
-	            var hDist = (0, _math.distance)(this.origin.x, this.origin.y, backHInt.intPoint.x, backHInt.intPoint.y);
-	            if (vDist >= hDist) {
-	                tMaxOrigin = backHInt.intPoint;
-	            } else {
-	                tMaxOrigin = backVInt.intPoint;
-	            }
-	        }
-	
-	        // Hash segments to test for distance to intersection
-	        var verticalSeg = [(0, _Vector2.default)((col + colOffset) * cellSize, 0), (0, _Vector2.default)((col + colOffset) * cellSize, hash.height)],
-	            horizontalSeg = [(0, _Vector2.default)(0, (row + rowOffset) * cellSize), (0, _Vector2.default)(hash.width, (row + rowOffset) * cellSize)];
-	
-	        // Step 2. Get distance to both vertical and horizontal hash segments
-	        // Run hash intersection tests
-	        var vInt = this.intersectSegment(verticalSeg),
-	            hInt = this.intersectSegment(horizontalSeg);
-	
-	        if (window.sciDebug) {
-	            if (vInt.intPoint && hInt.intPoint) {
-	                window.ctx.beginPath();
-	                window.ctx.strokeStyle = 'yellow';
-	                window.ctx.ellipse(vInt.intPoint.x, vInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-	                window.ctx.stroke();
-	                window.ctx.beginPath();
-	                window.ctx.strokeStyle = 'red';
-	                window.ctx.ellipse(hInt.intPoint.x, hInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-	                window.ctx.stroke();
-	            }
-	
-	            if (backVInt.intPoint && backHInt.intPoint) {
-	                window.ctx.beginPath();
-	                window.ctx.strokeStyle = 'yellow';
-	                window.ctx.ellipse(backVInt.intPoint.x, backVInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-	                window.ctx.stroke();
-	                window.ctx.beginPath();
-	                window.ctx.strokeStyle = 'red';
-	                window.ctx.ellipse(backHInt.intPoint.x, backHInt.intPoint.y, 8, 8, 0, 0, Math.PI * 2);
-	                window.ctx.stroke();
-	                window.ctx.beginPath();
-	                window.ctx.ellipse(tMaxOrigin.x, tMaxOrigin.y, 8, 8, 0, 0, Math.PI * 2);
-	                window.ctx.stroke();
-	            }
-	        }
-	
-	        // It's possible that ray doesn't intersect a segment, so doublecheck
-	        // Then get distance to intersection point
-	        var tx = void 0,
-	            ty = void 0;
-	        if (vInt) {
-	            tMaxX = (0, _math.distance)(tMaxOrigin.x, tMaxOrigin.y, vInt.intPoint.x, vInt.intPoint.y);
-	            // tx = distance(tMaxOrigin.x, tMaxOrigin.y, vInt.intPoint.x, vInt.intPoint.y);
-	            // tMaxX = distance(this.origin.x, this.origin.y, vInt.intPoint.x, vInt.intPoint.y);
-	        }
-	        if (hInt) {
-	            tMaxY = (0, _math.distance)(tMaxOrigin.x, tMaxOrigin.y, hInt.intPoint.x, hInt.intPoint.y);
-	            // ty = distance(tMaxOrigin.x, tMaxOrigin.y, hInt.intPoint.x, hInt.intPoint.y);
-	            // tMaxY = distance(this.origin.x, this.origin.y, hInt.intPoint.x, hInt.intPoint.y);
-	        }
-	
-	        // FIXME: Left here on 11/21 - Somethings' not working and I'm not sure
-	        // what.......
-	        // Store distances on separate var to hold onto values
-	        tDeltaX = tMaxX;
-	        tDeltaY = tMaxY;
-	
-	        // Step 3. Loop - step through hash, only if X and Y are within the right range
-	        // TODO: Fix this - negative rays are not tracing
-	        // FIXME: see todo
-	        // through hash properly....not sure why
 	        while (Y < hash.numRows && Y > -1 && X < hash.numCols && X > -1) {
-	            // Draw buckets that ray overlaps
-	            if (window.sciDebug) {
+	            // In debug mode - Draw buckets that ray overlaps
+	            if (window.renderer.debug) {
 	                window.ctx.beginPath();
+	                window.ctx.globalAlpha = 1;
 	                window.ctx.strokeStyle = 'orange';
 	                window.ctx.lineWidth = 3;
 	                window.ctx.strokeRect(X * cellSize, Y * cellSize, cellSize, cellSize);
@@ -808,13 +695,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                tMaxX += tDeltaX;
 	                X += stepX;
 	            } else if (tMaxX < tMaxY) {
-	                // tMaxY += tDeltaY;
-	                // Y += stepY;
 	                tMaxX += tDeltaX;
 	                X += stepX;
 	            } else if (tMaxX >= tMaxY) {
-	                // tMaxX += tDeltaX;
-	                // X += stepX;
 	                tMaxY += tDeltaY;
 	                Y += stepY;
 	            }
@@ -829,25 +712,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	    },
 	
+	    /**
+	     * Axis-Aligned Bounding Box Intersection test
+	     * @param {AABB} aabb - the box to test
+	     * @return {boolean} true for hit, false for miss
+	     */
 	    intersectAABB: function intersectAABB(aabb) {
-	        //let tmin, tmax, tymin, tymax;
-	
-	        //let divx = this.invDirection.x;
-	        //let divy = this.invDirection.y;
-	        //if (divx >= 0) {
-	        //tmin = (aabb.min.x - this.origin.x) * divx;
-	        //tmax = (aabb.max.x - this.origin.x) * divx;
-	        //} else {
-	        //tmin = (aabb.max.x - this.origin.x) * divx;
-	        //tmax = (aabb.min.x - this.origin.x) * divx;
-	        //}
-	        //if (divy >= 0) {
-	        //tymin = (aabb.min.y - this.origin.y) * divy;
-	        //tymax = (aabb.max.y - this.origin.y) * divy;
-	        //} else {
-	        //tymin = (aabb.max.y - this.origin.y) * divy;
-	        //tymax = (aabb.min.y - this.origin.y) * divy;
-	        //}
 	        var tx1 = (aabb.min.x - this.origin.x) * this.invDirection.x;
 	        var tx2 = (aabb.max.x - this.origin.x) * this.invDirection.x;
 	
@@ -859,89 +729,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        tmin = Math.max(tmin, Math.min(ty1, ty2));
 	        tmax = Math.min(tmax, Math.max(ty1, ty2));
-	        var hit = tmax >= tmin && tmax >= 0;
-	        return hit;
+	        var didHit = tmax >= tmin && tmax >= 0;
+	        return didHit;
 	    },
-	    /*AABB.prototype.intersectSegment = function(pos, delta) {
-	          var farTime, farTimeX, farTimeY, hit, nearTime, nearTimeX, nearTimeY, scaleX, scaleY, signX, signY;
-	    
-	          scaleX = 1.0 / delta.x;
-	          scaleY = 1.0 / delta.y;
-	          signX = sign(scaleX);
-	          signY = sign(scaleY);
-	          nearTimeX = (this.pos.x - signX * (this.half.x + paddingX) - pos.x) * scaleX;
-	          nearTimeY = (this.pos.y - signY * (this.half.y + paddingY) - pos.y) * scaleY;
-	          farTimeX = (this.pos.x + signX * (this.half.x + paddingX) - pos.x) * scaleX;
-	          farTimeY = (this.pos.y + signY * (this.half.y + paddingY) - pos.y) * scaleY;
-	          if (nearTimeX > farTimeY || nearTimeY > farTimeX) {
-	            return null;
-	          }
-	          nearTime = nearTimeX > nearTimeY ? nearTimeX : nearTimeY;
-	          farTime = farTimeX < farTimeY ? farTimeX : farTimeY;
-	          if (nearTime >= 1 || farTime <= 0) {
-	            return null;
-	          }
-	          hit = new Hit(this);
-	          hit.time = clamp(nearTime, 0, 1);
-	          if (nearTimeX > nearTimeY) {
-	            hit.normal.x = -signX;
-	            hit.normal.y = 0;
-	          } else {
-	            hit.normal.x = 0;
-	            hit.normal.y = -signY;
-	          }
-	          hit.delta.x = hit.time * delta.x;
-	          hit.delta.y = hit.time * delta.y;
-	          hit.pos.x = pos.x + hit.delta.x;
-	          hit.pos.y = pos.y + hit.delta.y;
-	          return hit;
-	        };*/
-	    /**
-	     * Simple Ray-AABB Test
-	     * Only returns if intersection exists, DOES NOT give distance to
-	     * intersection
-	     * 2D version of this: http://www.cg.cs.tu-bs.de/media/publications/fast-rayaxis-aligned-bounding-box-overlap-tests-using-ray-slopes.pdf
-	     * @param {AABB} aabb - axis-aligned bounding-box instance
-	     * @return {bool} did intersection occur
-	     */
-	    //intersectAABB: function(aabb) {
-	    //// Low hanging fruit, if ray origin is inside aabb, then automatic
-	    //// intersection
-	    //if (aabb.contains(this.origin)) {
-	    //return true;
-	    //}
-	
-	    //// Steps:
-	    //// 1. Get slope of line from ray origin to aabb.min and aabb.max
-	    //// 2. if slope of ray is between slopes generated in step 1, then
-	    //// ray intersects
-	    ////
-	    //// Handle two cases : positive vs. negative slope
-	    //// If slope is positive, use min + width and min + height as corners to
-	    //// check
-	    //// Otherwise use regular min and max
-	    //let min, max;
-	    //if (this.slope > 0) {
-	    //min = {x: aabb.max.x, y: aabb.min.y};
-	    //max = {x: aabb.min.x, y: aabb.max.y};
-	    //} else {
-	    //min = aabb.min;
-	    //max = aabb.max;
-	    //}
-	
-	    //let s1 = (min.y - this.origin.y) / (min.x - this.origin.x);
-	    //let s2 = (max.y - this.origin.y) / (max.x - this.origin.x);
-	    //let smin = Math.min(s1, s2);
-	    //let smax = Math.max(s1, s2);
-	
-	    //if (this.slope < smax && this.slope > smin) {
-	    //return true;
-	    //}
-	    //return false;
-	    //},
 	
 	    /**
 	     * Internally used to update point of intersection property
+	     * @private
 	     * @param {Point} intPoint - object with x and y properties representing
 	     * intersection point
 	     * @param {Vector} segVec - vector object that was intersected
@@ -974,6 +768,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/**
 	 * 'Constructor' function
+	 * @public
 	 * @param {number} x - origin x
 	 * @param {number} y - origin y
 	 * @param {number} dir - direction in radians (or degrees if 'degrees' param
@@ -1014,72 +809,127 @@ return /******/ (function(modules) { // webpackBootstrap
 	System.prototype = {
 	    init: function init(params) {
 	        this.frames = [];
-	        this.objects = [];
 	        this.waves = [];
 	        this.childWaves = [];
-	        this.rays = [];
+	        this.bodies = [];
 	        this.width = params.width || 600;
 	        this.height = params.height || 300;
 	
-	        var divisor = params.cellSize ? params.cellSize : 100;
+	        // Cell size will adjust to fit world precisely
+	        // May not be exaclty what user initialized
+	        // let divisor = params.cellSize ? params.cellSize : 100;
+	        this.cellSize = this.calculateCellSize(params.cellSize || 100);
+	        // Initialize spatial hash
+	        this.hash = this.initializeHash(this.cellSize, this.width, this.height);
 	
-	        var cellSize = this.width / Math.floor(this.width / divisor);
-	        this.hash = (0, _SpatialHash2.default)(cellSize, this.width, this.height);
+	        // Ray ID Counter
 	        this.currentRayId = 0;
+	    },
+	    calculateCellSize: function calculateCellSize(cellSize) {
+	        var divisor = cellSize ? cellSize : 100;
+	        return this.width / Math.floor(this.width / divisor);
+	    },
+	    initializeHash: function initializeHash(cellSize, width, height) {
+	        return (0, _SpatialHash2.default)(cellSize, width, height);
+	    },
+	    /**
+	     * Resize system - doesn't resize renderer (i.e. canvas)
+	     * In event that thing should be drawn outside the system
+	     * @param {number} width - new system width
+	     * @param {number} height - new system height
+	     * @param {number} [cellSize] - optional, new cell size
+	     *
+	     * @example - reset both system and canvas
+	     * system.resize(500, 400, 30);
+	     * renderer.resize(500, 400);
+	     */
+	    resize: function resize(width, height, cellSize) {
+	        this.width = width;
+	        this.height = height;
+	        this.cellSize = this.calculateCellSize(cellSize || this.cellSize);
+	        this.hash = this.initializeHash(this.cellSize, width, height);
 	    },
 	    addFrame: function addFrame(frame) {
 	        this.frames.push(frame);
 	    },
-	    addRay: function addRay(ray) {
-	        this.rays.push(ray);
-	    },
-	    addWave: function addWave(wave) {
-	        this.waves.push(wave);
-	    },
 	    addChildWave: function addChildWave(wave) {
 	        this.childWaves.push(wave);
 	    },
-	
+	    addBody: function addBody(body) {
+	        this.bodies.push(body);
+	    },
+	    addObject: function addObject(obj) {
+	        switch (obj.type) {
+	            case 'rectangle':
+	            case 'circle':
+	            case 'polygon':
+	                this.bodies.push(obj);
+	                break;
+	            case 'incident':
+	            case 'wave':
+	                this.waves.push(obj);
+	                break;
+	            default:
+	                throw new Error('tried to add something that\'s not a body or a wave');
+	        }
+	    },
 	    /**
 	     * Add objects to the system
 	     * Objects not added will not be rendered
 	     * or updated
 	     *
-	     * @param {Body|Body[]} b - a body object, or array of body objects
+	     * @param {Sci.Object|Sci.Object[]} b - a body or wave object, or array of body objects
 	     */
-	    addObject: function addObject(b) {
+	    add: function add(b) {
 	        var _this = this;
 	
 	        if ((typeof b === 'undefined' ? 'undefined' : _typeof(b)) === 'object' && b.length !== undefined) {
-	            // b is an array
 	            b.forEach(function (body) {
-	                _this.objects.push(body);
+	                _this.addObject(body);
 	            });
 	        } else {
-	            this.objects.push(b);
+	            this.addObject(b);
 	        }
 	    },
 	    update: function update() {
 	        var _this2 = this;
 	
+	        // Clear out hash at the start of every update loop
 	        this.hash.clear();
-	        this.objects.forEach(function (body) {
+	
+	        // Put each body into the hash
+	        this.bodies.forEach(function (body) {
 	            _this2.hash.insertBody(body);
 	            body.update();
 	        });
 	
+	        // Each ray needs a unique ID for collision checking
 	        // Reset currentRayID during each update loop so we can reuse these
 	        // ID's
 	        this.currentRayId = 0;
+	
+	        // Remove all child waves
 	        this.childWaves = [];
+	
+	        // Update each wave and loop through it's chilren
 	        this.waves.forEach(function (wave) {
 	            wave.update(_this2);
 	            _this2.traverseWaves(wave);
 	        });
 	    },
+	
+	    /**
+	     * Recursively loop through child waves
+	     * and add them to the system
+	     * @param {Wave} wave - wave object to traverse
+	     */
 	    traverseWaves: function traverseWaves(wave) {
 	        var _this3 = this;
 	
+	        // If the wave has children
+	        // Add each child to the system,
+	        // then repeat for each child
+	        // Exit condition -> When children have no children
 	        if (wave.children.length !== 0) {
 	            wave.children.forEach(function (child) {
 	                _this3.addChildWave(child);
@@ -1089,6 +939,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 	
+	/**
+	 * @public
+	 * @param {object} params - initialization parameters
+	 * @return {System}
+	 *
+	 * params
+	 *  - width: int - width of entire system (usually canvas width)
+	 *  - height: number - height of entire system
+	 *  - cellSize: number - requested cellSize, (system will choose closest value
+	 *          that precisely fits into the system width)
+	 */
 	var system = function system(params) {
 	    var s = Object.create(System.prototype);
 	    s.init(params);
@@ -1108,6 +969,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	var SpatialHash = {};
+	
 	SpatialHash.prototype = {
 	    init: function init(cellSize, width, height) {
 	        this.cellSize = cellSize;
@@ -1115,6 +977,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.height = height;
 	        this.numRows = Math.ceil(height / cellSize);
 	        this.numCols = width / cellSize;
+	        this.contents = {};
 	    },
 	
 	    /**
@@ -1147,6 +1010,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }
+	    },
+	    updateBody: function updateBody(body) {
+	        this.removeBody(body);
+	        this.insertBody(body);
 	    },
 	    removeBody: function removeBody(body) {
 	        var min = this.hash(body.aabb.min);
@@ -1223,6 +1090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.debug = params.debug || false;
 	        this.background = params.background || 'black';
 	
+	        // Initialize Canvas element
 	        // Pardon the ugly ternary...
 	        this.canvas = typeof params.canvas === 'undefined' ? function () {
 	            var c = document.createElement('canvas');
@@ -1237,36 +1105,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }();
 	
 	        if (this.debug) {
-	            window.sciDebug = true;window.ctx = this.canvas.getContext('2d');
+	            window.renderer = this;
+	            window.ctx = this.canvas.getContext('2d');
 	        }
 	
 	        //this.canvas.width = params.width || 600;
 	        //this.canvas.height = params.height || 300;
 	        this.ctx = this.canvas.getContext('2d');
 	    },
+	
 	    /**
-	     * Draw bodies and waves
-	     * @private
-	     * @param {object} system - phys.system object containing all objects
+	     * Resize the canvas
+	     * @param {number} width
+	     * @param {number} height
 	     */
-	    //renderObjects: function(system) {
-	    //system.objects.forEach(body => {
-	    //this.draw(body);
-	    ////body.draw(this.ctx);
-	    //});
+	    resize: function resize(width, height) {
+	        this.canvas.width = width;
+	        this.canvas.height = height;
+	    },
 	
-	    //system.waves.forEach(wave => {
-	    //wave.trace(system, this.ctx);
-	    ////wave.draw(this.ctx);
-	    //});
-	
-	    ////system.rays.forEach(ray => {
-	    ////ray.draw(ctx);
-	    ////});
-	    //},
+	    /**
+	     * Draw a body object
+	     * @private
+	     * @param {Body} body - phys.system object containing all objects
+	     */
 	    drawBody: function drawBody(body) {
 	        if (this.debug) {
 	            this.ctx.beginPath();
+	            this.ctx.globalAlpha = 1;
 	            this.ctx.strokeStyle = 'red';
 	            this.ctx.lineWidth = 1;
 	
@@ -1278,6 +1144,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.ctx.rect(x, y, w, h);
 	            this.ctx.stroke();
 	        }
+	
+	        // Start a new path for each body
+	        this.ctx.beginPath();
+	        this.ctx.globalAlpha = 1;
 	        switch (body.type) {
 	            case 'rectangle':
 	                {
@@ -1313,12 +1183,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            break;
 	                    }
 	                    this.ctx.lineJoin = 'miter';
-	                    this.ctx.beginPath();
 	                    this.ctx.moveTo(_x, _y);
 	                    this.ctx.lineTo(_x + _w, _y);
 	                    this.ctx.lineTo(_x + _w, _y + _h);
 	                    this.ctx.lineTo(_x, _y + _h);
 	                    this.ctx.closePath();
+	                    this.ctx.fill();
 	                    this.ctx.stroke();
 	                    break;
 	                }
@@ -1328,19 +1198,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this.ctx.lineWidth = body.style.lineWidth;
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
 	
-	                    this.ctx.beginPath();
 	                    this.ctx.ellipse(body.position.x, body.position.y, body.radius, body.radius, 0, 0, Math.PI * 2);
-	                    this.ctx.closePath();
+	                    // this.ctx.closePath();
 	                    this.ctx.stroke();
-	                    this.ctx.fill();
+	                    // this.ctx.fill();
+	                    break;
 	                }
-	                break;
 	            case 'polygon':
 	                {
 	                    this.ctx.fillStyle = body.style.fillStyle;
 	                    this.ctx.lineWidth = body.style.lineWidth;
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
-	                    this.ctx.beginPath();
 	                    this.ctx.lineJoin = 'miter';
 	                    this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
 	                    for (var i = 1; i < body.vertices.length; i++) {
@@ -1359,17 +1227,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    drawWave: function drawWave(wave) {
 	        // No matter what the angle mode, always use radians
 	        var angle = wave.mode === 'DEGREES' ? math.degToRad(wave.direction) : wave.direction;
+	
+	        // Set wave style properties
 	        this.ctx.fillStyle = wave.style.fillStyle;
 	        this.ctx.lineWidth = wave.style.lineWidth;
 	        this.ctx.strokeStyle = wave.style.strokeStyle;
-	        this.ctx.beginPath();
+	        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
 	
 	        // If debug == true, draw waves in certain colors
 	        if (this.debug) {
 	            if (wave.type === 'incident') {
 	                // Draw starting circle
-	                this.ctx.fillStyle = 'yellow';
 	                this.ctx.beginPath();
+	                this.ctx.fillStyle = 'yellow';
 	                this.ctx.ellipse(wave.position.x, wave.y, 3, 3, 0, 0, Math.PI * 2);
 	                this.ctx.fill();
 	                this.ctx.stroke();
@@ -1381,7 +1251,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	
-	        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
+	        this.ctx.beginPath();
 	        this.ctx.moveTo(wave.position.x, wave.position.y);
 	
 	        // If the wave intersects an object ahead, then
@@ -1392,9 +1262,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            // Draw intersection points as circles
 	            // when in debug mode
-	            if (this.debug === true) {
+	            if (this.debug) {
 	                this.ctx.beginPath();
 	                this.ctx.strokeStyle = 'red';
+	                this.ctx.lineWidth = 0.5;
 	                this.ctx.ellipse(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y, 3, 3, 0, 0, Math.PI * 2);
 	                this.ctx.stroke();
 	            }
@@ -1402,7 +1273,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.ctx.lineTo(2000 * Math.cos(angle) + wave.position.x, 2000 * Math.sin(angle) + wave.position.y);
 	            this.ctx.stroke();
 	        }
-	        this.ctx.globalAlpha = 1;
 	    },
 	
 	    render: function render(system) {
@@ -1432,21 +1302,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        // Draw background
 	        this.ctx.beginPath();
+	        this.ctx.globalAlpha = 1;
 	        this.ctx.fillStyle = this.background;
 	        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	
 	        // Update the system
-	        system.update();
+	        this.lastState = system.update();
 	
 	        // Draw all objects + waves
-	        system.objects.forEach(function (obj) {
-	            _this.drawBody(obj);
+	        system.bodies.forEach(function (body) {
+	            _this.drawBody(body);
 	        });
 	
+	        // Update all waves
 	        system.waves.forEach(function (wave) {
 	            _this.drawWave(wave);
 	        });
 	
+	        // Update all child waves
 	        system.childWaves.forEach(function (wave) {
 	            _this.drawWave(wave);
 	        });
@@ -1456,6 +1329,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.debug === true) {
 	            (function () {
 	                var cellSize = system.hash.cellSize;
+	                _this.ctx.globalAlpha = 1;
+	                _this.ctx.lineWidth = 0.5;
 	                for (var i = 0; i < system.hash.width; i += cellSize) {
 	                    for (var j = 0; j < system.hash.height; j += cellSize) {
 	                        _this.ctx.beginPath();
@@ -1468,7 +1343,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    Object.keys(system.hash.contents[row]).forEach(function (col) {
 	                        // Draw all squares
 	                        _this.ctx.beginPath();
-	                        _this.ctx.strokeStyle = 'green';
+	                        // this.ctx.strokeStyle = 'green';
 	                        if (system.hash.contents[row][col].length !== 0) {
 	                            _this.ctx.strokeStyle = 'red';
 	                        }
@@ -1488,10 +1363,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    setSize: function setSize(width, height) {
 	        this.canvas.width = width;
 	        this.canvas.height = height;
-	        //if (shouldUpdateStyle) {
-	        //canvas.style.width = `${width}px`;
-	        //canvas.style.height = `${height}px`;
-	        //}
 	    },
 	    /**
 	     * Stop animation cycle
@@ -1956,7 +1827,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //this.outerBodies = [];
 	        this.style = {
 	            lineWidth: options.lineWidth || 1,
-	            strokeStyle: options.strokeStyle || '#456abc'
+	            strokeStyle: options.strokeStyle || '#456abc',
+	            opacity: options.opacity || 1.0
 	        };
 	
 	        this.x = options.x || 10;

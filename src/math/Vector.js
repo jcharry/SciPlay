@@ -75,6 +75,9 @@ Vector.prototype = {
         let mag = this.magnitude();
         this.x /= mag;
         this.y /= mag;
+    },
+    distanceTo: function(vec) {
+        return Math.sqrt((vec.x - this.x) * (vec.x - this.x) + (vec.y - this.y) * (vec.y - this.y));
     }
 };
 

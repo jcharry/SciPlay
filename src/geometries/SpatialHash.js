@@ -1,4 +1,5 @@
 const SpatialHash = {};
+
 SpatialHash.prototype = {
     init: function(cellSize, width, height) {
         this.cellSize = cellSize;
@@ -6,6 +7,7 @@ SpatialHash.prototype = {
         this.height = height;
         this.numRows = Math.ceil(height / cellSize);
         this.numCols = width / cellSize;
+        this.contents = {};
     },
 
     /**
@@ -38,6 +40,10 @@ SpatialHash.prototype = {
                 }
             }
         }
+    },
+    updateBody: function(body) {
+        this.removeBody(body);
+        this.insertBody(body);
     },
     removeBody: function(body) {
         let min = this.hash(body.aabb.min);

@@ -4,7 +4,7 @@ window.addEventListener('load', function() {
     window.sci = sci;
 
     var system = sci.system({
-        width: 860,
+        width: 300,
         height: 600,
         cellSize: 100
     });
@@ -94,21 +94,13 @@ window.addEventListener('load', function() {
     //});
 
     window.w = w;
-    //window.w1 = w1;
-    //window.w2 = w2;
-    //window.w3 = w3;
     window.r = r;
     window.r2 = r2;
     window.p = p;
     window.c = c;
-    system.addObject(r);
-    system.addObject(p);
-    //system.addObject(r2);
-    //system.addObject(c);
-    //system.addWave(w);
-    //system.addWave(w1);
-    //system.addWave(w2);
-    //system.addWave(w3);
+    // system.add(r);
+    // system.add(p);
+    // system.add(w);
 
     var squareDown = false;
     var circleDown = false;
@@ -169,7 +161,7 @@ window.addEventListener('load', function() {
                     strokeStyle: 'transparent'
 
                 });
-                system.addObject(rect);
+                system.add(rect);
             }
             squareDown = false;
         }
@@ -183,7 +175,7 @@ window.addEventListener('load', function() {
             });
             addCircle.style.position = 'static';
             if (e.clientY < window.innerHeight - 100) {
-                system.addObject(circ);
+                system.add(circ);
             }
             circleDown = false;
         }
@@ -199,7 +191,7 @@ window.addEventListener('load', function() {
                     strokeStyle: 'magenta',
                     lineWidth: 1
                 });
-                system.addWave(window.w);
+                system.add(window.w);
             }
             waveDown = false;
         }
@@ -215,9 +207,10 @@ window.addEventListener('load', function() {
                         y: e.clientY,
                         direction: i * step,
                         strokeStyle: 'white',
-                        lineWidth: 0.5
+                        lineWidth: 5,
+                        intensity: 0.3
                     });
-                    system.addWave(wave);
+                    system.add(wave);
                 }
             }
         }
@@ -235,7 +228,7 @@ window.addEventListener('load', function() {
                         strokeStyle: 'white',
                         lineWidth: 0.5
                     });
-                    system.addWave(wave);
+                    system.add(wave);
                 }
             }
         }

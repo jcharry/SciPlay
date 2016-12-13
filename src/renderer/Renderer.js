@@ -6,6 +6,7 @@ Renderer.prototype = {
         this.debug = params.debug || false;
         this.background = params.background || 'black';
 
+        // Initialize Canvas element
         // Pardon the ugly ternary...
         this.canvas = (typeof params.canvas === 'undefined') ?
             (function() {
@@ -21,36 +22,34 @@ Renderer.prototype = {
             })();
 
         if (this.debug) {
-            window.sciDebug = true; window.ctx = this.canvas.getContext('2d');
+            window.renderer = this;
+            window.ctx = this.canvas.getContext('2d');
         }
 
         //this.canvas.width = params.width || 600;
         //this.canvas.height = params.height || 300;
         this.ctx = this.canvas.getContext('2d');
     },
+
     /**
-     * Draw bodies and waves
-     * @private
-     * @param {object} system - phys.system object containing all objects
+     * Resize the canvas
+     * @param {number} width
+     * @param {number} height
      */
-    //renderObjects: function(system) {
-        //system.objects.forEach(body => {
-            //this.draw(body);
-            ////body.draw(this.ctx);
-        //});
+    resize: function(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+    },
 
-        //system.waves.forEach(wave => {
-            //wave.trace(system, this.ctx);
-            ////wave.draw(this.ctx);
-        //});
-
-        ////system.rays.forEach(ray => {
-        ////ray.draw(ctx);
-        ////});
-    //},
+    /**
+     * Draw a body object
+     * @private
+     * @param {Body} body - phys.system object containing all objects
+     */
     drawBody: function(body) {
         if (this.debug) {
             this.ctx.beginPath();
+            this.ctx.globalAlpha = 1;
             this.ctx.strokeStyle = 'red';
             this.ctx.lineWidth = 1;
 
@@ -62,6 +61,10 @@ Renderer.prototype = {
             this.ctx.rect(x, y, w, h);
             this.ctx.stroke();
         }
+
+        // Start a new path for each body
+        this.ctx.beginPath();
+        this.ctx.globalAlpha = 1;
         switch (body.type) {
             case 'rectangle': {
                 this.ctx.fillStyle = body.style.fillStyle;
@@ -92,12 +95,12 @@ Renderer.prototype = {
                         break;
                 }
                 this.ctx.lineJoin = 'miter';
-                this.ctx.beginPath();
                 this.ctx.moveTo(x, y);
                 this.ctx.lineTo(x + w, y);
                 this.ctx.lineTo(x + w, y + h);
                 this.ctx.lineTo(x, y + h);
                 this.ctx.closePath();
+                this.ctx.fill();
                 this.ctx.stroke();
                 break;
             }
@@ -106,18 +109,16 @@ Renderer.prototype = {
                 this.ctx.lineWidth = body.style.lineWidth;
                 this.ctx.strokeStyle = body.style.strokeStyle;
 
-                this.ctx.beginPath();
                 this.ctx.ellipse(body.position.x, body.position.y, body.radius, body.radius, 0, 0, Math.PI * 2);
-                this.ctx.closePath();
+                // this.ctx.closePath();
                 this.ctx.stroke();
-                this.ctx.fill();
-            }
+                // this.ctx.fill();
                 break;
+            }
             case 'polygon': {
                 this.ctx.fillStyle = body.style.fillStyle;
                 this.ctx.lineWidth = body.style.lineWidth;
                 this.ctx.strokeStyle = body.style.strokeStyle;
-                this.ctx.beginPath();
                 this.ctx.lineJoin = 'miter';
                 this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
                 for (let i = 1; i < body.vertices.length; i++) {
@@ -136,17 +137,19 @@ Renderer.prototype = {
     drawWave: function(wave) {
         // No matter what the angle mode, always use radians
         let angle = wave.mode === 'DEGREES' ? math.degToRad(wave.direction) : wave.direction;
+
+        // Set wave style properties
         this.ctx.fillStyle = wave.style.fillStyle;
         this.ctx.lineWidth = wave.style.lineWidth;
         this.ctx.strokeStyle = wave.style.strokeStyle;
-        this.ctx.beginPath();
+        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
 
         // If debug == true, draw waves in certain colors
         if (this.debug) {
             if (wave.type === 'incident') {
                 // Draw starting circle
-                this.ctx.fillStyle = 'yellow';
                 this.ctx.beginPath();
+                this.ctx.fillStyle = 'yellow';
                 this.ctx.ellipse(wave.position.x, wave.y, 3, 3, 0, 0, Math.PI * 2);
                 this.ctx.fill();
                 this.ctx.stroke();
@@ -158,7 +161,7 @@ Renderer.prototype = {
             }
         }
 
-        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
+        this.ctx.beginPath();
         this.ctx.moveTo(wave.position.x, wave.position.y);
 
         // If the wave intersects an object ahead, then
@@ -169,9 +172,10 @@ Renderer.prototype = {
 
             // Draw intersection points as circles
             // when in debug mode
-            if (this.debug === true) {
+            if (this.debug) {
                 this.ctx.beginPath();
                 this.ctx.strokeStyle = 'red';
+                this.ctx.lineWidth = 0.5;
                 this.ctx.ellipse(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y, 3, 3, 0, 0, Math.PI * 2);
                 this.ctx.stroke();
             }
@@ -179,7 +183,6 @@ Renderer.prototype = {
             this.ctx.lineTo(2000 * Math.cos(angle) + wave.position.x, 2000 * Math.sin(angle) + wave.position.y);
             this.ctx.stroke();
         }
-        this.ctx.globalAlpha = 1;
     },
 
     render: function(system) {
@@ -207,21 +210,24 @@ Renderer.prototype = {
         }
         // Draw background
         this.ctx.beginPath();
+        this.ctx.globalAlpha = 1;
         this.ctx.fillStyle = this.background;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Update the system
-        system.update();
+        this.lastState = system.update();
 
         // Draw all objects + waves
-        system.objects.forEach(obj => {
-            this.drawBody(obj);
+        system.bodies.forEach(body => {
+            this.drawBody(body);
         });
 
+        // Update all waves
         system.waves.forEach(wave => {
             this.drawWave(wave);
         });
 
+        // Update all child waves
         system.childWaves.forEach(wave => {
             this.drawWave(wave);
         });
@@ -230,6 +236,8 @@ Renderer.prototype = {
         // and highlight nodes that contain items in red
         if (this.debug === true) {
             let cellSize = system.hash.cellSize;
+            this.ctx.globalAlpha = 1;
+            this.ctx.lineWidth = 0.5;
             for (let i = 0; i < system.hash.width; i += cellSize) {
                 for (let j = 0; j < system.hash.height; j += cellSize) {
                     this.ctx.beginPath();
@@ -242,7 +250,7 @@ Renderer.prototype = {
                 Object.keys(system.hash.contents[row]).forEach(col => {
                     // Draw all squares
                     this.ctx.beginPath();
-                    this.ctx.strokeStyle = 'green';
+                    // this.ctx.strokeStyle = 'green';
                     if (system.hash.contents[row][col].length !== 0) {
                         this.ctx.strokeStyle = 'red';
                     }
@@ -261,10 +269,6 @@ Renderer.prototype = {
     setSize: function(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
-        //if (shouldUpdateStyle) {
-        //canvas.style.width = `${width}px`;
-        //canvas.style.height = `${height}px`;
-        //}
     },
     /**
      * Stop animation cycle
