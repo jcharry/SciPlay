@@ -38,21 +38,21 @@ System.prototype = {
      * system.resize(500, 400, 30);
      * renderer.resize(500, 400);
      */
-    resize: function(width, height, cellSize) {
-        this.width = width;
-        this.height = height;
-        this.cellSize = this.calculateCellSize(cellSize || this.cellSize);
-        this.hash = this.initializeHash(this.cellSize, width, height);
-    },
-    addFrame: function(frame) {
-        this.frames.push(frame);
-    },
+    // resize: function(width, height, cellSize) {
+    //     this.width = width;
+    //     this.height = height;
+    //     this.cellSize = this.calculateCellSize(cellSize || this.cellSize);
+    //     this.hash = this.initializeHash(this.cellSize, width, height);
+    // },
+    // addFrame: function(frame) {
+    //     this.frames.push(frame);
+    // },
     addChildWave: function(wave) {
         this.childWaves.push(wave);
     },
-    addBody: function(body) {
-        this.bodies.push(body);
-    },
+    // addBody: function(body) {
+    //     this.bodies.push(body);
+    // },
     addObject: function(obj) {
         switch (obj.type) {
             case 'rectangle':

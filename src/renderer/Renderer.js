@@ -33,12 +33,16 @@ Renderer.prototype = {
 
     /**
      * Resize the canvas
-     * @param {number} width
-     * @param {number} height
+     * @param {number} width - new width of canvas
+     * @param {number} height - new height of canvas
      */
-    resize: function(width, height) {
+    resize: function(width, height, cellSize) {
         this.canvas.width = width;
         this.canvas.height = height;
+        this.system.width = width;
+        this.system.height = height;
+        this.system.cellSize = system.calculateCellSize(cellSize || this.system.cellSize);
+        this.system.hash = this.system.initializeHash(this.system.cellSize, width, height);
     },
 
     /**
@@ -185,7 +189,7 @@ Renderer.prototype = {
         }
     },
 
-    render: function(system) {
+    render: function(system, updateFn) {
         // The first time the system renders,
         // capture a local reference to it
         // to be used to restart the renderer later
@@ -201,7 +205,7 @@ Renderer.prototype = {
         // passing it to requestAnimationFrame
         let self = this;
         this._requestID = requestAnimationFrame(function() {
-            self.render(system);
+            self.render(system, updateFn);
         });
 
         // Clear background
@@ -214,7 +218,11 @@ Renderer.prototype = {
         this.ctx.fillStyle = this.background;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Call user draw code
+        updateFn();
+
         // Update the system
+        // FIXME: this.laststate isn't doing anything right now
         this.lastState = system.update();
 
         // Draw all objects + waves

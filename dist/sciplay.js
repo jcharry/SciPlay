@@ -843,21 +843,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * system.resize(500, 400, 30);
 	     * renderer.resize(500, 400);
 	     */
-	    resize: function resize(width, height, cellSize) {
-	        this.width = width;
-	        this.height = height;
-	        this.cellSize = this.calculateCellSize(cellSize || this.cellSize);
-	        this.hash = this.initializeHash(this.cellSize, width, height);
-	    },
-	    addFrame: function addFrame(frame) {
-	        this.frames.push(frame);
-	    },
+	    // resize: function(width, height, cellSize) {
+	    //     this.width = width;
+	    //     this.height = height;
+	    //     this.cellSize = this.calculateCellSize(cellSize || this.cellSize);
+	    //     this.hash = this.initializeHash(this.cellSize, width, height);
+	    // },
+	    // addFrame: function(frame) {
+	    //     this.frames.push(frame);
+	    // },
 	    addChildWave: function addChildWave(wave) {
 	        this.childWaves.push(wave);
 	    },
-	    addBody: function addBody(body) {
-	        this.bodies.push(body);
-	    },
+	    // addBody: function(body) {
+	    //     this.bodies.push(body);
+	    // },
 	    addObject: function addObject(obj) {
 	        switch (obj.type) {
 	            case 'rectangle':
@@ -1116,12 +1116,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    /**
 	     * Resize the canvas
-	     * @param {number} width
-	     * @param {number} height
+	     * @param {number} width - new width of canvas
+	     * @param {number} height - new height of canvas
 	     */
-	    resize: function resize(width, height) {
+	    resize: function resize(width, height, cellSize) {
 	        this.canvas.width = width;
 	        this.canvas.height = height;
+	        this.system.width = width;
+	        this.system.height = height;
+	        this.system.cellSize = system.calculateCellSize(cellSize || this.system.cellSize);
+	        this.system.hash = this.system.initializeHash(this.system.cellSize, width, height);
 	    },
 	
 	    /**
@@ -1275,7 +1279,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    },
 	
-	    render: function render(system) {
+	    render: function render(system, updateFn) {
 	        var _this = this;
 	
 	        // The first time the system renders,
@@ -1293,7 +1297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // passing it to requestAnimationFrame
 	        var self = this;
 	        this._requestID = requestAnimationFrame(function () {
-	            self.render(system);
+	            self.render(system, updateFn);
 	        });
 	
 	        // Clear background
@@ -1306,7 +1310,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.ctx.fillStyle = this.background;
 	        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	
+	        // Call user draw code
+	        updateFn();
+	
 	        // Update the system
+	        // FIXME: this.laststate isn't doing anything right now
 	        this.lastState = system.update();
 	
 	        // Draw all objects + waves
