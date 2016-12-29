@@ -3,6 +3,7 @@
  */
 import Body from './Body';
 import aabb from '../geometries/AABB';
+import vector from '../math/Vector';
 
 var rect = function(options) {
     options = options || {};
@@ -42,67 +43,47 @@ var rect = function(options) {
     B.updateVertices = function() {
         let w = this.width,
             h = this.height,
-            x, y;
+            x = this.position.x,
+            y = this.position.y;
         switch (this._mode) {
             case 'LEFT':
-                x = this.position.x;
-                y = this.position.y;
+                // Already in left mode, do nothing
                 break;
             case 'CENTER':
-                x = this.position.x - w / 2;
-                y = this.position.y - h / 2;
+                x -= (w / 2);
+                y -= (h / 2);
                 break;
             case 'RIGHT':
-                x = this.x - w;
-                y = this.y;
+                x -= w;
                 break;
             default:
                 break;
         }
+
+        //Get centroid
+        let centroid = {
+            x: (x + (x + w)) / 2,
+            y: (y + (y + h)) / 2
+        };
+        B.centroid = centroid;
+
         this.vertices = [
-            {x: x,     y: y},
-            {x: x + w, y: y},
-            {x: x + w, y: y + h},
-            {x: x,     y: y + h}
+            vector(x, y),
+            vector(x + w, y),
+            vector(x + w, y + h),
+            vector(x, y + h)
         ];
-    };
 
-    /**
-     * Update segments - used in update loop
-     */
-    B.updateSegments = function() {
-        // What mode are we in?
-        let x, y, w, h;
-        //let pos = this.position;
-        switch (this._mode) {
-            case 'LEFT':
-                x = this.position.x;
-                y = this.position.y;
-                w = this.width;
-                h = this.height;
-                break;
-            case 'CENTER':
-                w = this.width;
-                h = this.height;
-                x = this.position.x - w / 2;
-                y = this.position.y - h / 2;
-                break;
-            case 'RIGHT':
-                w = this.width;
-                h = this.height;
-                x = this.x - w;
-                y = this.y;
-                break;
-            default:
-                break;
+        // To perform a rotation, we have to first translate to the origin,
+        // then rotate, then translate back to the centroid
+        if (B.angularVelocity !== 0 || B._rotation !== 0 || B._scale !== 0) {
+            this.vertices.forEach(vertex => {
+                vertex.translate(-centroid.x, -centroid.y)
+                    .rotate(this._rotation)
+                    .multiply(this._scale)
+                    .translate(centroid.x, centroid.y);
+            });
         }
-
-        this.segments = [
-            [[x, y], [x + w, y]],
-            [[x + w, y], [x + w, y + h]],
-            [[x + w, y + h], [x, y + h]],
-            [[x, y + h], [x, y]]
-        ];
     };
 
     B.isPointInterior = function(x, y) {

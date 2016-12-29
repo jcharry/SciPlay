@@ -1,4 +1,8 @@
 /* global sciplay */
+/* eslint
+    "require-jsdoc": "off"
+ */
+
 window.addEventListener('load', function() {
     var sci = sciplay();
     window.sci = sci;
@@ -11,7 +15,7 @@ window.addEventListener('load', function() {
     window.system = system;
     var renderer = sci.renderer({
         canvas: 'canvas',
-        debug: true
+        debug: false
     });
 
     window.renderer = renderer;
@@ -28,23 +32,36 @@ window.addEventListener('load', function() {
     });
 
     let circles = [];
-    let numCircles = 100;
+    let numCircles = 10;
     let spacing = (system.width - 20) / numCircles;
     for (let i = 0; i < numCircles; i++) {
         circles.push(sci.circle({
             x: 10 + spacing * i,
             y: Math.random() * system.height,
-            velocity: new sci.Vector(Math.random() * 3 - 1.5, 0),
-            radius: 3,
+            velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 6 - 3),
+            radius: 15,
             strokeStyle: 'white',
-            lineWidth: 0.3,
+            lineWidth: 0.1,
             alpha: 0.5
         }));
-        system.add(circles[i]);
     }
 
-    // var p = sci.polygon();
-    var p = sci.polygon({
+    let rects = [];
+    for (let i = 0; i < numCircles; i++) {
+        rects.push(sci.rect({
+            x: 10 + spacing * i,
+            y: Math.random() * system.height,
+            width: 60,
+            velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 3 - 1.5),
+            height: 30,
+            strokeStyle: 'white',
+            lineWidth: 1,
+            mirror: true,
+            angularVelocity: Math.random() * 0.02 - 0.01
+        }));
+    }
+
+    let p = sci.polygon({
         x: 100,
         y: 100,
         vertices: [
@@ -54,18 +71,23 @@ window.addEventListener('load', function() {
             {x: 42, y: 84},
             {x: 10, y: 35}
         ],
+        velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 3 - 1.5),
+        angularVelocity: Math.random() * 0.02 - 0.01,
         strokeStyle: 'orange',
-        fillStyle: 'orange',
         lineWidth: 2,
         refractiveIndex: 1.66
     });
-    system.add(p);
 
     var r2 = sci.rect({
-        x: 300,
-        y: 100,
+        x: 350,
+        y: 150,
         width: 100,
-        height: 100
+        height: 100,
+        strokeStyle: 'yellow',
+        lineWidth: 2,
+        rotation: 0.3,
+        angularVelocity: 0.01,
+        mirror: true
     });
 
     var c = sci.circle({
@@ -82,6 +104,13 @@ window.addEventListener('load', function() {
         strokeStyle: 'green'
     });
 
+    system.add(rects);
+    // system.add(circles);
+    system.add(p);
+    // system.add(r);
+    // system.add(r2);
+
+
     window.w = w;
     window.r = r;
     window.r2 = r2;
@@ -91,21 +120,32 @@ window.addEventListener('load', function() {
     let angle = 0;
     function loop() {
         // Move the polygon in a little circle
-        angle += 0.1;
-        let x = window.innerWidth / 2 + 20*Math.cos(angle);
-        let y = window.innerHeight/ 2 + 20*Math.sin(angle);
-        p.position.x = x;
-        p.position.y = y;
+        // angle += 0.1;
+        // let x = 3 * Math.cos(angle);
+        // let y = 3 * Math.sin(angle);
+        // p.velocity.x = x;
+        // p.velocity.y = y;
 
-        // Bounce back and forth
-        for (let i = 0; i < circles.length; i++) {
-            let c = circles[i];
-            if (c.position.x + c.radius > system.width || c.position.x - c.radius < 0) {
-                c.velocity.x *= -1;
+        for (let i = 0; i < system.bodies.length; i++) {
+            let b = system.bodies[i];
+            if (b.aabb.max.x >= system.width || b.aabb.min.x <= 0) {
+                b.velocity.x *= -1;
+                b.position.add(b.velocity);
+            }
+
+            if (b.aabb.max.y >= system.height || b.aabb.min.y <= 0) {
+                b.velocity.y *= -1;
+                b.position.add(b.velocity);
             }
         }
+
+        if (p.colliders.length > 0) {
+            p.colliders.forEach(collider => {
+                system.remove(collider);
+                p.scale += 0.1;
+            });
+        }
     }
-    // system.add(r);
     renderer.render(system, loop);
 
     var squareDown = false;
@@ -214,7 +254,7 @@ window.addEventListener('load', function() {
                         direction: i * step,
                         strokeStyle: 'white',
                         lineWidth: 1,
-                        intensity: 0.3
+                        intensity: 0.1
                     });
                     system.add(wave);
                 }
@@ -232,7 +272,8 @@ window.addEventListener('load', function() {
                         y: e.clientY + i,
                         direction: 0,
                         strokeStyle: 'white',
-                        lineWidth: 0.5
+                        lineWidth: 0.5,
+                        intensity: 1
                     });
                     system.add(wave);
                 }

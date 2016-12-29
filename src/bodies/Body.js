@@ -31,12 +31,17 @@ let Body = {
         };
         this.mass = options.mass || 0;
         this.position = vector(options.x || 0, options.y || 0);
+        this.canCollide = options.canCollide || true;
+        this.colliders = [];
         this.velocity = vector(
             (options.velocity && options.velocity.x) || 0,
             (options.velocity && options.velocity.y) || 0
         );
         this.height = options.height || 10;
         this.width = options.width || 10;
+        this._scale = 1;
+        this._rotation = options.rotation || 0; // <-- Private prop - DO NOT SET THIS DIRECTLY, use getter and setter for
+        this.angularVelocity = options.angularVelocity || 0;
         this.refractiveIndex = options.refractiveIndex || 1;
         this.material = options.material || 'GLASS';
         this.materialColor = options.fillStyle || 'black';
@@ -65,12 +70,14 @@ let Body = {
         } else {
             this.refractiveIndex = 1.33;
         }
+        return this;
     },
 
     freeze: function() {
         this._cachedVelocity = this.velocity.clone();
         this.velocity.x = 0;
         this.velocity.y = 0;
+        return this;
     },
 
     unfreeze: function() {
@@ -80,25 +87,72 @@ let Body = {
         } else {
             console.warn('cannot unfreeze a non-frozen object');
         }
+        return this;
+    },
+
+    translate: function(x, y) {
+        this.position.x += x;
+        this.position.y += y;
+
+        if (this.updateVertices) {
+            this.updateVertices();
+        }
+        return this;
+    },
+
+    rotate: function(angle) {
+        this.rotation += angle;
+        return this;
     },
 
     update: function() {
         this.position.add(this.velocity);
+        this.rotation += this.angularVelocity;
 
-        if (this.updateSegments) {
-            this.updateSegments();
-        }
+        // if (this.updateSegments) {
+        //     this.updateSegments();
+        // }
 
         if (this.updateVertices) {
             this.updateVertices();
         }
 
+        // if (this.vertices) {
+        //     this.vertices.update();
+        // }
+
         // For each update loop, reset intersection points to zero
         this.intersectionPoints = {};
 
         this.aabb.update();
+        return this;
     }
-
 };
+
+Object.defineProperty(Body, 'rotation', {
+    get: function() {
+        return this._rotation;
+    },
+    set: function(angle) {
+        this._rotation = angle;
+        if (this.updateVertices) {
+            this.updateVertices();
+        }
+    }
+});
+
+Object.defineProperty(Body, 'scale', {
+    get: function() {
+        return this._scale;
+    },
+    set: function(scaleFactor) {
+        this._scale = scaleFactor;
+        if (this.updateVertices) {
+            this.updateVertices();
+        } else if (this.type === 'circle') {
+            this.scaledRadius = this.radius * scaleFactor;
+        }
+    }
+});
 
 export default Body;

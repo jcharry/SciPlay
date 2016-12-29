@@ -115,23 +115,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _System2 = _interopRequireDefault(_System);
 	
-	var _Renderer = __webpack_require__(8);
+	var _Renderer = __webpack_require__(9);
 	
 	var _Renderer2 = _interopRequireDefault(_Renderer);
 	
-	var _Rect = __webpack_require__(9);
+	var _Rect = __webpack_require__(10);
 	
 	var _Rect2 = _interopRequireDefault(_Rect);
 	
-	var _Wave = __webpack_require__(13);
+	var _Wave = __webpack_require__(14);
 	
 	var _Wave2 = _interopRequireDefault(_Wave);
 	
-	var _Circle = __webpack_require__(14);
+	var _Circle = __webpack_require__(15);
 	
 	var _Circle2 = _interopRequireDefault(_Circle);
 	
-	var _Polygon = __webpack_require__(15);
+	var _Polygon = __webpack_require__(16);
 	
 	var _Polygon2 = _interopRequireDefault(_Polygon);
 	
@@ -170,23 +170,70 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.Vector = undefined;
 	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+	                                                                                                                                                                                                                                                                               * Generic Vector class
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               * @example
+	                                                                                                                                                                                                                                                                               * import vector, {Vector} from 'Vector';
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               * Instantiate new objects in the following ways
+	                                                                                                                                                                                                                                                                               *  1. use vector convenience function like so: vector(x, y);
+	                                                                                                                                                                                                                                                                               *  2. use Vector object directly like: new Vector(x, y);
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               * Methods on a newly created vector, such as .add or .subtract
+	                                                                                                                                                                                                                                                                               * modify the x and y properties on that vector, changing them forever
+	                                                                                                                                                                                                                                                                               * i.e.
+	                                                                                                                                                                                                                                                                               *      let vec1 = vector(0, 0);
+	                                                                                                                                                                                                                                                                               *      let vec2 = vector(10, 20);
+	                                                                                                                                                                                                                                                                               *      vec1.add(vec2);
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               * Results in vec1.x = 10 and vec1.y = 20.  vec2 is unmodified
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               * To perform an operation on two vectors and return a new vector,
+	                                                                                                                                                                                                                                                                               * without modifying the input vectors, use the methods on {Vector}
+	                                                                                                                                                                                                                                                                               * i.e.
+	                                                                                                                                                                                                                                                                               *      let vec1 = vector(0, 0);
+	                                                                                                                                                                                                                                                                               *      let vec2 = vector(10, 20);
+	                                                                                                                                                                                                                                                                               *      let vec3 = Vector.add(vec1, vec2);
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               * Results in vec1 and vec2 remining unmodified,
+	                                                                                                                                                                                                                                                                               * and vec3.x = 10 and vec3.y = 20
+	                                                                                                                                                                                                                                                                               *
+	                                                                                                                                                                                                                                                                               */
 	
 	var _math = __webpack_require__(4);
 	
+	/**
+	 * Base Vector constructor
+	 * @constructor
+	 * @param {number} x - x coordinate
+	 * @param {number} y - y coordinate
+	 */
 	var Vector = exports.Vector = function Vector(x, y) {
 	    this.x = x || 0;
 	    this.y = y || 0;
 	};
 	
+	/**
+	 * Prototype object for all Vectors
+	 */
 	Vector.prototype = {
+	    /**
+	     * Return a copy of a vector
+	     * @method
+	     * @return {Vector} a new vector object
+	     */
 	    clone: function clone() {
 	        return new Vector(this.x, this.y);
 	    },
+	
 	    /**
 	     * Generic Setter
+	     * @method
 	     * @param {string} prop - property to set
 	     * @param {*} val - value to set
+	     * @return {This} for chaining
 	     */
 	    set: function set(prop, val) {
 	        if (prop === 'x') {
@@ -194,41 +241,135 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else if (prop === 'y') {
 	            this.y = val;
 	        }
+	        return this;
 	    },
+	
+	    /**
+	     * Add another vector to this vector, modifying internal
+	     * properties
+	     * @method
+	     * @param {Vector} vec - vector to add
+	     * @return {This} for chaining
+	     */
 	    add: function add(vec) {
 	        this.x += vec.x;
 	        this.y += vec.y;
+	        return this;
 	    },
+	
+	    /**
+	     * Subtract another vector from this vector
+	     * @method
+	     * @param {Vector} vec - vector to subtract
+	     * @return {This} for chaining
+	     */
 	    subtract: function subtract(vec) {
 	        this.x -= vec.x;
 	        this.y -= vec.y;
+	        return this;
 	    },
+	
+	    /**
+	     * Multiply another vector by this vector or scalar
+	     * modifies internal properties
+	     * @param {Vector|number} vec - either Vector object or single scalar
+	     * @return {This} for chaining
+	     */
 	    multiply: function multiply(vec) {
 	        if ((typeof vec === 'undefined' ? 'undefined' : _typeof(vec)) === 'object') {
-	            this.x *= vec.getX();
-	            this.y *= vec.getY();
+	            this.x *= vec.x;
+	            this.y *= vec.y;
 	        } else if (typeof vec === 'number') {
 	            this.x *= vec;
 	            this.y *= vec;
 	        }
+	
+	        return this;
 	    },
+	
+	    /**
+	     * Gives the magnitude (length, essentially) of the vector
+	     * @method
+	     * @return {number} magnitude of the vector
+	     */
 	    magnitude: function magnitude() {
 	        return Math.sqrt(this.x * this.x + this.y * this.y);
 	    },
+	
+	    /**
+	     * Magnitude squared - useful when trying to save on computation
+	     * @method
+	     * @return {number} mag squared
+	     */
 	    magnitudeSq: function magnitudeSq() {
 	        return this.x * this.x + this.y * this.y;
 	    },
+	
+	    /**
+	     * Negate both x and y values (essentially rotate vector 180 degrees)
+	     * @method
+	     * @return {Vector} for method chaining
+	     */
 	    negate: function negate() {
 	        this.x = -this.x;
 	        this.y = -this.y;
 	        return this;
 	    },
+	
+	    /**
+	     * Translate to specified x and y points
+	     * @param {number} x - amount to move in the x
+	     * @param {number} y - amount to move in the y
+	     * @return {This} for chaining
+	     */
+	    translate: function translate(x, y) {
+	        this.x += x;
+	        this.y += y;
+	        return this;
+	    },
+	
+	    /**
+	     * Rotate vector around specified point of rotation
+	     * Note: Will rotate around origin
+	     * @param {number} angle - amount of rotation in radians
+	     * @return {This} for chaining
+	     */
+	    rotate: function rotate(angle) {
+	        var sin = Math.sin(angle);
+	        var cos = Math.cos(angle);
+	        var x = this.x * cos - this.y * sin;
+	        var y = this.x * sin + this.y * cos;
+	        this.x = x;
+	        this.y = y;
+	        return this;
+	    },
+	
+	    /**
+	     * Dot product between two vectors
+	     * Does NOT modify internal state
+	     * @param {Vector} vec - the vector to dot with
+	     * @return {number} dot product
+	     */
 	    dot: function dot(vec) {
 	        return this.x * vec.x + this.y * vec.y;
 	    },
+	
+	    /**
+	     * Cross product between two vectors
+	     * Does NOT modify internal state
+	     * @method
+	     * @param {Vector} vec - the vec to cross with
+	     * @return {number} cross product
+	     */
 	    cross: function cross(vec) {
 	        return this.x * vec.y - this.y * vec.x;
 	    },
+	
+	    /**
+	     * Return angle between two vectors in radians
+	     * @param {Vector} vec - vector to find angle to
+	     * @return {number} theta - radians between two vectors
+	     */
 	    angleTo: function angleTo(vec) {
 	        var a = this.magnitude();
 	        var b = vec.magnitude();
@@ -237,6 +378,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var theta = Math.acos(d / (a * b));
 	        return theta;
 	    },
+	
+	    /**
+	     * Return angle from 0 of this vector
+	     * @method
+	     * @param {string} [mode] - if mode = 'DEGREES', return value will be in
+	     * degrees, otherwise radians
+	     * @return {number} angle in degrees or radians (depending on mode)
+	     *
+	     */
 	    getAngle: function getAngle(mode) {
 	        if (mode === 'DEGREES') {
 	            return (0, _math.radToDeg)(Math.atan(this.y / this.x));
@@ -245,14 +395,100 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //return a;
 	        return a < 0 ? Math.PI * 2 + a : a;
 	    },
-	    normalize: function normalize(vec) {
+	
+	    /**
+	     * Convert to a unit vector
+	     * i.e. change length of vector to 1
+	     * @method
+	     * @return {This} for chaining
+	     */
+	    normalize: function normalize() {
 	        var mag = this.magnitude();
 	        this.x /= mag;
 	        this.y /= mag;
+	        return this;
 	    },
+	
+	    /**
+	     * Create normal vector based on current vector
+	     * Modifies internal state!
+	     * @param {string} side - specify 'left' or 'right' normal
+	     * @return {This} for chaining
+	     */
+	    perp: function perp(side) {
+	        if (side === 'right') {
+	            var tmp = this.x;
+	            this.x = this.y;
+	            this.y = -tmp;
+	        } else {
+	            var _tmp = this.x;
+	            this.x = -this.y;
+	            this.y = _tmp;
+	        }
+	        return this;
+	    },
+	
+	    /**
+	     * Calculate euclidian distance between two vectors
+	     * @param {Vector} vec - vector to find distance to
+	     * @return {number} euclidean distance
+	     */
 	    distanceTo: function distanceTo(vec) {
 	        return Math.sqrt((vec.x - this.x) * (vec.x - this.x) + (vec.y - this.y) * (vec.y - this.y));
+	    },
+	
+	    /**
+	     * Scalar Projection of A onto B assuming B is NOT a unit vector
+	     * @param {Vector} vec - the vector to project onto
+	     * @return {number} component of A on B
+	     */
+	    scalarProject: function scalarProject(vec) {
+	        return this.dot(vec) / vec.magnitude();
+	    },
+	
+	    /**
+	     * Calculate Scalar projection of A onto B assuming that B is a unit vector
+	     * This is more efficient assuming we already have a unit vector
+	     * @param {Vector} vec - the unit vector to project onto
+	     * @return {number} component of A on B
+	     */
+	    scalarProjectUnit: function scalarProjectUnit(vec) {
+	        return this.dot(vec);
+	    },
+	
+	    /**
+	     * Vector Projection of A onto B assuming B is NOT a unit vector
+	     * @param {Vector} vec - vector to project onto
+	     * @return {This} for chaining
+	     */
+	    vectorProject: function vectorProject(vec) {
+	        var scalarComp = this.dot(vec) / vec.magnitudeSq();
+	        this.x = vec.x * scalarComp;
+	        this.y = vec.y * scalarComp;
+	        return this;
+	    },
+	
+	    /**
+	     * Vector Projection of A onto B assuming B IS a unit vector
+	     * @param {Vector} vec - vector to project onto
+	     * @return {This} for chaining
+	     */
+	    vectorProjectUnit: function vectorProjectUnit(vec) {
+	        var scalarComp = this.dot(vec);
+	        this.x = vec.x * scalarComp;
+	        this.y = vec.y * scalarComp;
+	        return this;
 	    }
+	};
+	
+	/**
+	 * Convenience function so we can ignore the 'new' keyword
+	 * @param {number} x - initial x value
+	 * @param {number} y - initial y value
+	 * @return {Vector} a new vector object
+	 */
+	var vector = function vector(x, y) {
+	    return new Vector(x, y);
 	};
 	
 	// ---------- Static Methods -----------//
@@ -282,6 +518,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if ((typeof v2 === 'undefined' ? 'undefined' : _typeof(v2)) === 'object' && typeof v1 === 'number') {
 	        return new Vector(v1 * v2.x, v1 * v2.y);
 	    }
+	
+	    return new Vector(v1.x * v2.x, v1.y * v2.y);
 	};
 	Vector.dot = function (v1, v2) {
 	    return v1.x * v2.x + v1.y * v2.y;
@@ -294,9 +532,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var theta = Math.acos(d / (a * b));
 	    return theta;
 	};
-	
-	var vector = function vector(x, y) {
-	    return new Vector(x, y);
+	Vector.perp = function (v1, side) {
+	    switch (side) {
+	        case 'right':
+	            return new Vector(this.y, -this.x);
+	        case 'left':
+	        default:
+	            return new Vector(-this.y, this.x);
+	    }
 	};
 	
 	exports.default = vector;
@@ -492,7 +735,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (poly.isPointInterior(this.origin)) {
 	            this.outerBodies.push(poly);
 	        }
-	        //let segs = poly.segments;
 	        var vertices = poly.vertices;
 	        var vertLength = vertices.length;
 	        var intersection = void 0;
@@ -803,6 +1045,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _SpatialHash2 = _interopRequireDefault(_SpatialHash);
 	
+	var _SAT = __webpack_require__(8);
+	
+	var _SAT2 = _interopRequireDefault(_SAT);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var System = {};
@@ -891,16 +1137,84 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.addObject(b);
 	        }
 	    },
-	    update: function update() {
+	
+	    remove: function remove(b) {
 	        var _this2 = this;
+	
+	        if ((typeof b === 'undefined' ? 'undefined' : _typeof(b)) === 'object' && b.length !== undefined) {
+	            // We have an array of things to remove
+	            b.forEach(function (body) {
+	                var idx = _this2.bodies.indexOf(body);
+	                if (idx !== -1) {
+	                    _this2.bodies.splice(idx, 1);
+	                }
+	            });
+	        } else {
+	            var idx = this.bodies.indexOf(b);
+	            if (idx !== -1) {
+	                this.bodies.splice(idx, 1);
+	            }
+	        }
+	    },
+	
+	    /**
+	     * Update loop
+	     * Update all bodies, waves, run collision tests if necessary, and keep
+	     * track of rayID's on potentially colliding bodies
+	     * @return {This} System
+	     */
+	    update: function update() {
+	        var _this3 = this;
 	
 	        // Clear out hash at the start of every update loop
 	        this.hash.clear();
 	
 	        // Put each body into the hash
 	        this.bodies.forEach(function (body) {
-	            _this2.hash.insertBody(body);
 	            body.update();
+	            _this3.hash.insertBody(body);
+	        });
+	
+	        // Brodaphase collision
+	        this.bodies.forEach(function (body) {
+	            // Make sure this body can collide
+	            if (body.canCollide) {
+	                // Perform broadphase search of nearby hash objects
+	                var broadphase = _this3.hash.queryBody(body);
+	
+	                // Reset body colliders to empty
+	                body.colliders = [];
+	
+	                // Nearphase detection
+	                if (broadphase.length > 0) {
+	                    var collision = void 0;
+	
+	                    // Go through each nearby object
+	                    for (var i = 0; i < broadphase.length; i++) {
+	                        var b = broadphase[i];
+	                        //
+	                        // Make sure other object can collide as well
+	                        if (b.canCollide) {
+	                            // Check aabb overlap before SAT
+	                            if (body.aabb.overlap(b.aabb)) {
+	                                // Finally perform actual SAT intersection test
+	                                collision = _SAT2.default.intersect(body, b);
+	                                if (collision) {
+	                                    body.colliders.push(b);
+	                                }
+	                            }
+	                        }
+	                    }
+	                    // if (body.colliders.length > 0) {
+	                    //     if (body.type === 'circle') {
+	                    //         // body.position.add(collision.MTVAxis.multiply(collision.overlap));
+	                    //     }
+	                    //     // Move the body out of the way of the collision
+	                    // } else {
+	                    //     // body.style.strokeStyle = 'white';
+	                    // }
+	                }
+	            }
 	        });
 	
 	        // Each ray needs a unique ID for collision checking
@@ -913,9 +1227,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Update each wave and loop through it's chilren
 	        this.waves.forEach(function (wave) {
-	            wave.update(_this2);
-	            _this2.traverseWaves(wave);
+	            wave.update(_this3);
+	            _this3.traverseWaves(wave);
 	        });
+	
+	        return this;
 	    },
 	
 	    /**
@@ -924,7 +1240,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Wave} wave - wave object to traverse
 	     */
 	    traverseWaves: function traverseWaves(wave) {
-	        var _this3 = this;
+	        var _this4 = this;
 	
 	        // If the wave has children
 	        // Add each child to the system,
@@ -932,8 +1248,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Exit condition -> When children have no children
 	        if (wave.children.length !== 0) {
 	            wave.children.forEach(function (child) {
-	                _this3.addChildWave(child);
-	                _this3.traverseWaves(child);
+	                _this4.addChildWave(child);
+	                _this4.traverseWaves(child);
 	            });
 	        }
 	    }
@@ -1077,6 +1393,244 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
+	var _Vector = __webpack_require__(3);
+	
+	var SAT = {};
+	
+	/**
+	 * Determine min and max projection components along a
+	 * given axis
+	 *
+	 * @param {Body} b - the body whos vertices to project
+	 * @param {Vector} axis - the axis to project onto. Should be a unit vector
+	 *
+	 * @return {Object} min and max values of projected vertices
+	 */
+	SAT.projectBody = function (b, axis) {
+	    if (b.type === 'rectangle' || b.type === 'polygon') {
+	        var min = b.vertices[0].scalarProjectUnit(axis);
+	        var max = min;
+	
+	        for (var i = 0; i < b.vertices.length; i++) {
+	            var v = b.vertices[i];
+	            var p = v.scalarProjectUnit(axis);
+	            if (p < min) {
+	                min = p;
+	            } else if (p > max) {
+	                max = p;
+	            }
+	        }
+	        return { min: min, max: max };
+	    } else if (b.type === 'circle') {
+	        var _p = b.position.scalarProjectUnit(axis);
+	        return { min: _p - b.scaledRadius, max: _p + b.scaledRadius };
+	    }
+	};
+	
+	/**
+	 * @param {number} p1min - min point of 1st line
+	 * @param {number} p1max - max point of 1st line
+	 * @param {number} p2min - min point of 2nd line
+	 * @param {number} p2max - max point of 2nd line
+	 * @return {number} amount of overlap of these two lines
+	 *
+	 */
+	SAT.lineOverlap = function (p1min, p1max, p2min, p2max) {
+	    return Math.max(0, Math.min(p1max, p2max) - Math.max(p1min, p2min));
+	};
+	
+	/**
+	 * Rect-Rect intersection test
+	 * @param {Sci.Rect} b1 - first body
+	 * @param {Sci.Rect} b2 - second body
+	 * @return {bool} true or false, if intersection occurred
+	 * @todo optimize like crazy, we only need to do four axes, not eight
+	 * see here: https://gamedevelopment.tutsplus.com/tutorials/collision-detection-using-the-separating-axis-theorem--gamedev-169
+	 *
+	 * @todo should return collision data, not just true or false
+	 * see here: http://www.dyn4j.org/2010/01/sat/
+	 */
+	
+	SAT.intersect = function (b1, b2) {
+	    if (b1.type === 'rectangle' || b1.type === 'polygon') {
+	        if (b2.type === 'circle') {
+	            return SAT.polycircle(b1, b2);
+	        }
+	
+	        // b2 must then be a Polygon (or a rectangle)
+	        return SAT.polypoly(b1, b2);
+	    }
+	
+	    if (b1.type === 'circle') {
+	        if (b2.type === 'circle') {
+	            return SAT.circlecircle(b2, b1);
+	        }
+	
+	        // b2 Must be a polygon or a rectangle
+	        return SAT.polycircle(b2, b1);
+	    }
+	};
+	SAT.circlecircle = function (c1, c2) {
+	    var v1 = _Vector.Vector.subtract(c1.position, c2.position);
+	    var d = v1.magnitude();
+	    var rplusr = c1.scaledRadius + c2.scaledRadius;
+	
+	    if (d < rplusr) {
+	        return { MTVAxis: v1.normalize(), overlap: rplusr - d };
+	    }
+	    return;
+	};
+	
+	/**
+	 * @param {Polygon} p1 - first poly
+	 * @param {Polygon} p2 - second poly
+	 * @return {Object} Collision results, or undefined if no collision
+	 *
+	 * @todo Containment - doesn't appropriately handle containment
+	 */
+	SAT.polypoly = function (p1, p2) {
+	    // Gather all axes to test
+	    var axes = [],
+	        smallestOverlap = void 0,
+	        MTVAxis = void 0,
+	        numVerts1 = p1.vertices.length,
+	        numVerts2 = p2.vertices.length;
+	
+	    // Get axes for rect
+	    // Only need two sides for testing
+	    if (p1.type === 'rectangle') {
+	        numVerts1 = 2;
+	    }
+	    for (var i = 0; i < numVerts1; i++) {
+	        var v1 = p1.vertices[i];
+	        var v2 = p1.vertices[i + 1 === p1.vertices.length ? 0 : i + 1];
+	        var axis = _Vector.Vector.subtract(v2, v1);
+	        axis.normalize().perp();
+	        axes.push(axis);
+	    }
+	
+	    if (p2.type === 'rectangle') {
+	        numVerts2 = 2;
+	    }
+	    // Get axes for polygon
+	    // Need all sides
+	    for (var _i = 0; _i < numVerts2; _i++) {
+	        var _v = p2.vertices[_i];
+	        var _v2 = p2.vertices[_i + 1 === p2.vertices.length ? 0 : _i + 1];
+	        var _axis = _Vector.Vector.subtract(_v2, _v);
+	        _axis.normalize().perp();
+	        axes.push(_axis);
+	    }
+	
+	    // Perform intersection test along all axes
+	    for (var _i2 = 0; _i2 < axes.length; _i2++) {
+	        var _axis2 = axes[_i2];
+	
+	        // Get min and max projectsion
+	        var p1Projection = this.projectBody(p1, _axis2);
+	        var p2Projection = this.projectBody(p2, _axis2);
+	
+	        // Test for overlap of projections
+	        var overlap = this.lineOverlap(p1Projection.min, p1Projection.max, p2Projection.min, p2Projection.max);
+	
+	        // If at any point the overlap is zero, then we're guarenteed
+	        // to have no collision, so exit the test
+	        if (overlap === 0) {
+	            return;
+	        }
+	
+	        if (smallestOverlap) {
+	            if (overlap < smallestOverlap) {
+	                smallestOverlap = overlap;
+	                MTVAxis = _axis2;
+	            }
+	        } else {
+	            smallestOverlap = overlap;
+	            MTVAxis = _axis2;
+	        }
+	    }
+	
+	    // Will return true if overlap never equals 0, meaning all
+	    // projections overlap to some degree, so a collision is happening
+	    return { MTV: { axis: MTVAxis, magnitude: smallestOverlap } };
+	};
+	
+	SAT.polycircle = function (p, c) {
+	    // Gather all axes to test
+	    var axes = [],
+	        smallestOverlap = void 0,
+	        MTVAxis = void 0,
+	        numVerts1 = p.vertices.length;
+	
+	    // smallest distance vector from polygon vertex to circle center
+	    var d = void 0;
+	
+	    for (var i = 0; i < numVerts1; i++) {
+	        var v1 = p.vertices[i];
+	        var v2 = p.vertices[i + 1 === p.vertices.length ? 0 : i + 1];
+	        var axis = _Vector.Vector.subtract(v2, v1);
+	        axis.normalize().perp();
+	        axes.push(axis);
+	
+	        // Get distance of vertex to circle center
+	        var vc = _Vector.Vector.subtract(c.position, v1);
+	        if (d) {
+	            if (vc.magnitudeSq() < d.magnitudeSq()) {
+	                d = vc;
+	            }
+	        } else {
+	            d = vc;
+	        }
+	    }
+	
+	    axes.push(d.normalize());
+	
+	    // Perform intersection test along all axes
+	    for (var _i3 = 0; _i3 < axes.length; _i3++) {
+	        var _axis3 = axes[_i3];
+	
+	        // Get min and max projectsion
+	        var pProjection = this.projectBody(p, _axis3);
+	        var cProjection = this.projectBody(c, _axis3);
+	
+	        // Test for overlap of projections
+	        var overlap = this.lineOverlap(pProjection.min, pProjection.max, cProjection.min, cProjection.max);
+	
+	        // If at any point the overlap is zero, then we're guarenteed
+	        // to have no collision, so exit the test
+	        if (overlap === 0) {
+	            return;
+	        }
+	
+	        if (smallestOverlap) {
+	            if (overlap < smallestOverlap) {
+	                smallestOverlap = overlap;
+	                MTVAxis = _axis3;
+	            }
+	        } else {
+	            smallestOverlap = overlap;
+	            MTVAxis = _axis3;
+	        }
+	    }
+	
+	    // Will return true if overlap never equals 0, meaning all
+	    // projections overlap to some degree, so a collision is happening
+	    return { MTV: { axis: MTVAxis, magnitude: smallestOverlap } };
+	};
+	
+	exports.default = SAT;
+	module.exports = exports['default'];
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
 	var _math = __webpack_require__(4);
 	
 	var math = _interopRequireWildcard(_math);
@@ -1118,13 +1672,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Resize the canvas
 	     * @param {number} width - new width of canvas
 	     * @param {number} height - new height of canvas
+	     * @param {number} [cellSize] - optional. set a new cell size for the
+	     * spatial hash
 	     */
 	    resize: function resize(width, height, cellSize) {
 	        this.canvas.width = width;
 	        this.canvas.height = height;
 	        this.system.width = width;
 	        this.system.height = height;
-	        this.system.cellSize = system.calculateCellSize(cellSize || this.system.cellSize);
+	        this.system.cellSize = this.system.calculateCellSize(cellSize || this.system.cellSize);
 	        this.system.hash = this.system.initializeHash(this.system.cellSize, width, height);
 	    },
 	
@@ -1134,6 +1690,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Body} body - phys.system object containing all objects
 	     */
 	    drawBody: function drawBody(body) {
+	        var _this = this;
+	
 	        if (this.debug) {
 	            this.ctx.beginPath();
 	            this.ctx.globalAlpha = 1;
@@ -1147,6 +1705,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var h = aabb.max.y - y;
 	            this.ctx.rect(x, y, w, h);
 	            this.ctx.stroke();
+	
+	            if (body.vertices) {
+	                body.vertices.forEach(function (vert) {
+	                    _this.ctx.beginPath();
+	                    _this.ctx.strokeStyle = 'magenta';
+	                    _this.ctx.lineWidth = 2;
+	                    _this.ctx.ellipse(vert.x, vert.y, 4, 4, 0, 0, Math.PI * 2);
+	                    _this.ctx.stroke();
+	                });
+	            }
+	            if (body.centroid) {
+	                this.ctx.beginPath();
+	                this.ctx.strokeStyle = 'red';
+	                this.ctx.lineWidth = 3;
+	                this.ctx.ellipse(body.centroid.x, body.centroid.y, 3, 3, 0, 0, Math.PI * 2);
+	                this.ctx.stroke();
+	            }
 	        }
 	
 	        // Start a new path for each body
@@ -1158,39 +1733,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this.ctx.fillStyle = body.style.fillStyle;
 	                    this.ctx.lineWidth = body.style.lineWidth;
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
-	                    var _x = void 0,
-	                        _y = void 0,
-	                        _w = void 0,
-	                        _h = void 0;
-	                    switch (body._mode) {
-	                        case 'LEFT':
-	                            {
-	                                _x = body.position.x;
-	                                _y = body.position.y;
-	                                _w = body.width;
-	                                _h = body.height;
-	                                break;
-	                            }
-	                        case 'CENTER':
-	                            _w = body.width;
-	                            _h = body.height;
-	                            _x = body.position.x - _w / 2;
-	                            _y = body.position.y - _h / 2;
-	                            break;
-	                        case 'RIGHT':
-	                            _w = body.width;
-	                            _h = body.height;
-	                            _x = body.position.x - _w;
-	                            _y = body.position.y;
-	                            break;
-	                        default:
-	                            break;
-	                    }
 	                    this.ctx.lineJoin = 'miter';
-	                    this.ctx.moveTo(_x, _y);
-	                    this.ctx.lineTo(_x + _w, _y);
-	                    this.ctx.lineTo(_x + _w, _y + _h);
-	                    this.ctx.lineTo(_x, _y + _h);
+	                    if (this.debug) {
+	                        if (body.colliding) {
+	                            this.ctx.strokeStyle = 'green';
+	                        } else {
+	                            this.ctx.strokeStyle = 'white';
+	                        }
+	                    }
+	                    this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
+	                    for (var i = 1; i < body.vertices.length; i++) {
+	                        var v = body.vertices[i];
+	                        this.ctx.lineTo(v.x, v.y);
+	                    }
 	                    this.ctx.closePath();
 	                    this.ctx.fill();
 	                    this.ctx.stroke();
@@ -1202,7 +1757,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this.ctx.lineWidth = body.style.lineWidth;
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
 	
-	                    this.ctx.ellipse(body.position.x, body.position.y, body.radius, body.radius, 0, 0, Math.PI * 2);
+	                    this.ctx.ellipse(body.position.x, body.position.y, body.scaledRadius, body.scaledRadius, 0, 0, Math.PI * 2);
 	                    // this.ctx.closePath();
 	                    this.ctx.stroke();
 	                    // this.ctx.fill();
@@ -1215,9 +1770,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
 	                    this.ctx.lineJoin = 'miter';
 	                    this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
-	                    for (var i = 1; i < body.vertices.length; i++) {
-	                        var v = body.vertices[i];
-	                        this.ctx.lineTo(v.x, v.y);
+	                    for (var _i = 1; _i < body.vertices.length; _i++) {
+	                        var _v = body.vertices[_i];
+	                        this.ctx.lineTo(_v.x, _v.y);
 	                    }
 	                    this.ctx.closePath();
 	                    this.ctx.fill();
@@ -1236,7 +1791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.ctx.fillStyle = wave.style.fillStyle;
 	        this.ctx.lineWidth = wave.style.lineWidth;
 	        this.ctx.strokeStyle = wave.style.strokeStyle;
-	        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
+	        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.1, 1);
 	
 	        // If debug == true, draw waves in certain colors
 	        if (this.debug) {
@@ -1280,7 +1835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    render: function render(system, updateFn) {
-	        var _this = this;
+	        var _this2 = this;
 	
 	        // The first time the system renders,
 	        // capture a local reference to it
@@ -1295,9 +1850,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // In order to pass 'system' into render
 	        // we have to wrap it in a function before
 	        // passing it to requestAnimationFrame
-	        var self = this;
 	        this._requestID = requestAnimationFrame(function () {
-	            self.render(system, updateFn);
+	            _this2.render(system, updateFn);
 	        });
 	
 	        // Clear background
@@ -1319,17 +1873,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Draw all objects + waves
 	        system.bodies.forEach(function (body) {
-	            _this.drawBody(body);
+	            _this2.drawBody(body);
 	        });
 	
 	        // Update all waves
 	        system.waves.forEach(function (wave) {
-	            _this.drawWave(wave);
+	            _this2.drawWave(wave);
 	        });
 	
 	        // Update all child waves
 	        system.childWaves.forEach(function (wave) {
-	            _this.drawWave(wave);
+	            _this2.drawWave(wave);
 	        });
 	
 	        // If in debug mode, draw spatial hash
@@ -1337,26 +1891,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.debug === true) {
 	            (function () {
 	                var cellSize = system.hash.cellSize;
-	                _this.ctx.globalAlpha = 1;
-	                _this.ctx.lineWidth = 0.5;
+	                _this2.ctx.globalAlpha = 1;
+	                _this2.ctx.lineWidth = 1;
 	                for (var i = 0; i < system.hash.width; i += cellSize) {
 	                    for (var j = 0; j < system.hash.height; j += cellSize) {
-	                        _this.ctx.beginPath();
-	                        _this.ctx.strokeStyle = 'green';
-	                        _this.ctx.rect(i, j, cellSize, cellSize);
-	                        _this.ctx.stroke();
+	                        _this2.ctx.beginPath();
+	                        _this2.ctx.strokeStyle = 'green';
+	                        _this2.ctx.rect(i, j, cellSize, cellSize);
+	                        _this2.ctx.stroke();
 	                    }
 	                }
 	                Object.keys(system.hash.contents).forEach(function (row) {
 	                    Object.keys(system.hash.contents[row]).forEach(function (col) {
 	                        // Draw all squares
-	                        _this.ctx.beginPath();
+	                        _this2.ctx.beginPath();
 	                        // this.ctx.strokeStyle = 'green';
 	                        if (system.hash.contents[row][col].length !== 0) {
-	                            _this.ctx.strokeStyle = 'red';
+	                            _this2.ctx.strokeStyle = 'red';
+	                            _this2.ctx.lineWidth = 1;
 	                        }
-	                        _this.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
-	                        _this.ctx.stroke();
+	                        _this2.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+	                        _this2.ctx.stroke();
 	                    });
 	                });
 	            })();
@@ -1376,7 +1931,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Stop animation cycle
 	     */
 	    stop: function stop() {
-	        cancelAnimationFrame(this.requestID);
+	        cancelAnimationFrame(this._requestID);
 	    },
 	
 	    /**
@@ -1397,7 +1952,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1406,19 +1961,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(10);
+	var _Body = __webpack_require__(11);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
-	var _AABB = __webpack_require__(12);
+	var _AABB = __webpack_require__(13);
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
+	var _Vector = __webpack_require__(3);
+	
+	var _Vector2 = _interopRequireDefault(_Vector);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	/* eslint
-	    "no-multi-spaces": "off"
-	 */
 	var rect = function rect(options) {
 	    options = options || {};
 	
@@ -1455,63 +2011,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Update location of vertices - used in update loop
 	     */
 	    B.updateVertices = function () {
+	        var _this = this;
+	
 	        var w = this.width,
 	            h = this.height,
-	            x = void 0,
-	            y = void 0;
+	            x = this.position.x,
+	            y = this.position.y;
 	        switch (this._mode) {
 	            case 'LEFT':
-	                x = this.position.x;
-	                y = this.position.y;
+	                // Already in left mode, do nothing
 	                break;
 	            case 'CENTER':
-	                x = this.position.x - w / 2;
-	                y = this.position.y - h / 2;
+	                x -= w / 2;
+	                y -= h / 2;
 	                break;
 	            case 'RIGHT':
-	                x = this.x - w;
-	                y = this.y;
-	                break;
-	            default:
-	                break;
-	        }
-	        this.vertices = [{ x: x, y: y }, { x: x + w, y: y }, { x: x + w, y: y + h }, { x: x, y: y + h }];
-	    };
-	
-	    /**
-	     * Update segments - used in update loop
-	     */
-	    B.updateSegments = function () {
-	        // What mode are we in?
-	        var x = void 0,
-	            y = void 0,
-	            w = void 0,
-	            h = void 0;
-	        //let pos = this.position;
-	        switch (this._mode) {
-	            case 'LEFT':
-	                x = this.position.x;
-	                y = this.position.y;
-	                w = this.width;
-	                h = this.height;
-	                break;
-	            case 'CENTER':
-	                w = this.width;
-	                h = this.height;
-	                x = this.position.x - w / 2;
-	                y = this.position.y - h / 2;
-	                break;
-	            case 'RIGHT':
-	                w = this.width;
-	                h = this.height;
-	                x = this.x - w;
-	                y = this.y;
+	                x -= w;
 	                break;
 	            default:
 	                break;
 	        }
 	
-	        this.segments = [[[x, y], [x + w, y]], [[x + w, y], [x + w, y + h]], [[x + w, y + h], [x, y + h]], [[x, y + h], [x, y]]];
+	        //Get centroid
+	        var centroid = {
+	            x: (x + (x + w)) / 2,
+	            y: (y + (y + h)) / 2
+	        };
+	        B.centroid = centroid;
+	
+	        this.vertices = [(0, _Vector2.default)(x, y), (0, _Vector2.default)(x + w, y), (0, _Vector2.default)(x + w, y + h), (0, _Vector2.default)(x, y + h)];
+	
+	        // To perform a rotation, we have to first translate to the origin,
+	        // then rotate, then translate back to the centroid
+	        if (B.angularVelocity !== 0 || B._rotation !== 0 || B._scale !== 0) {
+	            this.vertices.forEach(function (vertex) {
+	                vertex.translate(-centroid.x, -centroid.y).rotate(_this._rotation).multiply(_this._scale).translate(centroid.x, centroid.y);
+	            });
+	        }
 	    };
 	
 	    B.isPointInterior = function (x, y) {
@@ -1527,13 +2063,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    B.updateVertices();
 	    B.aabb = (0, _AABB2.default)(B);
 	    return B;
-	};
-	
+	}; /* eslint
+	       "no-multi-spaces": "off"
+	    */
 	exports.default = rect;
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1542,7 +2079,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _materials = __webpack_require__(11);
+	var _materials = __webpack_require__(12);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
@@ -1581,9 +2118,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        this.mass = options.mass || 0;
 	        this.position = (0, _Vector2.default)(options.x || 0, options.y || 0);
+	        this.canCollide = options.canCollide || true;
+	        this.colliders = [];
 	        this.velocity = (0, _Vector2.default)(options.velocity && options.velocity.x || 0, options.velocity && options.velocity.y || 0);
 	        this.height = options.height || 10;
 	        this.width = options.width || 10;
+	        this._scale = 1;
+	        this._rotation = options.rotation || 0; // <-- Private prop - DO NOT SET THIS DIRECTLY, use getter and setter for
+	        this.angularVelocity = options.angularVelocity || 0;
 	        this.refractiveIndex = options.refractiveIndex || 1;
 	        this.material = options.material || 'GLASS';
 	        this.materialColor = options.fillStyle || 'black';
@@ -1612,12 +2154,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            this.refractiveIndex = 1.33;
 	        }
+	        return this;
 	    },
 	
 	    freeze: function freeze() {
 	        this._cachedVelocity = this.velocity.clone();
 	        this.velocity.x = 0;
 	        this.velocity.y = 0;
+	        return this;
 	    },
 	
 	    unfreeze: function unfreeze() {
@@ -1627,36 +2171,83 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            console.warn('cannot unfreeze a non-frozen object');
 	        }
+	        return this;
+	    },
+	
+	    translate: function translate(x, y) {
+	        this.position.x += x;
+	        this.position.y += y;
+	
+	        if (this.updateVertices) {
+	            this.updateVertices();
+	        }
+	        return this;
+	    },
+	
+	    rotate: function rotate(angle) {
+	        this.rotation += angle;
+	        return this;
 	    },
 	
 	    update: function update() {
 	        this.position.add(this.velocity);
+	        this.rotation += this.angularVelocity;
 	
-	        if (this.updateSegments) {
-	            this.updateSegments();
-	        }
+	        // if (this.updateSegments) {
+	        //     this.updateSegments();
+	        // }
 	
 	        if (this.updateVertices) {
 	            this.updateVertices();
 	        }
 	
+	        // if (this.vertices) {
+	        //     this.vertices.update();
+	        // }
+	
 	        // For each update loop, reset intersection points to zero
 	        this.intersectionPoints = {};
 	
 	        this.aabb.update();
+	        return this;
 	    }
-	
 	}; /* eslint "no-unused-vars": "off" */
 	// What should a body be able to do?
 	// 1. Attach to other bodies or surfaces
 	// 2. Respond to forces (spring, friction)
 	// 3. Move according to velocity and acceleration
 	
+	Object.defineProperty(Body, 'rotation', {
+	    get: function get() {
+	        return this._rotation;
+	    },
+	    set: function set(angle) {
+	        this._rotation = angle;
+	        if (this.updateVertices) {
+	            this.updateVertices();
+	        }
+	    }
+	});
+	
+	Object.defineProperty(Body, 'scale', {
+	    get: function get() {
+	        return this._scale;
+	    },
+	    set: function set(scaleFactor) {
+	        this._scale = scaleFactor;
+	        if (this.updateVertices) {
+	            this.updateVertices();
+	        } else if (this.type === 'circle') {
+	            this.scaledRadius = this.radius * scaleFactor;
+	        }
+	    }
+	});
+	
 	exports.default = Body;
 	module.exports = exports['default'];
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1669,7 +2260,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1757,7 +2348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // Assume it's a circle
 	            var cx = this.body.position.x,
 	                cy = this.body.position.y,
-	                r = this.body.radius;
+	                r = this.body.scaledRadius;
 	            return {
 	                max: {
 	                    x: cx + r,
@@ -1787,6 +2378,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    /**
+	     * Check if two AABB's intersect
+	     * @param {AABB} aabb - other bounding box
+	     * @return {bool} true for overlap, false otherwise
+	     */
+	    overlap: function overlap(aabb) {
+	        if (this.max.x < aabb.min.x) return false; // a is left of b
+	        if (this.min.x > aabb.max.x) return false; // a is right of b
+	        if (this.max.y < aabb.min.y) return false; // a is above b
+	        if (this.min.y > aabb.max.y) return false; // a is below b
+	        return true; // boxes overlap
+	    },
+	
+	    /**
 	     * Updates the AABB
 	     */
 	    update: function update() {
@@ -1806,7 +2410,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2098,7 +2702,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2107,11 +2711,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(10);
+	var _Body = __webpack_require__(11);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
-	var _AABB = __webpack_require__(12);
+	var _AABB = __webpack_require__(13);
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
@@ -2124,14 +2728,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var B = Object.create(_Body2.default);
 	    B.init(options);
 	
-	    B.radius = options.radius || 0;
+	    B.radius = options.radius || 10;
+	    B.scaledRadius = B.radius;
 	    B.type = 'circle';
 	    B.aabb = (0, _AABB2.default)(B);
 	
 	    B.isPointInterior = function (x, y) {
 	        var bx = B.position.x,
 	            by = B.position.y;
-	        if ((0, _math.distance)(x, y, bx, by) <= B.radius) {
+	        if ((0, _math.distance)(x, y, bx, by) <= B.scaledRadius) {
 	            return true;
 	        }
 	        return false;
@@ -2144,7 +2749,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2153,11 +2758,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(10);
+	var _Body = __webpack_require__(11);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
-	var _AABB = __webpack_require__(12);
+	var _AABB = __webpack_require__(13);
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
@@ -2176,27 +2781,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    B.init(options);
 	
+	    // Set type
+	    B.type = 'polygon';
+	
 	    //Initialize vetices as vectors
 	    // private vertices, relative to x and y
 	    B._relativeVertices = [];
 	
 	    // public vertices, (contain world coords);
 	    B.vertices = [];
+	
 	    options.vertices.forEach(function (vert) {
 	        B._relativeVertices.push((0, _Vector2.default)(vert.x, vert.y));
 	        B.vertices.push((0, _Vector2.default)(options.x + vert.x, options.y + vert.y));
 	    });
 	
-	    // Set type
-	    B.type = 'polygon';
-	
 	    // Update all vertices based on position
 	    B.updateVertices = function () {
+	        var _this = this;
+	
+	        B.centroid = { x: 0, y: 0 };
 	        B.vertices.forEach(function (vert, index) {
 	            var relVert = B._relativeVertices[index];
 	            vert.x = relVert.x + B.position.x;
 	            vert.y = relVert.y + B.position.y;
+	
+	            B.centroid.x += vert.x;
+	            B.centroid.y += vert.y;
 	        });
+	
+	        B.centroid.x /= B.vertices.length;
+	        B.centroid.y /= B.vertices.length;
+	
+	        // Update rotate vertices if necessary
+	        if (B.angularVelocity !== 0 || B._rotation !== 0 || B._scale !== 0) {
+	            B.vertices.forEach(function (vert) {
+	                vert.translate(-B.centroid.x, -B.centroid.y).rotate(_this._rotation).multiply(_this._scale).translate(B.centroid.x, B.centroid.y);
+	            });
+	        }
 	    };
 	
 	    B.isPointInterior = function (x, y) {

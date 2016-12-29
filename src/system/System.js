@@ -1,4 +1,5 @@
 import hash from '../geometries/SpatialHash';
+import SAT from '../collision/SAT';
 
 const System = {};
 System.prototype = {
@@ -84,14 +85,80 @@ System.prototype = {
             this.addObject(b);
         }
     },
+
+    remove: function(b) {
+        if (typeof b === 'object' && b.length !== undefined) {
+            // We have an array of things to remove
+            b.forEach(body => {
+                let idx = this.bodies.indexOf(body);
+                if (idx !== -1) {
+                    this.bodies.splice(idx, 1);
+                }
+            });
+        } else {
+            let idx = this.bodies.indexOf(b);
+            if (idx !== -1) {
+                this.bodies.splice(idx, 1);
+            }
+        }
+    },
+
+    /**
+     * Update loop
+     * Update all bodies, waves, run collision tests if necessary, and keep
+     * track of rayID's on potentially colliding bodies
+     * @return {This} System
+     */
     update: function() {
         // Clear out hash at the start of every update loop
         this.hash.clear();
 
         // Put each body into the hash
         this.bodies.forEach(body => {
-            this.hash.insertBody(body);
             body.update();
+            this.hash.insertBody(body);
+        });
+
+        // Brodaphase collision
+        this.bodies.forEach(body => {
+            // Make sure this body can collide
+            if (body.canCollide) {
+                // Perform broadphase search of nearby hash objects
+                let broadphase = this.hash.queryBody(body);
+
+                // Reset body colliders to empty
+                body.colliders = [];
+
+                // Nearphase detection
+                if (broadphase.length > 0) {
+                    let collision;
+
+                    // Go through each nearby object
+                    for (let i = 0; i < broadphase.length; i++) {
+                        let b = broadphase[i];
+                        //
+                        // Make sure other object can collide as well
+                        if (b.canCollide) {
+                            // Check aabb overlap before SAT
+                            if (body.aabb.overlap(b.aabb)) {
+                                // Finally perform actual SAT intersection test
+                                collision = SAT.intersect(body, b);
+                                if (collision) {
+                                    body.colliders.push(b);
+                                }
+                            }
+                        }
+                    }
+                    // if (body.colliders.length > 0) {
+                    //     if (body.type === 'circle') {
+                    //         // body.position.add(collision.MTVAxis.multiply(collision.overlap));
+                    //     }
+                    //     // Move the body out of the way of the collision
+                    // } else {
+                    //     // body.style.strokeStyle = 'white';
+                    // }
+                }
+            }
         });
 
         // Each ray needs a unique ID for collision checking
@@ -107,6 +174,8 @@ System.prototype = {
             wave.update(this);
             this.traverseWaves(wave);
         });
+
+        return this;
     },
 
     /**

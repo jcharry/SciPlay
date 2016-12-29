@@ -7,14 +7,15 @@ let circle = function(options) {
     let B = Object.create(Body);
     B.init(options);
 
-    B.radius = options.radius || 0;
+    B.radius = options.radius || 10;
+    B.scaledRadius = B.radius;
     B.type = 'circle';
     B.aabb = aabb(B);
 
     B.isPointInterior = function(x, y) {
         let bx = B.position.x,
             by = B.position.y;
-        if (distance(x, y, bx, by) <= B.radius) {
+        if (distance(x, y, bx, by) <= B.scaledRadius) {
             return true;
         }
         return false;

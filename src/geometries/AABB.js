@@ -67,7 +67,7 @@ let AABB = {
             // Assume it's a circle
             let cx = this.body.position.x,
                 cy = this.body.position.y,
-                r = this.body.radius;
+                r = this.body.scaledRadius;
             return {
                 max: {
                     x: cx + r,
@@ -97,6 +97,19 @@ let AABB = {
         }
 
         return false;
+    },
+
+    /**
+     * Check if two AABB's intersect
+     * @param {AABB} aabb - other bounding box
+     * @return {bool} true for overlap, false otherwise
+     */
+    overlap: function(aabb) {
+        if (this.max.x < aabb.min.x) return false; // a is left of b
+        if (this.min.x > aabb.max.x) return false; // a is right of b
+        if (this.max.y < aabb.min.y) return false; // a is above b
+        if (this.min.y > aabb.max.y) return false; // a is below b
+        return true; // boxes overlap
     },
 
     /**

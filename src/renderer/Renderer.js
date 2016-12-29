@@ -35,13 +35,15 @@ Renderer.prototype = {
      * Resize the canvas
      * @param {number} width - new width of canvas
      * @param {number} height - new height of canvas
+     * @param {number} [cellSize] - optional. set a new cell size for the
+     * spatial hash
      */
     resize: function(width, height, cellSize) {
         this.canvas.width = width;
         this.canvas.height = height;
         this.system.width = width;
         this.system.height = height;
-        this.system.cellSize = system.calculateCellSize(cellSize || this.system.cellSize);
+        this.system.cellSize = this.system.calculateCellSize(cellSize || this.system.cellSize);
         this.system.hash = this.system.initializeHash(this.system.cellSize, width, height);
     },
 
@@ -64,6 +66,23 @@ Renderer.prototype = {
             let h = aabb.max.y - y;
             this.ctx.rect(x, y, w, h);
             this.ctx.stroke();
+
+            if (body.vertices) {
+                body.vertices.forEach(vert => {
+                    this.ctx.beginPath();
+                    this.ctx.strokeStyle = 'magenta';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.ellipse(vert.x, vert.y, 4, 4, 0, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                });
+            }
+            if (body.centroid) {
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = 'red';
+                this.ctx.lineWidth = 3;
+                this.ctx.ellipse(body.centroid.x, body.centroid.y, 3, 3, 0, 0, Math.PI * 2);
+                this.ctx.stroke();
+            }
         }
 
         // Start a new path for each body
@@ -74,35 +93,19 @@ Renderer.prototype = {
                 this.ctx.fillStyle = body.style.fillStyle;
                 this.ctx.lineWidth = body.style.lineWidth;
                 this.ctx.strokeStyle = body.style.strokeStyle;
-                let x, y, w, h;
-                switch (body._mode) {
-                    case 'LEFT': {
-                        x = body.position.x;
-                        y = body.position.y;
-                        w = body.width;
-                        h = body.height;
-                        break;
-                    }
-                    case 'CENTER':
-                        w = body.width;
-                        h = body.height;
-                        x = body.position.x - w / 2;
-                        y = body.position.y - h / 2;
-                        break;
-                    case 'RIGHT':
-                        w = body.width;
-                        h = body.height;
-                        x = body.position.x - w;
-                        y = body.position.y;
-                        break;
-                    default:
-                        break;
-                }
                 this.ctx.lineJoin = 'miter';
-                this.ctx.moveTo(x, y);
-                this.ctx.lineTo(x + w, y);
-                this.ctx.lineTo(x + w, y + h);
-                this.ctx.lineTo(x, y + h);
+                if (this.debug) {
+                    if (body.colliding) {
+                        this.ctx.strokeStyle = 'green';
+                    } else {
+                        this.ctx.strokeStyle = 'white';
+                    }
+                }
+                this.ctx.moveTo(body.vertices[0].x, body.vertices[0].y);
+                for (let i = 1; i < body.vertices.length; i++) {
+                    let v = body.vertices[i];
+                    this.ctx.lineTo(v.x, v.y);
+                }
                 this.ctx.closePath();
                 this.ctx.fill();
                 this.ctx.stroke();
@@ -113,7 +116,7 @@ Renderer.prototype = {
                 this.ctx.lineWidth = body.style.lineWidth;
                 this.ctx.strokeStyle = body.style.strokeStyle;
 
-                this.ctx.ellipse(body.position.x, body.position.y, body.radius, body.radius, 0, 0, Math.PI * 2);
+                this.ctx.ellipse(body.position.x, body.position.y, body.scaledRadius, body.scaledRadius, 0, 0, Math.PI * 2);
                 // this.ctx.closePath();
                 this.ctx.stroke();
                 // this.ctx.fill();
@@ -146,7 +149,7 @@ Renderer.prototype = {
         this.ctx.fillStyle = wave.style.fillStyle;
         this.ctx.lineWidth = wave.style.lineWidth;
         this.ctx.strokeStyle = wave.style.strokeStyle;
-        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.3, 1);
+        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.1, 1);
 
         // If debug == true, draw waves in certain colors
         if (this.debug) {
@@ -203,9 +206,8 @@ Renderer.prototype = {
         // In order to pass 'system' into render
         // we have to wrap it in a function before
         // passing it to requestAnimationFrame
-        let self = this;
-        this._requestID = requestAnimationFrame(function() {
-            self.render(system, updateFn);
+        this._requestID = requestAnimationFrame(() => {
+            this.render(system, updateFn);
         });
 
         // Clear background
@@ -245,7 +247,7 @@ Renderer.prototype = {
         if (this.debug === true) {
             let cellSize = system.hash.cellSize;
             this.ctx.globalAlpha = 1;
-            this.ctx.lineWidth = 0.5;
+            this.ctx.lineWidth = 1;
             for (let i = 0; i < system.hash.width; i += cellSize) {
                 for (let j = 0; j < system.hash.height; j += cellSize) {
                     this.ctx.beginPath();
@@ -261,6 +263,7 @@ Renderer.prototype = {
                     // this.ctx.strokeStyle = 'green';
                     if (system.hash.contents[row][col].length !== 0) {
                         this.ctx.strokeStyle = 'red';
+                        this.ctx.lineWidth = 1;
                     }
                     this.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
                     this.ctx.stroke();
@@ -282,7 +285,7 @@ Renderer.prototype = {
      * Stop animation cycle
      */
     stop: function() {
-        cancelAnimationFrame(this.requestID);
+        cancelAnimationFrame(this._requestID);
     },
 
     /**

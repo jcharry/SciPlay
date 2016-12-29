@@ -146,7 +146,6 @@ let Ray = {
         if (poly.isPointInterior(this.origin)) {
             this.outerBodies.push(poly);
         }
-        //let segs = poly.segments;
         let vertices = poly.vertices;
         let vertLength = vertices.length;
         let intersection;
