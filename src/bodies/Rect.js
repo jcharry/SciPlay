@@ -61,13 +61,13 @@ var rect = function(options) {
         }
 
         //Get centroid
-        let centroid = {
-            x: (x + (x + w)) / 2,
-            y: (y + (y + h)) / 2
-        };
+        let centroid = vector(
+            (x + (x + w)) / 2,      // <-- x value
+            (y + (y + h)) / 2       // <-- y value
+        );
         B.centroid = centroid;
 
-        this.vertices = [
+        B.vertices = [
             vector(x, y),
             vector(x + w, y),
             vector(x + w, y + h),
@@ -77,7 +77,7 @@ var rect = function(options) {
         // To perform a rotation, we have to first translate to the origin,
         // then rotate, then translate back to the centroid
         if (B.angularVelocity !== 0 || B._rotation !== 0 || B._scale !== 0) {
-            this.vertices.forEach(vertex => {
+            B.vertices.forEach(vertex => {
                 vertex.translate(-centroid.x, -centroid.y)
                     .rotate(this._rotation)
                     .multiply(this._scale)

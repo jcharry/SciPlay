@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "build": "BUILD_ENV=build webpack",
+        "build": "BUILD_ENV=production webpack",
         "dev": "BUILD_ENV=dev webpack --progress --colors --watch",
         "test": "mocha --recursive --compilers js:babel-core/register --colors -w ./test/",
         "start": "ss ."

@@ -13,7 +13,7 @@ var config = {
     },
     output: {
         path: path.resolve('./dist'),
-        filename: env === 'build' ? 'sciplay.min.js' : 'sciplay.js',
+        filename: env === 'production' ? 'sciplay.min.js' : 'sciplay.js',
         library: 'sciplay',
         libraryTarget: 'umd',
         umdNamedDefine: true
@@ -23,9 +23,6 @@ var config = {
         modulesDirectories: [
             'node_modules'
         ],
-        alias: {
-            src: 'src'
-        },
         extensions: ['', '.js']
     },
     module: {
@@ -46,7 +43,7 @@ var config = {
             }
         ]
     },
-    plugins: env === 'build' ?
+    plugins: env === 'production' ?
         [new webpack.optimize.UglifyJsPlugin({minimize: true})] :
         []
 };

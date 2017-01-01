@@ -15,7 +15,8 @@ window.addEventListener('load', function() {
     window.system = system;
     var renderer = sci.renderer({
         canvas: 'canvas',
-        debug: false
+        debug: false,
+        background: 'white'
     });
 
     window.renderer = renderer;
@@ -25,23 +26,26 @@ window.addEventListener('load', function() {
         y: 90,
         width: 100,
         mode: 'LEFT',
-        velocity: new sci.Vector(2, 0),
+        // velocity: new sci.Vector(2, 0),
         height: 100,
-        strokeStyle: 'white',
+        strokeStyle: 'black',
         refractiveIndex: 2
     });
 
     let circles = [];
-    let numCircles = 10;
-    let spacing = (system.width - 20) / numCircles;
+    let numCircles = 200;
+    let spacing = {
+        height: (system.height - 30) / numCircles,
+        width: (system.width - 20) / numCircles
+    }
     for (let i = 0; i < numCircles; i++) {
         circles.push(sci.circle({
-            x: 10 + spacing * i,
-            y: Math.random() * system.height,
+            x: system.width / 2 + Math.random() * 200 - 100,
+            y: system.height / 2 + Math.random() * 200 - 100,
             velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 6 - 3),
             radius: 15,
-            strokeStyle: 'white',
-            lineWidth: 0.1,
+            strokeStyle: 'blue',
+            lineWidth: 0.5,
             alpha: 0.5
         }));
     }
@@ -54,8 +58,8 @@ window.addEventListener('load', function() {
             width: 60,
             velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 3 - 1.5),
             height: 30,
-            strokeStyle: 'white',
-            lineWidth: 1,
+            strokeStyle: 'orange',
+            lineWidth: 0.5,
             mirror: true,
             angularVelocity: Math.random() * 0.02 - 0.01
         }));
@@ -104,10 +108,10 @@ window.addEventListener('load', function() {
         strokeStyle: 'green'
     });
 
-    system.add(rects);
+    // system.add(rects);
     // system.add(circles);
-    system.add(p);
-    // system.add(r);
+    // system.add(p);
+    system.add(r);
     // system.add(r2);
 
 
@@ -139,9 +143,9 @@ window.addEventListener('load', function() {
             }
         }
 
-        if (p.colliders.length > 0) {
-            p.colliders.forEach(collider => {
-                system.remove(collider);
+        if (p.colliderList.length > 0) {
+            p.colliderList.forEach(collider => {
+                system.remove(collider.body2);
                 p.scale += 0.1;
             });
         }
@@ -204,7 +208,7 @@ window.addEventListener('load', function() {
                     height: 100,
                     refractiveIndex: 1,
                     mirror: true,
-                    strokeStyle: 'transparent'
+                    strokeStyle: 'red'
 
                 });
                 system.add(rect);
@@ -217,7 +221,8 @@ window.addEventListener('load', function() {
                 y: e.clientY,
                 radius: 50,
                 refractiveIndex: 1.3,
-                lineWidth: 0.3
+                lineWidth: 1,
+                strokeStyle: 'orange'
             });
             addCircle.style.position = 'static';
             if (e.clientY < window.innerHeight - 100) {
@@ -252,7 +257,7 @@ window.addEventListener('load', function() {
                         x: e.clientX,
                         y: e.clientY,
                         direction: i * step,
-                        strokeStyle: 'white',
+                        strokeStyle: 'black',
                         lineWidth: 1,
                         intensity: 0.1
                     });
@@ -271,9 +276,9 @@ window.addEventListener('load', function() {
                         x: e.clientX,
                         y: e.clientY + i,
                         direction: 0,
-                        strokeStyle: 'white',
+                        strokeStyle: 'black',
                         lineWidth: 0.5,
-                        intensity: 1
+                        intensity: 0.1
                     });
                     system.add(wave);
                 }

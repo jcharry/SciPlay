@@ -1,8 +1,10 @@
 import hash from '../geometries/SpatialHash';
-import SAT from '../collision/SAT';
+import broadphase from '../collision/Broadphase';
+import narrowphase from '../collision/Narrowphase';
+import solver from '../collision/Solver';
 
-const System = {};
-System.prototype = {
+// const System = {};
+const System = {
     init: function(params) {
         this.frames = [];
         this.waves = [];
@@ -10,6 +12,8 @@ System.prototype = {
         this.bodies = [];
         this.width = params.width || 600;
         this.height = params.height || 300;
+        this.collisionPairs = {};
+        this.nextBodyId = 0;
 
         // Cell size will adjust to fit world precisely
         // May not be exaclty what user initialized
@@ -18,47 +22,34 @@ System.prototype = {
         // Initialize spatial hash
         this.hash = this.initializeHash(this.cellSize, this.width, this.height);
 
+        // Initialize Collision objects
+        this.broadphase = broadphase();
+        this.narrowphase = narrowphase();
+        this.solver = solver();
+
         // Ray ID Counter
         this.currentRayId = 0;
     },
+
     calculateCellSize: function(cellSize) {
         let divisor = cellSize ? cellSize : 100;
         return this.width / Math.floor(this.width / divisor);
     },
+
     initializeHash: function(cellSize, width, height) {
         return hash(cellSize, width, height);
     },
-    /**
-     * Resize system - doesn't resize renderer (i.e. canvas)
-     * In event that thing should be drawn outside the system
-     * @param {number} width - new system width
-     * @param {number} height - new system height
-     * @param {number} [cellSize] - optional, new cell size
-     *
-     * @example - reset both system and canvas
-     * system.resize(500, 400, 30);
-     * renderer.resize(500, 400);
-     */
-    // resize: function(width, height, cellSize) {
-    //     this.width = width;
-    //     this.height = height;
-    //     this.cellSize = this.calculateCellSize(cellSize || this.cellSize);
-    //     this.hash = this.initializeHash(this.cellSize, width, height);
-    // },
-    // addFrame: function(frame) {
-    //     this.frames.push(frame);
-    // },
+
     addChildWave: function(wave) {
         this.childWaves.push(wave);
     },
-    // addBody: function(body) {
-    //     this.bodies.push(body);
-    // },
+
     addObject: function(obj) {
         switch (obj.type) {
             case 'rectangle':
             case 'circle':
             case 'polygon':
+                obj.id = this.nextBodyId++;
                 this.bodies.push(obj);
                 break;
             case 'incident':
@@ -69,6 +60,7 @@ System.prototype = {
                 throw new Error('tried to add something that\'s not a body or a wave');
         }
     },
+
     /**
      * Add objects to the system
      * Objects not added will not be rendered
@@ -86,6 +78,11 @@ System.prototype = {
         }
     },
 
+    /**
+     * Remove an object from the system
+     * @param {Body} b - the body object to remove
+     * @return {This} for chaining
+     */
     remove: function(b) {
         if (typeof b === 'object' && b.length !== undefined) {
             // We have an array of things to remove
@@ -101,13 +98,15 @@ System.prototype = {
                 this.bodies.splice(idx, 1);
             }
         }
+
+        return this;
     },
 
     /**
      * Update loop
      * Update all bodies, waves, run collision tests if necessary, and keep
      * track of rayID's on potentially colliding bodies
-     * @return {This} System
+     * @return {This} for chaining, or getting checking last state of system
      */
     update: function() {
         // Clear out hash at the start of every update loop
@@ -119,47 +118,23 @@ System.prototype = {
             this.hash.insertBody(body);
         });
 
-        // Brodaphase collision
-        this.bodies.forEach(body => {
-            // Make sure this body can collide
-            if (body.canCollide) {
-                // Perform broadphase search of nearby hash objects
-                let broadphase = this.hash.queryBody(body);
+        let pairs = this.broadphase.getCollisionPairs(this.bodies, this.hash);
+        let collisions;
 
-                // Reset body colliders to empty
-                body.colliders = [];
+        if (pairs && Object.keys(pairs).length > 0) {
+            collisions = this.narrowphase.checkForCollisions(pairs);
+        }
 
-                // Nearphase detection
-                if (broadphase.length > 0) {
-                    let collision;
-
-                    // Go through each nearby object
-                    for (let i = 0; i < broadphase.length; i++) {
-                        let b = broadphase[i];
-                        //
-                        // Make sure other object can collide as well
-                        if (b.canCollide) {
-                            // Check aabb overlap before SAT
-                            if (body.aabb.overlap(b.aabb)) {
-                                // Finally perform actual SAT intersection test
-                                collision = SAT.intersect(body, b);
-                                if (collision) {
-                                    body.colliders.push(b);
-                                }
-                            }
-                        }
-                    }
-                    // if (body.colliders.length > 0) {
-                    //     if (body.type === 'circle') {
-                    //         // body.position.add(collision.MTVAxis.multiply(collision.overlap));
-                    //     }
-                    //     // Move the body out of the way of the collision
-                    // } else {
-                    //     // body.style.strokeStyle = 'white';
-                    // }
-                }
-            }
-        });
+        // FIXME: MTV for two rectangles turns out to be the same axis, so they
+        // move in the same direction when we try to resolve the collision
+        if (collisions && collisions.length > 0) {
+            // Solve for collisions!
+            collisions.forEach(coll => {
+                this.solver.solve(coll);
+                // let {MTVAxis, overlap, body2} = coll;
+                // body2.position.add(MTVAxis.multiply(overlap));
+            });
+        }
 
         // Each ray needs a unique ID for collision checking
         // Reset currentRayID during each update loop so we can reuse these
@@ -181,6 +156,7 @@ System.prototype = {
     /**
      * Recursively loop through child waves
      * and add them to the system
+     * @private
      * @param {Wave} wave - wave object to traverse
      */
     traverseWaves: function(wave) {
@@ -209,7 +185,7 @@ System.prototype = {
  *          that precisely fits into the system width)
  */
 const system = function(params) {
-    const s = Object.create(System.prototype);
+    const s = Object.create(System);
     s.init(params);
     return s;
 };

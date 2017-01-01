@@ -1,4 +1,6 @@
 import {Vector} from '../math/Vector';
+import collision from './Collision';
+
 const SAT = {};
 
 /**
@@ -67,11 +69,11 @@ SAT.intersect = function(b1, b2) {
 
     if (b1.type === 'circle') {
         if (b2.type === 'circle') {
-            return SAT.circlecircle(b2, b1);
+            return SAT.circlecircle(b1, b2);
         }
 
         // b2 Must be a polygon or a rectangle
-        return SAT.polycircle(b2, b1);
+        return SAT.polycircle(b1, b2);
     }
 };
 SAT.circlecircle = function(c1, c2) {
@@ -80,7 +82,8 @@ SAT.circlecircle = function(c1, c2) {
     let rplusr = c1.scaledRadius + c2.scaledRadius;
 
     if (d < rplusr) {
-        return {MTVAxis: v1.normalize(), overlap: rplusr - d};
+        // return {MTVAxis: v1.normalize(), overlap: rplusr - d};
+        return collision(c1, c2, v1.normalize(), rplusr - d);
     }
     return;
 };
@@ -156,10 +159,20 @@ SAT.polypoly = function(p1, p2) {
 
     // Will return true if overlap never equals 0, meaning all
     // projections overlap to some degree, so a collision is happening
-    return {MTV: {axis: MTVAxis, magnitude: smallestOverlap}};
+    // return {MTV: {axis: MTVAxis, magnitude: smallestOverlap}};
+    return collision(p1, p2, MTVAxis, smallestOverlap);
 };
 
-SAT.polycircle = function(p, c) {
+SAT.polycircle = function(b1, b2) {
+    let p, c;
+    if (b1.type === 'circle') {
+        c = b1;
+        p = b2;
+    } else {
+        c = b2;
+        p = b1;
+    }
+
     // Gather all axes to test
     let axes = [],
         smallestOverlap,
@@ -219,7 +232,7 @@ SAT.polycircle = function(p, c) {
 
     // Will return true if overlap never equals 0, meaning all
     // projections overlap to some degree, so a collision is happening
-    return {MTV: {axis: MTVAxis, magnitude: smallestOverlap}};
+    return collision(b1, b2, MTVAxis, smallestOverlap);
 };
 
 export default SAT;

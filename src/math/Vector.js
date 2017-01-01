@@ -79,9 +79,24 @@ Vector.prototype = {
      * @param {Vector} vec - vector to add
      * @return {This} for chaining
      */
-    add: function(vec) {
-        this.x += vec.x;
-        this.y += vec.y;
+    add: function(...args) {
+        let x, y;
+        if (args.length === 1) {
+            let vec = args[0];
+            if (typeof vec === 'object') {
+                x = vec.x;
+                y = vec.y;
+            }
+        } else if (args.length === 2) {
+            if (typeof args[0] === 'number' && typeof args[1] === 'number') {
+                x = args[0];
+                y = args[1];
+            }
+        }
+
+        this.x += x;
+        this.y += y;
+
         return this;
     },
 
@@ -150,11 +165,12 @@ Vector.prototype = {
      * @param {number} y - amount to move in the y
      * @return {This} for chaining
      */
-    translate: function(x, y) {
-        this.x += x;
-        this.y += y;
-        return this;
-    },
+    // translate:
+    // function(x, y) {
+    //     this.x += x;
+    //     this.y += y;
+    //     return this;
+    // },
 
     /**
      * Rotate vector around specified point of rotation
@@ -308,6 +324,8 @@ Vector.prototype = {
         return this;
     }
 };
+
+Vector.prototype.translate = Vector.prototype.add;
 
 /**
  * Convenience function so we can ignore the 'new' keyword

@@ -1,6 +1,4 @@
-const SpatialHash = {};
-
-SpatialHash.prototype = {
+const SpatialHash = {
     init: function(cellSize, width, height) {
         this.cellSize = cellSize;
         this.width = width;
@@ -89,7 +87,7 @@ SpatialHash.prototype = {
 };
 
 const hash = function(cellSize, width, height) {
-    let h = Object.create(SpatialHash.prototype);
+    let h = Object.create(SpatialHash);
     h.init(cellSize, width, height);
     return h;
 };

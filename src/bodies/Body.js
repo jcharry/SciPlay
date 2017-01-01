@@ -31,8 +31,8 @@ let Body = {
         };
         this.mass = options.mass || 0;
         this.position = vector(options.x || 0, options.y || 0);
-        this.canCollide = options.canCollide || true;
-        this.colliders = [];
+        this.canCollide = options.canCollide !== false;
+        this.colliderList = [];
         this.velocity = vector(
             (options.velocity && options.velocity.x) || 0,
             (options.velocity && options.velocity.y) || 0
@@ -90,9 +90,18 @@ let Body = {
         return this;
     },
 
-    translate: function(x, y) {
-        this.position.x += x;
-        this.position.y += y;
+    translate: function(...args) {
+        if (args.length === 1) {
+            if (typeof args[0] === 'object') {
+                // Assume we have a vector object
+                this.position.add(args[0]);
+            }
+        } else if (args.length === 2) {
+            if (typeof args[0] === 'number' && typeof args[1] === 'number') {
+                this.position.x += args[0];
+                this.position.y += args[1];
+            }
+        }
 
         if (this.updateVertices) {
             this.updateVertices();
@@ -124,6 +133,7 @@ let Body = {
         // For each update loop, reset intersection points to zero
         this.intersectionPoints = {};
 
+        this.colliderList = [];
         this.aabb.update();
         return this;
     }
