@@ -850,8 +850,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Initialize variables
 	        // Step 1. Initialization - determine starting voxel
 	        var bucket = hash.hash(this.origin);
-	        var row = bucket.row;
-	        var col = bucket.col;
+	        var row = bucket.row,
+	            col = bucket.col;
 	
 	        var X = col,
 	            Y = row;
@@ -1826,7 +1826,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.MTVAxis = mtv;
 	        this.overlap = overlap;
 	    }
-	
 	};
 	
 	var collision = function collision(b1, b2, mtv, overlap) {
@@ -1855,8 +1854,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var Solver = {
-	    init: function init() {},
-	
 	    /**
 	     * Resolve collision
 	     * @param {Collision} collision - collision object to resolve
@@ -1866,10 +1863,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    solve: function solve(collision) {
 	        // Solve for body collision
-	        var body1 = collision.body1;
-	        var body2 = collision.body2;
-	        var MTVAxis = collision.MTVAxis;
-	        var overlap = collision.overlap;
+	        var body1 = collision.body1,
+	            body2 = collision.body2,
+	            MTVAxis = collision.MTVAxis,
+	            overlap = collision.overlap;
 	
 	        var xOverlap = Math.abs(MTVAxis.x * overlap);
 	        var yOverlap = Math.abs(MTVAxis.y * overlap);
@@ -1877,27 +1874,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // if there is an xOverlap
 	        if (xOverlap !== 0) {
-	            if (body1.position.x > body2.position.x) {
-	                // Move body1 to the right and body2 to the left
-	                body1.position.x += resolutionVector.x / 2;
-	                body2.position.x -= resolutionVector.x / 2;
-	            } else {
-	                // Move body1 to the left and body 2 to the right
-	                body1.position.x -= resolutionVector.x / 2;
-	                body2.position.x += resolutionVector.x / 2;
+	            var xDir = 1;
+	            if (body1.aabb.min.x < body2.aabb.min.x) {
+	                // Move body1 to the left and body2 to the right
+	                xDir = -1;
+	            }
+	
+	            if (!body1.static) {
+	                body1.position.x += resolutionVector.x / 2 * xDir;
+	            }
+	            if (!body2.static) {
+	                body2.position.x -= resolutionVector.x / 2 * xDir;
 	            }
 	        }
 	
 	        // If there's a y overlap
 	        if (yOverlap !== 0) {
+	            var yDir = 1;
 	            // And body1 is lower on screen than body 2
-	            if (body1.position.y > body2.position.y) {
-	                // Move body 1 down and body 2 up
-	                body1.position.y += resolutionVector.y / 2;
-	                body2.position.y -= resolutionVector.y / 2;
-	            } else {
-	                body1.position.y -= resolutionVector.y / 2;
-	                body2.position.y += resolutionVector.y / 2;
+	            if (body1.aabb.min.y < body2.aabb.min.y) {
+	                // Move body 1 up and body 2 down
+	                yDir = -1;
+	            }
+	
+	            if (!body1.static) {
+	                body1.position.y += resolutionVector.y / 2 * yDir;
+	            }
+	            if (!body2.static) {
+	                body2.position.y -= resolutionVector.y / 2 * yDir;
 	            }
 	        }
 	    }
@@ -1982,18 +1986,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	    drawBody: function drawBody(body) {
 	        var _this = this;
 	
-	        if (this.debug) {
+	        if (body.debug) {
 	            this.ctx.beginPath();
-	            this.ctx.globalAlpha = 1;
-	            this.ctx.strokeStyle = 'red';
-	            this.ctx.lineWidth = 1;
-	
 	            var aabb = body.aabb;
 	            var x = aabb.min.x;
 	            var y = aabb.min.y;
 	            var w = aabb.max.x - x;
 	            var h = aabb.max.y - y;
 	            this.ctx.rect(x, y, w, h);
+	            this.ctx.strokeStyle = 'red';
+	            this.ctx.lineWidth = .5;
+	            this.ctx.stroke();
+	        }
+	        if (this.debug) {
+	            this.ctx.beginPath();
+	            this.ctx.globalAlpha = 1;
+	            this.ctx.strokeStyle = 'red';
+	            this.ctx.lineWidth = 1;
+	
+	            var _aabb = body.aabb;
+	            var _x = _aabb.min.x;
+	            var _y = _aabb.min.y;
+	            var _w = _aabb.max.x - _x;
+	            var _h = _aabb.max.y - _y;
+	            this.ctx.rect(_x, _y, _w, _h);
 	            this.ctx.stroke();
 	
 	            if (body.vertices) {
@@ -2418,6 +2434,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.canCollide = options.canCollide !== false;
 	        this.colliderList = [];
 	        this.velocity = (0, _Vector2.default)(options.velocity && options.velocity.x || 0, options.velocity && options.velocity.y || 0);
+	        this.acceleration = (0, _Vector2.default)(options.acceleration && options.acceleration.x || 0, options.acceleration && options.acceleration.y || 0);
+	        //
+	        // console.log(typeof options.static);
+	        // if (typeof options.static === 'undefined') {
+	        //     this.static = false;
+	        // } else if (o)
+	        this.static = options.static === true;
 	        this.height = options.height || 10;
 	        this.width = options.width || 10;
 	        this._scale = 1;
@@ -2428,6 +2451,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.materialColor = options.fillStyle || 'black';
 	        this.mirror = options.mirror || false;
 	        this.intersectionPoints = {};
+	
+	        // If debug = true, bounding box will be drawn
+	        this.debug = options.debug;
 	
 	        // If the material is provided, set refractive index based on materials
 	        // database
@@ -2455,19 +2481,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    freeze: function freeze() {
-	        this._cachedVelocity = this.velocity.clone();
-	        this.velocity.x = 0;
-	        this.velocity.y = 0;
+	        this.static = true;
+	        // this._cachedVelocity = this.velocity.clone();
+	        // this.velocity.x = 0;
+	        // this.velocity.y = 0;
 	        return this;
 	    },
 	
 	    unfreeze: function unfreeze() {
-	        if (this._cachedVelocity) {
-	            this.velocity.x = this._cachedVelocity.x;
-	            this.velocity.y = this._cachedVelocity.y;
-	        } else {
-	            console.warn('cannot unfreeze a non-frozen object');
-	        }
+	        this.static = false;
+	        // if (this._cachedVelocity) {
+	        //     this.velocity.x = this._cachedVelocity.x;
+	        //     this.velocity.y = this._cachedVelocity.y;
+	        // } else {
+	        //     console.warn('cannot unfreeze a non-frozen object');
+	        // }
 	        return this;
 	    },
 	
@@ -2496,16 +2524,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    update: function update() {
-	        this.position.add(this.velocity);
-	        this.rotation += this.angularVelocity;
+	        if (!this.static) {
+	            this.velocity.add(this.acceleration);
+	            this.position.add(this.velocity);
+	            this.rotation += this.angularVelocity;
+	
+	            if (this.updateVertices) {
+	                this.updateVertices();
+	            }
+	        }
 	
 	        // if (this.updateSegments) {
 	        //     this.updateSegments();
 	        // }
-	
-	        if (this.updateVertices) {
-	            this.updateVertices();
-	        }
 	
 	        // if (this.vertices) {
 	        //     this.vertices.update();
@@ -2580,9 +2611,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	var AABB = {
 	    init: function init(body) {
 	        this.body = body;
-	        var bounds = this.findMinMax(body);
-	        this.max = bounds.max;
-	        this.min = bounds.min;
+	
+	        var _findMinMax = this.findMinMax(body),
+	            min = _findMinMax.min,
+	            max = _findMinMax.max;
+	
+	        this.max = max;
+	        this.min = min;
 	    },
 	    /**
 	     * Finds bounds of AABB
@@ -2686,10 +2721,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @return {bool} true for overlap, false otherwise
 	     */
 	    overlap: function overlap(aabb) {
-	        if (this.max.x < aabb.min.x) return false; // a is left of b
-	        if (this.min.x > aabb.max.x) return false; // a is right of b
-	        if (this.max.y < aabb.min.y) return false; // a is above b
-	        if (this.min.y > aabb.max.y) return false; // a is below b
+	        if (this.max.x < aabb.min.x) {
+	            return false;
+	        } // a is left of b
+	        if (this.min.x > aabb.max.x) {
+	            return false;
+	        } // a is right of b
+	        if (this.max.y < aabb.min.y) {
+	            return false;
+	        } // a is above b
+	        if (this.min.y > aabb.max.y) {
+	            return false;
+	        } // a is below b
 	        return true; // boxes overlap
 	    },
 	
@@ -2697,9 +2740,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Updates the AABB
 	     */
 	    update: function update() {
-	        var bounds = this.findMinMax();
-	        this.max = bounds.max;
-	        this.min = bounds.min;
+	        var _findMinMax2 = this.findMinMax(),
+	            max = _findMinMax2.max,
+	            min = _findMinMax2.min;
+	
+	        this.max = max;
+	        this.min = min;
 	    }
 	};
 	

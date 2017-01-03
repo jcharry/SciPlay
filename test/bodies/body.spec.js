@@ -51,4 +51,24 @@ describe('Body', () => {
         r.mode = 'CENTER';
         //expect(r.isPointInterior(99, 101)).to.equal(false);
     });
+
+    it('should properly set `static` property', () => {
+        let r1 = rect({static: false});
+        let r2 = rect({});
+        let r3 = rect({static: true});
+        let r4 = rect({static: undefined});
+        let r5 = rect({static: 'abc'});
+        let r6 = rect({static: 123});
+        let r7 = rect({static: null});
+        let r8 = circle({static: true});
+
+        expect(r1.static).to.equal(false);
+        expect(r2.static).to.equal(false);
+        expect(r3.static).to.equal(true);
+        expect(r4.static).to.equal(false);
+        expect(r5.static).to.equal(false);
+        expect(r6.static).to.equal(false);
+        expect(r7.static).to.equal(false);
+        expect(r8.static).to.equal(true);
+    });
 });

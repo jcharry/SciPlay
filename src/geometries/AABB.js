@@ -4,9 +4,9 @@
 let AABB = {
     init: function(body) {
         this.body = body;
-        let bounds = this.findMinMax(body);
-        this.max = bounds.max;
-        this.min = bounds.min;
+        let {min, max} = this.findMinMax(body);
+        this.max = max;
+        this.min = min;
     },
     /**
      * Finds bounds of AABB
@@ -105,10 +105,10 @@ let AABB = {
      * @return {bool} true for overlap, false otherwise
      */
     overlap: function(aabb) {
-        if (this.max.x < aabb.min.x) return false; // a is left of b
-        if (this.min.x > aabb.max.x) return false; // a is right of b
-        if (this.max.y < aabb.min.y) return false; // a is above b
-        if (this.min.y > aabb.max.y) return false; // a is below b
+        if (this.max.x < aabb.min.x) {return false;} // a is left of b
+        if (this.min.x > aabb.max.x) {return false;} // a is right of b
+        if (this.max.y < aabb.min.y) {return false;} // a is above b
+        if (this.min.y > aabb.max.y) {return false;} // a is below b
         return true; // boxes overlap
     },
 
@@ -116,9 +116,9 @@ let AABB = {
      * Updates the AABB
      */
     update: function() {
-        let bounds = this.findMinMax();
-        this.max = bounds.max;
-        this.min = bounds.min;
+        let {max, min} = this.findMinMax();
+        this.max = max;
+        this.min = min;
     }
 };
 

@@ -34,7 +34,11 @@
             ignoreComments: true,
             ignoreUrls: true
         }],
-        "no-warning-comments": "off"
+        "no-warning-comments": "off",
+        "brace-style": ["error", "1tbs", {
+            "allowSingleLine": true
+        }],
+        "max-statements-per-line": ["error", {"max": 2}]
     }
 }
 

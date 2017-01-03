@@ -37,6 +37,16 @@ let Body = {
             (options.velocity && options.velocity.x) || 0,
             (options.velocity && options.velocity.y) || 0
         );
+        this.acceleration = vector(
+            (options.acceleration && options.acceleration.x) || 0,
+            (options.acceleration && options.acceleration.y) || 0,
+        );
+        //
+        // console.log(typeof options.static);
+        // if (typeof options.static === 'undefined') {
+        //     this.static = false;
+        // } else if (o)
+        this.static = options.static === true;
         this.height = options.height || 10;
         this.width = options.width || 10;
         this._scale = 1;
@@ -47,6 +57,9 @@ let Body = {
         this.materialColor = options.fillStyle || 'black';
         this.mirror = options.mirror || false;
         this.intersectionPoints = {};
+
+        // If debug = true, bounding box will be drawn
+        this.debug = options.debug;
 
          // If the material is provided, set refractive index based on materials
          // database
@@ -74,19 +87,21 @@ let Body = {
     },
 
     freeze: function() {
-        this._cachedVelocity = this.velocity.clone();
-        this.velocity.x = 0;
-        this.velocity.y = 0;
+        this.static = true;
+        // this._cachedVelocity = this.velocity.clone();
+        // this.velocity.x = 0;
+        // this.velocity.y = 0;
         return this;
     },
 
     unfreeze: function() {
-        if (this._cachedVelocity) {
-            this.velocity.x = this._cachedVelocity.x;
-            this.velocity.y = this._cachedVelocity.y;
-        } else {
-            console.warn('cannot unfreeze a non-frozen object');
-        }
+        this.static = false;
+        // if (this._cachedVelocity) {
+        //     this.velocity.x = this._cachedVelocity.x;
+        //     this.velocity.y = this._cachedVelocity.y;
+        // } else {
+        //     console.warn('cannot unfreeze a non-frozen object');
+        // }
         return this;
     },
 
@@ -115,16 +130,19 @@ let Body = {
     },
 
     update: function() {
-        this.position.add(this.velocity);
-        this.rotation += this.angularVelocity;
+        if (!this.static) {
+            this.velocity.add(this.acceleration);
+            this.position.add(this.velocity);
+            this.rotation += this.angularVelocity;
+
+            if (this.updateVertices) {
+                this.updateVertices();
+            }
+        }
 
         // if (this.updateSegments) {
         //     this.updateSegments();
         // }
-
-        if (this.updateVertices) {
-            this.updateVertices();
-        }
 
         // if (this.vertices) {
         //     this.vertices.update();

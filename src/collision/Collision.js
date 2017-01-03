@@ -5,7 +5,6 @@ const Collision = {
         this.MTVAxis = mtv;
         this.overlap = overlap;
     }
-
 };
 
 const collision = function(b1, b2, mtv, overlap) {

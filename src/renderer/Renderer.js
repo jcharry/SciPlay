@@ -53,6 +53,18 @@ Renderer.prototype = {
      * @param {Body} body - phys.system object containing all objects
      */
     drawBody: function(body) {
+        if (body.debug) {
+            this.ctx.beginPath();
+            let aabb = body.aabb;
+            let x = aabb.min.x;
+            let y = aabb.min.y;
+            let w = aabb.max.x - x;
+            let h = aabb.max.y - y;
+            this.ctx.rect(x, y, w, h);
+            this.ctx.strokeStyle = 'red';
+            this.ctx.lineWidth = .5;
+            this.ctx.stroke();
+        }
         if (this.debug) {
             this.ctx.beginPath();
             this.ctx.globalAlpha = 1;

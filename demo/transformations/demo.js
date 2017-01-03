@@ -18,7 +18,8 @@ var r = sci.rect({
     velocity: {
         x: 4, y: 2.5
     },
-    canCollide: false
+    canCollide: false,
+    debug: true
 });
 
 system.add(r);
@@ -28,12 +29,14 @@ function loop() {
     r.rotation += .03;
 
     // Bounce off walls
-    if (r.position.x + r.width > system.width || r.position.x < 0) {
+    if (r.aabb.max.x >= system.width || r.aabb.min.x < 0) {
         r.velocity.x *= -1;
+        r.position.x += r.velocity.x * r.scale;
     }
 
-    if (r.position.y + r.height > system.height || r.position.y < 0) {
+    if (r.aabb.max.y >= system.height || r.aabb.min.y < 0) {
         r.velocity.y *= -1;
+        r.position.y += r.velocity.y * r.scale;
     }
 
     // Scale up and down
