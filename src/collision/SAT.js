@@ -77,7 +77,7 @@ SAT.intersect = function(b1, b2) {
     }
 };
 SAT.circlecircle = function(c1, c2) {
-    let v1 = Vector.subtract(c1.position, c2.position);
+    let v1 = Vector.subtract(c2.position, c1.position);
     let d = v1.magnitude();
     let rplusr = c1.scaledRadius + c2.scaledRadius;
 

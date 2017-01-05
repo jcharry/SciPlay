@@ -13,6 +13,8 @@ var polygon = function(options) {
 
     // Set type
     B.type = 'polygon';
+    B.inertia = 1;
+    B.invInertia = 1 / B.inertia;
 
     //Initialize vetices as vectors
     // private vertices, relative to x and y
@@ -25,32 +27,6 @@ var polygon = function(options) {
         B._relativeVertices.push(vector(vert.x, vert.y));
         B.vertices.push(vector(options.x + vert.x, options.y + vert.y));
     });
-
-    // Update all vertices based on position
-    B.updateVertices = function() {
-        B.centroid = {x: 0, y: 0};
-        B.vertices.forEach((vert, index) => {
-            let relVert = B._relativeVertices[index];
-            vert.x = relVert.x + B.position.x;
-            vert.y = relVert.y + B.position.y;
-
-            B.centroid.x += vert.x;
-            B.centroid.y += vert.y;
-        });
-
-        B.centroid.x /= B.vertices.length;
-        B.centroid.y /= B.vertices.length;
-
-        // Update rotate vertices if necessary
-        if (B.angularVelocity !== 0 || B._rotation !== 0 || B._scale !== 0) {
-            B.vertices.forEach(vert => {
-                vert.translate(-B.centroid.x, -B.centroid.y)
-                    .rotate(this._rotation)
-                    .multiply(this._scale)
-                    .translate(B.centroid.x, B.centroid.y);
-            });
-        }
-    };
 
     B.isPointInterior = function(x, y) {
         var inside = false;

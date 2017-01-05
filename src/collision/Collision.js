@@ -2,7 +2,7 @@ const Collision = {
     init: function(b1, b2, mtv, overlap) {
         this.body1 = b1;
         this.body2 = b2;
-        this.MTVAxis = mtv;
+        this.mtvaxis = mtv;
         this.overlap = overlap;
     }
 };

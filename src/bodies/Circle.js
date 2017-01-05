@@ -12,6 +12,9 @@ let circle = function(options) {
     B.type = 'circle';
     B.aabb = aabb(B);
 
+    B.inertia = B.mass * B.radius * B.radius / 2;
+    B.invInertia = 1 / B.inertia;
+
     B.isPointInterior = function(x, y) {
         let bx = B.position.x,
             by = B.position.y;

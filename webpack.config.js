@@ -3,11 +3,18 @@ var path = require('path');
 var env = process.env.BUILD_ENV;
 
 var config = {
-    entry: [
+    entry: env === 'production' ? [
+        path.resolve('./src/extras/polyfills.js'),
+        path.resolve('./src/sciplay.js')
+    ] :
+    [
+        // 'webpack-dev-server/client?http://localhost:8080',
+        'webpack/hot/dev-server',
         path.resolve('./src/extras/polyfills.js'),
         path.resolve('./src/sciplay.js')
     ],
-    devtool: 'source-map',
+
+    devtool: env === 'production' ? null : 'source-map',
     externals: {
         polyfill: "./src/extras/polyfills.js"
     },

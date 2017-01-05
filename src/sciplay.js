@@ -12,6 +12,9 @@ import wave from './bodies/Wave';
 import circle from './bodies/Circle';
 import polygon from './bodies/Polygon';
 
+/* CONSTANTS */
+import collisionTypes from './collision/collisionTypes.js';
+
 let sciplay = function() {
     return {
         Vector, // for operations that return a new vector
@@ -22,7 +25,8 @@ let sciplay = function() {
         wave,
         rect,
         polygon,
-        circle
+        circle,
+        collisionTypes
     };
 };
 

@@ -1,10 +1,11 @@
 import * as math from '../math/math';
 const Renderer = {};
 Renderer.prototype = {
-    init: function(params) {
+    init: function(system, params) {
         this.clearBackground = true;
-        this.debug = params.debug || false;
         this.background = params.background || 'black';
+        this.system = system;
+        // this.loop = loop;
 
         // Initialize Canvas element
         // Pardon the ugly ternary...
@@ -21,14 +22,22 @@ Renderer.prototype = {
                 return c;
             })();
 
+        // Set canvas based on system size
+        this.canvas.width = this.system.width;
+        this.canvas.height = this.system.height;
+        this.ctx = this.canvas.getContext('2d');
+
+        // Timing for render loop
+        this.frameTimestep = 0;
+        this.fps = 60;
+        this.dt = 1000 / this.fps;
+
+        // Debug Params
+        this.debug = params.debug || false;
         if (this.debug) {
             window.renderer = this;
             window.ctx = this.canvas.getContext('2d');
         }
-
-        //this.canvas.width = params.width || 600;
-        //this.canvas.height = params.height || 300;
-        this.ctx = this.canvas.getContext('2d');
     },
 
     /**
@@ -52,8 +61,19 @@ Renderer.prototype = {
      * @private
      * @param {Body} body - phys.system object containing all objects
      */
-    drawBody: function(body) {
+    drawBody: function(body, pct) {
         if (body.debug) {
+            if (body.type === 'circle') {
+                this.ctx.beginPath();
+                let cx = body.position.x;
+                let cy = body.position.y;
+                let rx = Math.cos(body.rotation) * body.radius;
+                let ry = Math.sin(body.rotation) * body.radius;
+                this.ctx.moveTo(cx, cy);
+                this.ctx.lineTo(cx + rx, cy + ry);
+                this.ctx.strokeStyle = 'red';
+                this.ctx.stroke();
+            }
             this.ctx.beginPath();
             let aabb = body.aabb;
             let x = aabb.min.x;
@@ -106,8 +126,8 @@ Renderer.prototype = {
                 this.ctx.lineWidth = body.style.lineWidth;
                 this.ctx.strokeStyle = body.style.strokeStyle;
                 this.ctx.lineJoin = 'miter';
-                if (this.debug) {
-                    if (body.colliding) {
+                if (body.debug) {
+                    if (body.colliderList.length > 0) {
                         this.ctx.strokeStyle = 'green';
                     } else {
                         this.ctx.strokeStyle = 'white';
@@ -128,7 +148,23 @@ Renderer.prototype = {
                 this.ctx.lineWidth = body.style.lineWidth;
                 this.ctx.strokeStyle = body.style.strokeStyle;
 
-                this.ctx.ellipse(body.position.x, body.position.y, body.scaledRadius, body.scaledRadius, 0, 0, Math.PI * 2);
+                if (body.debug) {
+                    if (body.colliderList.length > 0) {
+                        this.ctx.strokeStyle = 'green';
+                    } else {
+                        this.ctx.strokeStyle = 'white';
+                    }
+                }
+
+                this.ctx.ellipse(
+                    body.position.x,
+                    body.position.y,
+                    body.scaledRadius,
+                    body.scaledRadius,
+                    0,
+                    0,
+                    Math.PI * 2
+                );
                 // this.ctx.closePath();
                 this.ctx.stroke();
                 // this.ctx.fill();
@@ -204,78 +240,117 @@ Renderer.prototype = {
         }
     },
 
-    render: function(system, updateFn) {
-        // The first time the system renders,
-        // capture a local reference to it
-        // to be used to restart the renderer later
-        // if it's ever stopped
-        if (!this.system) {
-            this.system = system;
-            this.canvas.width = this.system.width;
-            this.canvas.height = this.system.height;
+    // Combined Patterns from Matter.js
+    // - https://github.com/liabru/matter-js/blob/master/src/core/Runner.js
+    // and this tutorial:
+    // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-core-engine--gamedev-7493#timestepping
+    run: function() {
+        let self = this;
+        this.lastTick = 0;
+        let animate = time => {
+            this._requestID = window.requestAnimationFrame(animate);
+
+            if (time) {
+                this.tick(time);
+            }
+        };
+        animate();
+    },
+
+    // Clamping frameTimestep make a gigantic difference
+    tick: function(time) {
+        // Get time between this and the previous ticks
+        let elapsedTime = time - this.lastTick;
+
+        // Add the time to a counter
+        this.frameTimestep += elapsedTime;
+
+        // Update previous tick time
+        this.lastTick = time;
+
+        // Magic happens here
+        // if the elapsed time between this tick and the last tick is large
+        // (because the update or render code took a long time), then the
+        // engine would stall out.  Nothing would update while we're waiting
+        // for the long running code to finish.  So we clamp down the frame
+        // timestep to a small value.
+        if (this.frameTimestep > 50) {
+            this.frameTimestep = 50;
         }
 
-        // In order to pass 'system' into render
-        // we have to wrap it in a function before
-        // passing it to requestAnimationFrame
-        this._requestID = requestAnimationFrame(() => {
-            this.render(system, updateFn);
-        });
+        // If there's a large difference between the time of this frame and the
+        // previous frame, then this code will run a bunch of times,
+        // essentially stalling the renderer.  The engine can't render while
+        // the physics is updating, after all.  To combat this, we clamp down
+        // the frameTimestep above so that only a few updates run before
+        // everything renders.
+        while (this.frameTimestep > this.dt) {
+            this.system.update(this.dt);
+            this.frameTimestep -= this.dt;
+        }
 
+        // In the case where the frameTimestep is some in between value between
+        // 0 and dt, we can linearly interpolate rendered values of the bodies
+        // this won't actually effect the physics, but it'll make things look
+        // smoother
+        // pct is the fraction between 0 and dt, thus we should interpolate
+        // the position by that percentage
+        let pct = this.frameTimestep / this.dt;
+        // Render the system
+        this.render(pct);
+    },
+
+    render: function(pct) {
         // Clear background
         if (this.clearBackground) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
-        // Draw background
+        // Draw backgroun
         this.ctx.beginPath();
         this.ctx.globalAlpha = 1;
         this.ctx.fillStyle = this.background;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Call user draw code
-        if (updateFn) {
-            updateFn();
-        }
-
         // Update the system
         // FIXME: this.laststate isn't doing anything right now
-        this.lastState = system.update();
+        // this.lastState = this.system.update(this.timing);
 
         // Draw all objects + waves
-        system.bodies.forEach(body => {
-            this.drawBody(body);
+        this.system.bodies.forEach(body => {
+
+            this.drawBody(body, pct);
         });
 
         // Update all waves
-        system.waves.forEach(wave => {
-            this.drawWave(wave);
+        this.system.waves.forEach(wave => {
+            this.drawWave(wave, pct);
         });
 
         // Update all child waves
-        system.childWaves.forEach(wave => {
-            this.drawWave(wave);
+        this.system.childWaves.forEach(wave => {
+            this.drawWave(wave, pct);
         });
 
         // If in debug mode, draw spatial hash
         // and highlight nodes that contain items in red
         if (this.debug === true) {
-            let cellSize = system.hash.cellSize;
+            let cellSize = this.system.hash.cellSize;
             this.ctx.globalAlpha = 1;
             this.ctx.lineWidth = 1;
-            for (let i = 0; i < system.hash.width; i += cellSize) {
-                for (let j = 0; j < system.hash.height; j += cellSize) {
+            for (let i = 0; i < this.system.hash.width; i += cellSize) {
+                for (let j = 0; j < this.system.hash.height; j += cellSize) {
                     this.ctx.beginPath();
                     this.ctx.strokeStyle = 'green';
                     this.ctx.rect(i, j, cellSize, cellSize);
                     this.ctx.stroke();
                 }
             }
-            Object.keys(system.hash.contents).forEach(row => {
-                Object.keys(system.hash.contents[row]).forEach(col => {
+            Object.keys(this.system.hash.contents).forEach(row => {
+                Object.keys(this.system.hash.contents[row]).forEach(col => {
                     // Draw all squares
                     this.ctx.beginPath();
                     // this.ctx.strokeStyle = 'green';
-                    if (system.hash.contents[row][col].length !== 0) {
+                    if (this.system.hash.contents[row][col].length !== 0) {
                         this.ctx.strokeStyle = 'red';
                         this.ctx.lineWidth = 1;
                     }
@@ -310,9 +385,9 @@ Renderer.prototype = {
     }
 };
 
-var renderer = function(params) {
+var renderer = function(system, params) {
     let R = Object.create(Renderer.prototype);
-    R.init(params);
+    R.init(system, params);
     return R;
 };
 

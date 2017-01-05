@@ -1,22 +1,24 @@
 /* global sciplay */
 /* eslint
     "require-jsdoc": "off"
- */
+    */
 
 window.addEventListener('load', function() {
     var sci = sciplay();
     window.sci = sci;
 
-    var system = sci.system({
+    var system = sci.system(loop, {
         width: 900,
         height: 600,
         cellSize: 100
     });
+    system.loop = loop;
+
     window.system = system;
-    var renderer = sci.renderer({
+    var renderer = sci.renderer(system, {
         canvas: 'canvas',
         debug: false,
-        background: 'white'
+        background: 'lightgrey'
     });
 
     window.renderer = renderer;
@@ -33,15 +35,17 @@ window.addEventListener('load', function() {
     });
 
     let circles = [];
-    let numCircles = 200;
+    let numCircles = 10;
     let spacing = {
         height: (system.height - 30) / numCircles,
         width: (system.width - 20) / numCircles
-    }
+    };
     for (let i = 0; i < numCircles; i++) {
         circles.push(sci.circle({
-            x: system.width / 2 + Math.random() * 200 - 100,
-            y: system.height / 2 + Math.random() * 200 - 100,
+            mass: 10,
+            debug: true,
+            x: 20 + spacing.width * i,
+            y: 10 + Math.random() * system.height,
             velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 6 - 3),
             radius: 15,
             strokeStyle: 'blue',
@@ -49,11 +53,14 @@ window.addEventListener('load', function() {
             alpha: 0.5
         }));
     }
+    window.circles = circles;
 
     let rects = [];
     for (let i = 0; i < numCircles; i++) {
         rects.push(sci.rect({
-            x: 10 + spacing * i,
+            mass: Math.random() * 5 + 5,
+            debug: true,
+            x: 10 + spacing.width * i,
             y: Math.random() * system.height,
             width: 60,
             velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 3 - 1.5),
@@ -62,8 +69,10 @@ window.addEventListener('load', function() {
             lineWidth: 0.5,
             mirror: true,
             angularVelocity: Math.random() * 0.02 - 0.01
+            // collisionType: sci.collisionTypes.INELASTIC
         }));
     }
+    window.rects = rects;
 
     let p = sci.polygon({
         x: 100,
@@ -109,11 +118,10 @@ window.addEventListener('load', function() {
     });
 
     // system.add(rects);
-    // system.add(circles);
+    system.add(circles);
     // system.add(p);
-    system.add(r);
+    // system.add(r);
     // system.add(r2);
-
 
     window.w = w;
     window.r = r;
@@ -121,7 +129,7 @@ window.addEventListener('load', function() {
     window.p = p;
     window.c = c;
 
-    let angle = 0;
+    // let angle = 0;
     function loop() {
         // Move the polygon in a little circle
         // angle += 0.1;
@@ -130,18 +138,19 @@ window.addEventListener('load', function() {
         // p.velocity.x = x;
         // p.velocity.y = y;
 
-        for (let i = 0; i < system.bodies.length; i++) {
-            let b = system.bodies[i];
-            if (b.aabb.max.x >= system.width || b.aabb.min.x <= 0) {
-                b.velocity.x *= -1;
-                b.position.add(b.velocity);
-            }
-
-            if (b.aabb.max.y >= system.height || b.aabb.min.y <= 0) {
-                b.velocity.y *= -1;
-                b.position.add(b.velocity);
-            }
-        }
+        // for (let i = 0; i < system.bodies.length; i++) {
+        //     let b = system.bodies[i];
+        //     if (b.aabb.max.x >= system.width || b.aabb.min.x <= 0) {
+        //         b.velocity.x *= -1;
+        //         // b.position.add(b.velocity);
+        //         b.position.x +=  1.1 * b.velocity.x;
+        //     }
+        //
+        //     if (b.aabb.max.y >= system.height || b.aabb.min.y <= 0) {
+        //         b.velocity.y *= -1;
+        //         b.position.y +=  1.1 * b.velocity.y;
+        //     }
+        // }
 
         if (p.colliderList.length > 0) {
             p.colliderList.forEach(collider => {
@@ -150,18 +159,21 @@ window.addEventListener('load', function() {
             });
         }
     }
-    renderer.render(system, loop);
 
-    var squareDown = false;
-    var circleDown = false;
-    var waveDown = false;
-    var sunDown = false;
-    var colDown = false;
-    var addRect = document.getElementById('rectangle');
-    var addCircle = document.getElementById('circle');
-    var addWave = document.getElementById('wave');
-    var addSun = document.getElementById('sun');
-    var addCol = document.getElementById('col');
+    renderer.run();
+
+    let squareDown = false;
+    let circleDown = false;
+    let waveDown = false;
+    let sunDown = false;
+    let colDown = false;
+    let polyDown = false;
+    let addRect = document.getElementById('rectangle');
+    let addCircle = document.getElementById('circle');
+    let addWave = document.getElementById('wave');
+    let addSun = document.getElementById('sun');
+    let addCol = document.getElementById('col');
+    let addPoly = document.getElementById('poly');
     addRect.addEventListener('mousedown', function(e) {
         squareDown = true;
     });
@@ -176,6 +188,9 @@ window.addEventListener('load', function() {
     });
     addCol.addEventListener('mousedown', function(e) {
         colDown = true;
+    });
+    addPoly.addEventListener('mousedown', function(e) {
+        polyDown= true;
     });
     let move = false;
     renderer.canvas.addEventListener('mousedown', function(e) {
@@ -203,12 +218,15 @@ window.addEventListener('load', function() {
                 var rect = sci.rect({
                     x: e.clientX,
                     y: e.clientY,
-                    mode: 'CENTER',
+                    mode: 'LEFT',
                     width: 100,
                     height: 100,
-                    refractiveIndex: 1,
-                    mirror: true,
-                    strokeStyle: 'red'
+                    // torque: .0001,
+                    debug: true,
+                    // refractiveIndex: 1,
+                    // mirror: true,
+                    strokeStyle: 'red',
+                    lineWidth: 1
 
                 });
                 system.add(rect);
@@ -219,6 +237,8 @@ window.addEventListener('load', function() {
             let circ = sci.circle({
                 x: e.clientX,
                 y: e.clientY,
+                torque: 0.0001,
+                debug: true,
                 radius: 50,
                 refractiveIndex: 1.3,
                 lineWidth: 1,
@@ -284,6 +304,29 @@ window.addEventListener('load', function() {
                 }
             }
         }
+        if (polyDown) {
+            addPoly.style.position = 'static';
+            polyDown = false;
+            if (e.clientY < window.innerHeight - 100) {
+                let p = sci.polygon({
+                    x: e.clientX,
+                    y: e.clientY,
+                    vertices: [
+                        {x: 0, y: 0},
+                        {x: 100, y: 40},
+                        {x: 85, y: 65},
+                        {x: 42, y: 84},
+                        {x: 10, y: 35}
+                    ],
+                    // velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 3 - 1.5),
+                    // angularVelocity: Math.random() * 0.02 - 0.01,
+                    strokeStyle: 'orange',
+                    lineWidth: 2,
+                    refractiveIndex: 1.66
+                });
+                system.add(p);
+            }
+        }
     });
     document.addEventListener('mousemove', function(e) {
         if (move) {
@@ -317,6 +360,11 @@ window.addEventListener('load', function() {
             addCol.style.left = e.clientX - 50 + 'px';
             addCol.style.top = e.clientY - 50 + 'px';
         }
-    });
+        if (polyDown) {
+            addPoly.style.position = 'fixed';
+            addPoly.style.left = e.clientX - 50 + 'px';
+            addPoly.style.top = e.clientY - 50 + 'px';
 
+        }
+    });
 });
