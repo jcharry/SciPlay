@@ -2,7 +2,7 @@
 ![Sun Demo](https://github.com/jcharry/SciPlay/blob/master/img/sun.png)
 
 This repo contains a physics engine I'm building for the express purpose of
-learning about simulating physics.  That's is.  I don't intend to make this
+learning about simulating physics.  That's it.  I don't intend to make this
 stable or completely usable (there are a bunch of mature, powerful libraries
 already out there, and why reinvent the wheel?).  I do however intend to learn
 as much about game physics as I can, and building this library helps me do just
