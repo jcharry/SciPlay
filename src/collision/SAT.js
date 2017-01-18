@@ -34,12 +34,13 @@ SAT.projectBody = function(b, axis) {
 };
 
 /**
+ * Line Overlap
+ * Method to determine if two lines on the same axis have an overlap
  * @param {number} p1min - min point of 1st line
  * @param {number} p1max - max point of 1st line
  * @param {number} p2min - min point of 2nd line
  * @param {number} p2max - max point of 2nd line
  * @return {number} amount of overlap of these two lines
- *
  */
 SAT.lineOverlap = function(p1min, p1max, p2min, p2max) {
     return Math.max(0, Math.min(p1max, p2max) - Math.max(p1min, p2min));
@@ -58,6 +59,7 @@ SAT.lineOverlap = function(p1min, p1max, p2min, p2max) {
  */
 
 SAT.intersect = function(b1, b2) {
+    // FIXME: Make sure normal mtv is facing from b1 to b2
     if (b1.type === 'rectangle' || b1.type === 'polygon') {
         if (b2.type === 'circle') {
             return SAT.polycircle(b1, b2);
@@ -81,10 +83,19 @@ SAT.circlecircle = function(c1, c2) {
     let d = v1.magnitude();
     let rplusr = c1.scaledRadius + c2.scaledRadius;
 
+
     if (d < rplusr) {
-        // return {MTVAxis: v1.normalize(), overlap: rplusr - d};
+
+        // Ensure mtv axis points from p2 to p1
+        // TODO: Verify this with a few more tests...
+        let c2toc1 = Vector.subtract(c2.position, c1.position);
+        if (v1.dot(c2toc1) >= 0) {
+            v1.negate();
+        }
+
         return collision(c1, c2, v1.normalize(), rplusr - d);
     }
+
     return;
 };
 
@@ -111,7 +122,7 @@ SAT.polypoly = function(p1, p2) {
     for (let i = 0; i < numVerts1; i++) {
         let v1 = p1.vertices[i];
         let v2 = p1.vertices[i + 1 === p1.vertices.length ? 0 : i + 1];
-        let axis = Vector.subtract(v2, v1);
+        let axis = Vector.subtract(v1, v2);
         axis.normalize().perp();
         axes.push(axis);
     }
@@ -124,7 +135,7 @@ SAT.polypoly = function(p1, p2) {
     for (let i = 0; i < numVerts2; i++) {
         let v1 = p2.vertices[i];
         let v2 = p2.vertices[i + 1 === p2.vertices.length ? 0 : i + 1];
-        let axis = Vector.subtract(v2, v1);
+        let axis = Vector.subtract(v1, v2);
         axis.normalize().perp();
         axes.push(axis);
     }
@@ -157,6 +168,16 @@ SAT.polypoly = function(p1, p2) {
         }
     }
 
+    // Ensure mtv axis points from p2 to p1
+    // TODO: Verify this with a few more tests...
+    let p2top1 = Vector.subtract(p2.position, p1.position);
+    if (MTVAxis.dot(p2top1) >= 0) {
+        MTVAxis.negate();
+    }
+
+    // TODO: Find support points to determine which points were involved in the
+    // collision!?
+
     // Will return true if overlap never equals 0, meaning all
     // projections overlap to some degree, so a collision is happening
     // return {MTV: {axis: MTVAxis, magnitude: smallestOverlap}};
@@ -185,12 +206,12 @@ SAT.polycircle = function(b1, b2) {
     for (let i = 0; i < numVerts1; i++) {
         let v1 = p.vertices[i];
         let v2 = p.vertices[i + 1 === p.vertices.length ? 0 : i + 1];
-        let axis = Vector.subtract(v2, v1);
+        let axis = Vector.subtract(v1, v2);
         axis.normalize().perp();
         axes.push(axis);
 
         // Get distance of vertex to circle center
-        let vc = Vector.subtract(c.position, v1);
+        let vc = Vector.subtract(v1, c.position);
         if (d) {
             if (vc.magnitudeSq() < d.magnitudeSq()) {
                 d = vc;
@@ -228,6 +249,13 @@ SAT.polycircle = function(b1, b2) {
             smallestOverlap = overlap;
             MTVAxis = axis;
         }
+    }
+
+    // Ensure mtv axis points from p2 to p1
+    // TODO: Verify this with a few more tests...
+    let b2tob1 = Vector.subtract(b2.position, b1.position);
+    if (MTVAxis.dot(b2tob1) >= 0) {
+        MTVAxis.negate();
     }
 
     // Will return true if overlap never equals 0, meaning all

@@ -13,6 +13,9 @@ var polygon = function(options) {
 
     // Set type
     B.type = 'polygon';
+    // TODO: Find one of the (many) algorithms for subdividing a convex polygon
+    // into triangles (graphics needs to do this a lot). Calculate the moment
+    // of each triangle. Add them all up.
     B.inertia = 1;
     B.invInertia = 1 / B.inertia;
 

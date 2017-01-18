@@ -1,4 +1,4 @@
-import vector, {Vector} from '../math/Vector';
+import vector from '../math/Vector';
 
 const Solver = {
     // Collision Types
@@ -12,7 +12,6 @@ const Solver = {
         return this.ELASTIC;
     },
 
-
     /**
      * Resolve collision
      * @param {Collision} collision - collision object to resolve
@@ -20,104 +19,66 @@ const Solver = {
      * @todo: right now just directly manipulates position - things are
      * very jittery, but it works for now.
      */
-    solve: function(collision) {
+    solveCollision: function(collision) {
         // Solve for body collision
         let {body1, body2, mtvaxis, overlap} = collision;
-        let xOverlap = Math.abs(mtvaxis.x * overlap);
-        let yOverlap = Math.abs(mtvaxis.y * overlap);
-        let resolutionVector = vector(xOverlap, yOverlap);
-        let collisionType = this.getCollisionType(body1, body2);
-
-        // SEE HERE:
-        // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-basics-and-impulse-resolution--gamedev-6331
-        // let b1Mass = body1.mass;
-        // let b1InvMass = body1.invMass;
-        // let b2Mass = body2.mass;
-        // let b2InvMass = body2.invMass;
-        // //
-        // // Vec2 rv = B.velocity - A.velocity
-        // let relVel = Vector.subtract(body2.velocity, body1.velocity);
-        //
-        // // Calculate relative velocity in terms of the normal direction
-        // // float velAlongNormal = DotProduct( rv, normal )
-        // let velAlongNormal = Vector.dot(relVel, mtvaxis);
-        //
-        // if (velAlongNormal > 0) {
-        //     return;
-        // }
-        //
-        // // Min restitution
-        // let e = Math.min(body1.restitution, body2.restitution);
-        //
-        // let j = -(1 + e) * velAlongNormal;
-        // j /= body1.invMass + body2.invMass;
-        //
-        // // impulse vector
-        // let impulse = Vector.multiply(mtvaxis, j);
-        //
-        // // Apply impulse
-        // body1.velocity.x -= impulse.x * body1.invMass;
-        // body1.velocity.y -= impulse.y * body1.invMass;
-        // body2.velocity.x += impulse.x * body2.invMass;
-        // body2.velocity.y += impulse.y * body2.invMass;
-
-        // body2.velocity.add()
-
-
-        // // Calculate impulse scalar
-        // float j = -(1 + e) * velAlongNormal
-        // j /= 1 / A.mass + 1 / B.mass
-        //
-        // // Apply impulse
-        // Vec2 impulse = j * normal
-        // A.velocity -= 1 / A.mass * impulse
-        // B.velocity += 1 / B.mass * impulse
-
-
-
+        let resolutionVector = vector(mtvaxis.x * overlap, mtvaxis.y * overlap);
+        // let collisionType = this.getCollisionType(body1, body2);
 
         // if there is an xOverlap
-        if (xOverlap !== 0) {
-            let xDir = 1;
-            if (body1.aabb.min.x < body2.aabb.min.x) {
-                // Move body1 to the left and body2 to the right
-                xDir = -1;
-            }
+        let damping = 1;
 
-            if (!body1.static) {
-                body1.position.x += resolutionVector.x / 2 * xDir;
-            }
-            if (!body2.static) {
-                body2.position.x -= resolutionVector.x / 2 * xDir;
-            }
-        }
+        // First resolve position entirely (i.e. move it out of collision)
+        body1.position.x += resolutionVector.x / 2 + .001;
+        body1.position.y += resolutionVector.y / 2 + .001;
+        body2.position.x -= resolutionVector.x / 2 + .001;
+        body2.position.y -= resolutionVector.y / 2 + .001;
 
-        // If there's a y overlap
-        if (yOverlap !== 0) {
-            let yDir = 1;
-            // And body1 is lower on screen than body 2
-            if (body1.aabb.min.y < body2.aabb.min.y) {
-                // Move body 1 up and body 2 down
-                yDir = -1;
-            }
+        // Set previous position (so it's velocity is zero)
+        body1.positionPrev = body1.position.clone();
+        body2.positionPrev = body2.position.clone();
 
-            if (!body1.static) {
-                body1.position.y += resolutionVector.y / 2 * yDir;
-            }
-            if (!body2.static) {
-                body2.position.y -= resolutionVector.y / 2 * yDir;
-            }
-        }
+        let e = Math.max(body1.restitution, body2.restitution);
 
-        // body1.constraints.forEach(constraint => {
-        //     constraint.solve();
-        // });
-        // body2.constraints.forEach(constraint => {
-        //     constraint.solve();
-        // });
+        // Give it some velocity based on coefficient of restitution and some
+        // arbitrary damping (this needs to be tuned so the collision feels
+        // realistic!) TODO: Figure out how to make them more realistic
+        body1.positionPrev.x -= resolutionVector.x / 2 * e * damping;
+        body1.positionPrev.y -= resolutionVector.y / 2 * e * damping;
+        body2.positionPrev.x += resolutionVector.x / 2 * e * damping;
+        body2.positionPrev.y += resolutionVector.y / 2 * e * damping;
+
+        // Preserve impulse? See here: http://codeflow.org/entries/2010/nov/29/verlet-collision-with-impulse-preservation/
+        // let damping = 0.5;
+        // let f1 = (damping*(resolutionVector.x * body1.velocity.x + resolutionVector.y * body1.velocity.y))/resolutionVector.magnitudeSq();
+        // // var f2 = (damping*(resolutionVector.x*v2x+y*v2y))/slength;
+        // let f2 = (damping*(resolutionVector.x * body2.velocity.x + resolutionVector.y * body2.velocity.y))/resolutionVector.magnitudeSq();
+
+        // Swap the projected components
+        // let v1x = body1.velocity.x + f2 * resolutionVector.x - f1 * resolutionVector.x;
+        // let v2x = body2.velocity.x + f1 * resolutionVector.x - f2 * resolutionVector.x;
+        // let v1y = body1.velocity.y + f2 * resolutionVector.y - f1 * resolutionVector.y;
+        // let v2y = body2.velocity.y + f1 * resolutionVector.y - f2 * resolutionVector.y;
+        //
+        // body1.positionPrev.x = body1.position.x - v1x;
+        // body1.positionPrev.y = body1.position.y - v1y;
+        // body2.positionPrev.x = body2.position.x - v2x;
+        // body2.positionPrev.y = body2.position.y - v2y;
+
+        // update vertices and aabb's
+        body1.updateVertices();
+        body2.updateVertices();
     },
-    solveConstraint: function(constraint) {
-        constraint.solve();
+    solveCollisions: function(collisions) {
+        collisions.forEach(c => this.solveCollision(c));
+    },
+    solveConstraints: function(constraints) {
+        constraints.forEach(c => c.solve());
+    },
+    solve: function(collisions, constraints, dt) {
+        this.dt = dt;
+        this.solveConstraints(constraints);
+        this.solveCollisions(collisions);
     }
 };
 

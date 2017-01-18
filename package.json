@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "BUILD_ENV=production webpack && BUILD_EV=dev webpack",
-    "dev": "webpack-dev-server --progress --colors --inline --hot --content-base . --module-bind",
+    "build": "BUILD_ENV=production webpack && BUILD_ENV=dev webpack",
+    "dev": "open http://localhost:1234 && webpack-dev-server --progress --colors --inline --hot --port 1234 --content-base . --module-bind",
     "test": "mocha --recursive --compilers js:babel-core/register --colors -w ./test/",
     "start": "ss ."
   },

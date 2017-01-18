@@ -8,20 +8,35 @@ window.addEventListener('load', function() {
     window.sci = sci;
 
     var system = sci.system(loop, {
-        width: 900,
+        width: 600,
         height: 600,
-        cellSize: 100
+        cellSize: 100,
+        collideBoundary: true
     });
+
     system.loop = loop;
+    system.gravityOn = true;
+    setTimeout(function() {
+        system.gravity = sci.constants.GRAVITY.HEAVY;
+        console.log(system.bodies[0].force);
+        setTimeout(function() {
+            system.gravity = -sci.constants.GRAVITY.LIGHT;
+            console.log(system.bodies[0].force);
+        }, 3000);
+    }, 3000);
+
 
     window.system = system;
     var renderer = sci.renderer(system, {
         canvas: 'canvas',
         debug: false,
-        background: 'lightgrey'
+        background: 'black',
+        clearBackground: true
     });
 
     window.renderer = renderer;
+
+    // createSun(system.width / 2, 10, 800);
 
     var r = sci.rect({
         x: 10,
@@ -35,22 +50,26 @@ window.addEventListener('load', function() {
     });
 
     let circles = [];
-    let numCircles = 10;
+    let numCircles = 100;
     let spacing = {
         height: (system.height - 30) / numCircles,
         width: (system.width - 20) / numCircles
     };
     for (let i = 0; i < numCircles; i++) {
         circles.push(sci.circle({
-            mass: 10,
-            debug: true,
+            mass: 1,
+            debug: false,
+            // canCollide: false,
             x: 20 + spacing.width * i,
             y: 10 + Math.random() * system.height,
-            velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 6 - 3),
-            radius: 15,
-            strokeStyle: 'blue',
-            lineWidth: 0.5,
-            alpha: 0.5
+            force: {
+                x: Math.random() * .00004 - .00002,
+                y: Math.random() * .00004 - .00002,
+            },
+            // velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 6 - 3),
+            radius: Math.random() * 25 + 5,
+            strokeStyle: 'white',
+            lineWidth: 2
         }));
     }
     window.circles = circles;
@@ -59,13 +78,14 @@ window.addEventListener('load', function() {
     for (let i = 0; i < numCircles; i++) {
         rects.push(sci.rect({
             mass: Math.random() * 5 + 5,
-            debug: true,
+            debug: false,
             x: 10 + spacing.width * i,
             y: Math.random() * system.height,
-            width: 60,
+            width: 20,
             velocity: new sci.Vector(Math.random() * 6 - 3, Math.random() * 3 - 1.5),
             height: 30,
-            strokeStyle: 'orange',
+            torque: .0001,
+            strokeStyle: 'white',
             lineWidth: 0.5,
             mirror: true,
             angularVelocity: Math.random() * 0.02 - 0.01
@@ -161,6 +181,22 @@ window.addEventListener('load', function() {
     }
 
     renderer.run();
+
+    function createSun(x, y, numLines) {
+        let numPoints = numLines;
+        let step = (Math.PI) / numPoints;
+        for (let i = 0; i < numPoints; i++) {
+            let wave = sci.wave({
+                x: x,
+                y: y,
+                direction: i * step,
+                strokeStyle: 'white',
+                lineWidth: 1,
+                intensity: 0.1
+            });
+            system.add(wave);
+        }
+    }
 
     let squareDown = false;
     let circleDown = false;
@@ -270,7 +306,7 @@ window.addEventListener('load', function() {
             addSun.style.position = 'static';
             sunDown = false;
             if (e.clientY < window.innerHeight - 100) {
-                let numPoints = 1000;
+                let numPoints = 600;
                 let step = (Math.PI * 2) / numPoints;
                 for (let i = 0; i < numPoints; i++) {
                     let wave = sci.wave({
@@ -311,8 +347,9 @@ window.addEventListener('load', function() {
                 let p = sci.polygon({
                     x: e.clientX,
                     y: e.clientY,
+                    debug: true,
                     vertices: [
-                        {x: 0, y: 0},
+                        {x: 50, y: 50},
                         {x: 100, y: 40},
                         {x: 85, y: 65},
                         {x: 42, y: 84},

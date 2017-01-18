@@ -1,9 +1,11 @@
 import * as math from '../math/math';
-const Renderer = {};
-Renderer.prototype = {
+// TODO: rename params to options to be consistent with other objects
+const Renderer = {
     init: function(system, params) {
-        this.clearBackground = true;
+        this.clearBackground = params.clearBackground === undefined ? true : params.clearBackground;
+        console.log(this.clearBackground);
         this.background = params.background || 'black';
+        this.borderColor = params.borderColor;
         this.system = system;
         // this.loop = loop;
 
@@ -27,13 +29,18 @@ Renderer.prototype = {
         this.canvas.height = this.system.height;
         this.ctx = this.canvas.getContext('2d');
 
+        // Draw background
+        this.ctx.beginPath();
+        this.ctx.globalAlpha = 1;
+        this.ctx.fillStyle = this.background;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         // Timing for render loop
         this.frameTimestep = 0;
         this.fps = 60;
         this.dt = 1000 / this.fps;
 
         // Debug Params
-        this.debug = params.debug || false;
+        this.debug = params.debug === undefined ? false : params.debug;
         if (this.debug) {
             window.renderer = this;
             window.ctx = this.canvas.getContext('2d');
@@ -56,6 +63,28 @@ Renderer.prototype = {
         this.system.hash = this.system.initializeHash(this.system.cellSize, width, height);
     },
 
+    drawPoint: function(point) {
+        this.ctx.beginPath();
+        this.ctx.ellipse(point.position.x, point.position.y, 3, 3, 0, 0, Math.PI * 2);
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+    },
+    drawConstraints: function(constraints) {
+        constraints.forEach(c => this.drawConstraint(c));
+    },
+    drawConstraint: function(constraint) {
+        switch (constraint.type) {
+            case 'link':
+                this.ctx.beginPath();
+                this.ctx.moveTo(constraint.body1.centroid.x, constraint.body1.centroid.y);
+                this.ctx.lineTo(constraint.body2.centroid.x, constraint.body2.centroid.y);
+                this.ctx.stroke();
+        }
+    },
+    drawBodies: function(bodies) {
+        bodies.forEach(b => this.drawBody(b));
+    },
     /**
      * Draw a body object
      * @private
@@ -300,26 +329,31 @@ Renderer.prototype = {
         this.render(pct);
     },
 
-    render: function(pct) {
-        // Clear background
-        if (this.clearBackground) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        }
-        // Draw backgroun
+    drawBackground: function() {
+         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // Draw background
         this.ctx.beginPath();
         this.ctx.globalAlpha = 1;
+        this.ctx.lineWidth = 1;
         this.ctx.fillStyle = this.background;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.strokeStyle = this.borderColor;
+        this.ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fill();
+        this.ctx.stroke();
+    },
 
-        // Update the system
-        // FIXME: this.laststate isn't doing anything right now
-        // this.lastState = this.system.update(this.timing);
+    render: function(pct) {
+        // Clear background
+        if (this.clearBackground) { this.drawBackground(); }
 
-        // Draw all objects + waves
-        this.system.bodies.forEach(body => {
-
-            this.drawBody(body, pct);
-        });
+        // Draw all objects
+        this.drawBodies(this.system.bodies);
+        this.drawConstraints(this.system.constraints);
+        if (this.debug) {
+            this.system.anchors.forEach(point => {
+                    this.drawPoint(point);
+            });
+        }
 
         // Update all waves
         this.system.waves.forEach(wave => {
@@ -348,14 +382,14 @@ Renderer.prototype = {
             Object.keys(this.system.hash.contents).forEach(row => {
                 Object.keys(this.system.hash.contents[row]).forEach(col => {
                     // Draw all squares
-                    this.ctx.beginPath();
                     // this.ctx.strokeStyle = 'green';
                     if (this.system.hash.contents[row][col].length !== 0) {
+                        this.ctx.beginPath();
                         this.ctx.strokeStyle = 'red';
                         this.ctx.lineWidth = 1;
+                        this.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+                        this.ctx.stroke();
                     }
-                    this.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
-                    this.ctx.stroke();
                 });
             });
         }
@@ -386,7 +420,7 @@ Renderer.prototype = {
 };
 
 var renderer = function(system, params) {
-    let R = Object.create(Renderer.prototype);
+    let R = Object.create(Renderer);
     R.init(system, params);
     return R;
 };

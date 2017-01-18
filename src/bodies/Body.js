@@ -41,8 +41,10 @@ let Body = {
         // shape files
 
         // MOTION Properties //
+        this.positionImpulse = {x: 0, y: 0};
         this.position = vector(options.x || 0, options.y || 0);
         this.positionPrev = this.position.clone();
+        this.interpolatedPosition = this.position.clone();
         this.velocity = vector(
             (options.velocity && options.velocity.x) || 0,
             (options.velocity && options.velocity.y) || 0
@@ -51,13 +53,14 @@ let Body = {
         //     (options.acceleration && options.acceleration.x) || 0,
         //     (options.acceleration && options.acceleration.y) || 0,
         // );
-        this.force = {
-            x: 0,
-            y: .0004
-        };
+        this.force = vector(
+            (options.force && options.force.x) || 0,
+            (options.force && options.force.y) || 0
+        );
         this.torque = options.torque === undefined ? 0 : options.torque;
         this._scale = 1;
         this._rotation = options.rotation === undefined ? 0 : options.rotation; // <-- Private prop - DO NOT SET THIS DIRECTLY, use getter and setter for
+        this.interpolatedRotation = this.rotation;
         this.rotationPrev = this._rotation;
         this.angularVelocity = options.angularVelocity === undefined ? 0 : options.angularVelocity;
 
@@ -66,7 +69,7 @@ let Body = {
         this.canCollide = options.canCollide !== false;
         this.collisionType = options.collisionType || 'elastic';
         this.colliderList = [];
-        this.restitution = 0.1;
+        this.restitution = 1;
 
         // OPTICAL Properties //
         this.refractiveIndex = options.refractiveIndex || 1;
@@ -76,7 +79,7 @@ let Body = {
         this.intersectionPoints = {};
 
         // If debug = true, bounding box will be drawn
-        this.debug = options.debug;
+        this.debug = options.debug === undefined ? false : options.debug;
 
         // If the material is provided, set refractive index based on materials
         // database
@@ -104,7 +107,8 @@ let Body = {
     },
 
     freeze: function() {
-        this.static = true;
+        this.setPosition(this.position.x, this.position.y);
+        // this.static = true;
         // this._cachedVelocity = this.velocity.clone();
         // this.velocity.x = 0;
         // this.velocity.y = 0;
@@ -191,34 +195,38 @@ let Body = {
                 break;
             }
             case 'polygon': {
-                this.updateVertices = function() {
-                    this.centroid = {x: 0, y: 0};
-                    this.vertices.forEach((vert, index) => {
-                        let relVert = this._relativeVertices[index];
-                        vert.x = relVert.x + this.position.x;
-                        vert.y = relVert.y + this.position.y;
+                this.centroid = {x: 0, y: 0};
+                this.vertices.forEach((vert, index) => {
+                    let relVert = this._relativeVertices[index];
+                    vert.x = relVert.x + this.position.x;
+                    vert.y = relVert.y + this.position.y;
 
-                        this.centroid.x += vert.x;
-                        this.centroid.y += vert.y;
+                    this.centroid.x += vert.x;
+                    this.centroid.y += vert.y;
+                });
+
+                this.centroid.x /= this.vertices.length;
+                this.centroid.y /= this.vertices.length;
+
+                // Update rotate vertices if necessary
+                if (this.angularVelocity !== 0 || this._rotation !== 0 || this._scale !== 0) {
+                    this.vertices.forEach(vert => {
+                        vert.translate(-this.centroid.x, -this.centroid.y)
+                            .rotate(this._rotation)
+                            .multiply(this._scale)
+                            .translate(this.centroid.x, this.centroid.y);
                     });
-
-                    this.centroid.x /= this.vertices.length;
-                    this.centroid.y /= this.vertices.length;
-
-                    // Update rotate vertices if necessary
-                    if (this.angularVelocity !== 0 || this._rotation !== 0 || this._scale !== 0) {
-                        this.vertices.forEach(vert => {
-                            vert.translate(-this.centroid.x, -this.centroid.y)
-                                .rotate(this._rotation)
-                                .multiply(this._scale)
-                                .translate(this.centroid.x, this.centroid.y);
-                        });
-                    }
-                };
+                }
                 break;
             }
+            case 'circle':
+                this.centroid = {x: this.position.x, y: this.position.y};
+                break;
             default:
-                return;
+                break;
+        }
+        if (this.aabb) {
+            this.aabb.update();
         }
     },
 
@@ -236,8 +244,8 @@ let Body = {
     setPosition: function(x, y) {
         this.position.x = x;
         this.position.y = y;
-        this.positionPrev = x;
-        this.positionPrev = y;
+        this.positionPrev.x = x;
+        this.positionPrev.y = y;
     },
 
     // Instantaneously set x position without verlet integration
@@ -249,6 +257,10 @@ let Body = {
         this.position.y = y;
         this.positionPrev.y = y;
     },
+    setRotation: function(angle) {
+        this.rotation = angle;
+        this.rotationPrev = angle;
+    },
 
     // TODO: 1/4 Fix the update loop -> body is accelerating WAY too fast.
     update: function(dt) {
@@ -259,6 +271,10 @@ let Body = {
         // var frictionAir = 1 - body.frictionAir * timeScale * body.timeScale,
         let deltaTimeSquared = dt * dt;
 
+        // Verlet integration
+        if (this.colliderList.length > 0) {
+        }
+
         // Calculate previous velocity using change in position during one step
         let velocityPrevX = this.position.x - this.positionPrev.x,
             velocityPrevY = this.position.y - this.positionPrev.y;
@@ -266,15 +282,16 @@ let Body = {
         // update velocity with Verlet integration
         this.velocity.x = velocityPrevX + (this.force.x * this.invMass) * deltaTimeSquared;
         this.velocity.y = velocityPrevY + (this.force.y * this.invMass) * deltaTimeSquared;
+        this.angularVelocity = (this.rotation - this.rotationPrev) + (this.torque * this.invInertia) * deltaTimeSquared;
 
+        // Save previous position
         this.positionPrev.x = this.position.x;
         this.positionPrev.y = this.position.y;
-        this.position.add(this.velocity);
 
-        // Verlet integration
-        this.angularVelocity = (this.rotation - this.rotationPrev) + (this.torque * this.invInertia) * deltaTimeSquared;
+        // Update position with calculated velocity
+        this.position.add(this.velocity);
         this.rotationPrev = this.rotation;
-        this.rotation += this.angularVelocity;
+        this.rotation += this.angularVelocity * deltaTimeSquared;
 
         if (this.updateVertices) {
             this.updateVertices();
@@ -285,7 +302,7 @@ let Body = {
         this.intersectionPoints = {};
 
         this.colliderList = [];
-        this.aabb.update();
+        // this.aabb.update();
         return this;
     }
 };

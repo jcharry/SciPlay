@@ -4,6 +4,7 @@ const Collision = {
         this.body2 = b2;
         this.mtvaxis = mtv;
         this.overlap = overlap;
+        this.penetration = {x: mtv.x * overlap, y: mtv.y * overlap};
     }
 };
 

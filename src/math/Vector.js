@@ -381,11 +381,13 @@ Vector.angleBetween = function(v1, v2) {
 Vector.perp = function(v1, side) {
     switch (side) {
         case 'right':
-            return new Vector(this.y, -this.x);
-        case 'left':
+            return new Vector(v1.y, -v1.x);
         default:
-            return new Vector(-this.y, this.x);
+            return new Vector(-v1.y, v1.x);
     }
+};
+Vector.negate = function(v) {
+    return new Vector(-v.x, -v.y);
 };
 
 export default vector;
