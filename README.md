@@ -8,6 +8,9 @@ already out there, and why reinvent the wheel?).  I do however intend to learn
 as much about game physics as I can, and building this library helps me do just
 that.
 
+I'm also documenting all of this work [on my blog
+here](https://jcharry.com/blog)
+
 So poke around, check the code out, but know that some things don't work quite
 right, because building a working engine is hard.  So please take it with
 a grain of salt.
