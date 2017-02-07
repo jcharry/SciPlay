@@ -185,39 +185,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _System2 = _interopRequireDefault(_System);
 	
-	var _Renderer = __webpack_require__(19);
+	var _Renderer = __webpack_require__(18);
 	
 	var _Renderer2 = _interopRequireDefault(_Renderer);
 	
-	var _Rect = __webpack_require__(20);
+	var _Rect = __webpack_require__(19);
 	
 	var _Rect2 = _interopRequireDefault(_Rect);
 	
-	var _Wave = __webpack_require__(24);
+	var _Wave = __webpack_require__(23);
 	
 	var _Wave2 = _interopRequireDefault(_Wave);
 	
-	var _Circle = __webpack_require__(25);
+	var _Circle = __webpack_require__(24);
 	
 	var _Circle2 = _interopRequireDefault(_Circle);
 	
-	var _Polygon = __webpack_require__(26);
+	var _Polygon = __webpack_require__(25);
 	
 	var _Polygon2 = _interopRequireDefault(_Polygon);
 	
-	var _Point = __webpack_require__(27);
+	var _Anchor = __webpack_require__(26);
 	
-	var _Point2 = _interopRequireDefault(_Point);
+	var _Anchor2 = _interopRequireDefault(_Anchor);
 	
-	var _CONSTANTS = __webpack_require__(18);
+	var _CONSTANTS = __webpack_require__(17);
 	
 	var constants = _interopRequireWildcard(_CONSTANTS);
 	
-	var _BoundaryConstraint = __webpack_require__(15);
+	var _BoundaryConstraint = __webpack_require__(16);
 	
 	var _BoundaryConstraint2 = _interopRequireDefault(_BoundaryConstraint);
 	
-	var _LinkConstraint = __webpack_require__(17);
+	var _LinkConstraint = __webpack_require__(27);
 	
 	var _LinkConstraint2 = _interopRequireDefault(_LinkConstraint);
 	
@@ -225,7 +225,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _GJK2 = _interopRequireDefault(_GJK);
 	
-	var _collisionTypes = __webpack_require__(29);
+	var _collisionTypes = __webpack_require__(30);
 	
 	var _collisionTypes2 = _interopRequireDefault(_collisionTypes);
 	
@@ -250,7 +250,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        system: _System2.default,
 	        wave: _Wave2.default,
 	        rect: _Rect2.default,
-	        point: _Point2.default,
+	        anchor: _Anchor2.default,
 	        polygon: _Polygon2.default,
 	        circle: _Circle2.default,
 	        collisionTypes: _collisionTypes2.default,
@@ -666,6 +666,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        default:
 	            return new Vector(-v1.y, v1.x);
 	    }
+	};
+	Vector.negate = function (v) {
+	    return new Vector(-v.x, -v.y);
 	};
 	
 	exports.default = vector;
@@ -1166,6 +1169,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	// import linkConstraint from '../constraints/LinkConstraint';
+	
 	
 	var _SpatialHash = __webpack_require__(8);
 	
@@ -1183,15 +1188,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Solver2 = _interopRequireDefault(_Solver);
 	
-	var _BoundaryConstraint = __webpack_require__(15);
+	var _Constraint = __webpack_require__(15);
+	
+	var _Constraint2 = _interopRequireDefault(_Constraint);
+	
+	var _BoundaryConstraint = __webpack_require__(16);
 	
 	var _BoundaryConstraint2 = _interopRequireDefault(_BoundaryConstraint);
 	
-	var _LinkConstraint = __webpack_require__(17);
-	
-	var _LinkConstraint2 = _interopRequireDefault(_LinkConstraint);
-	
-	var _CONSTANTS = __webpack_require__(18);
+	var _CONSTANTS = __webpack_require__(17);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1206,15 +1211,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	            params = loop;
 	        }
 	
+	        this._gravityOn = true;
 	        this.frames = [];
 	        this.waves = [];
 	        this.childWaves = [];
 	        this.bodies = [];
 	        this.points = [];
+	        this.anchors = [];
 	        this.width = params.width || 600;
 	        this.height = params.height || 300;
-	        this.collisionPairs = {};
+	        // this.collisionPairs = {};
 	        this.nextBodyId = 0;
+	        this.collisions = [];
+	        this.constraints = [];
 	
 	        this.collideBoundary = params.collideBoundary === undefined ? true : params.collideBoundary;
 	        console.log('can collide with boundary', this.collideBoundary);
@@ -1263,19 +1272,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // tests
 	                obj.id = this.nextBodyId++;
 	
+	                if (this._gravityOn) {
+	                    obj.addForce(0, this.gravity);
+	                }
 	                // Initialize new bodies with world force
-	                obj.addForce(this.worldForce.x, this.worldForce.y);
+	                // obj.addForce(this.worldForce.x, this.worldForce.y);
 	                this.bodies.push(obj);
 	                break;
 	            case 'point':
 	                this.points.push(obj);
 	                break;
+	            case 'anchor':
+	                this.anchors.push(obj);
+	                break;
 	            case 'incident':
 	            case 'wave':
 	                this.waves.push(obj);
 	                break;
+	            case 'link':
+	            case 'boundary':
+	                this.constraints.push(obj);
+	                break;
 	            default:
-	                throw new Error('tried to add something that\'s not a body or a wave');
+	                throw new Error('tried to add something that you\'re totally not allowed to add');
 	        }
 	    },
 	
@@ -1284,17 +1303,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Objects not added will not be rendered
 	     * or updated
 	     *
-	     * @param {Sci.Object|Sci.Object[]} b - a body or wave object, or array of body objects
+	     * @param {Sci.Object|Sci.Object[]} b - a body or wave, or constraint, or array of any of those things
 	     */
-	    add: function add(b) {
+	    add: function add(obj) {
 	        var _this = this;
 	
-	        if ((typeof b === 'undefined' ? 'undefined' : _typeof(b)) === 'object' && b.length !== undefined) {
-	            b.forEach(function (body) {
-	                _this.addObject(body);
+	        if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.length !== undefined) {
+	            // We have an array
+	            obj.forEach(function (o) {
+	                _this.addObject(o);
 	            });
 	        } else {
-	            this.addObject(b);
+	            this.addObject(obj);
 	        }
 	    },
 	
@@ -1324,107 +1344,81 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this;
 	    },
 	
+	    _integratePosition: function _integratePosition(dt) {
+	        this.bodies.forEach(function (body) {
+	            if (!body.static) {
+	                body.update(dt);
+	            }
+	        });
+	    },
+	
+	    _populateGrid: function _populateGrid(bodies) {
+	        var _this3 = this;
+	
+	        this.bodies.forEach(function (body) {
+	            _this3.hash.insertBody(body);
+	        });
+	    },
+	
+	    _updateWorldForces: function _updateWorldForces() {
+	        var _this4 = this;
+	
+	        // Update forces if need be
+	        if (this.worldForceNeedsSet) {
+	            this.bodies.forEach(function (body) {
+	                body.setForce(_this4.worldForce.x, _this4.worldForce.y);
+	            });
+	            this.worldForceNeedsSet = false;
+	        }
+	        if (this.worldForceNeedsUpdate) {
+	            this.bodies.forEach(function (body) {
+	                body.addForce(_this4.worldForce.x, _this4.worldForce.y);
+	            });
+	            this.worldForceNeedsUpdate = false;
+	        }
+	    },
+	    _getCollisionPairs: function _getCollisionPairs() {
+	        // Perform broadphase
+	        this.pairs = this.broadphase.getCollisionPairs(this.bodies, this.hash);
+	
+	        // Perform narrowphase detection on potential pairs
+	        if (this.pairs && Object.keys(this.pairs).length > 0) {
+	            this.collisions = this.narrowphase.checkForCollisions(this.pairs);
+	        }
+	    },
 	    /**
 	     * Update loop
-	     *  For order of operations - see this deck: http://box2d.org/files/GDC2014/ErwinCoumans_ExploringMLCPSolversAndFeatherstone.pdf
-	     *  1. Compute collision contacts
-	     *  2. Inertia Update
-	     *  3. Contact Constraints
-	     *  4. Friction Constraints
-	     *  5. Constraint Solver
-	     *  6. Integrate position and velocity
-	     *  7. Perform ray intersection tests
-	     *  8. Restart
 	     * Update all bodies, waves, run collision tests if necessary, and keep
 	     * track of rayID's on potentially colliding bodies
 	     * @param {number} dt - time step for system update (defaults to 16.666 ms)
 	     * @return {This} for chaining, or getting checking last state of system
 	     */
 	    update: function update(dt) {
-	        var _this3 = this;
+	        var _this5 = this;
 	
 	        // 1. Reset State for next loop
 	        this.hash.clear();
-	        this.bodies.forEach(function (body) {
-	            // Clear out constraints
-	            body.constraints = [];
 	
-	            // Add each body to the hash
-	            _this3.hash.insertBody(body);
-	        });
+	        // Update world forces, if necessary
+	        this._updateWorldForces();
 	
-	        // Reset point constraints
-	        // Reset constriants
-	        this.points.forEach(function (point) {
-	            point.constraints = [];
-	        });
+	        // Update bodies with verlet integration
+	        // And insert into hash
+	        this._integratePosition(dt);
 	
-	        // Run User Loop
+	        // Run User Loop (they may want to change position somehow)
 	        if (this.loop) {
 	            this.loop();
 	        }
 	
-	        // 1. Compute contacts
-	        // Update forces if need be
-	        if (this.worldForceNeedsSet) {
-	            this.bodies.forEach(function (body) {
-	                body.setForce(_this3.worldForce.x, _this3.worldForce.y);
-	            });
-	            this.worldForceNeedsSet = false;
-	        }
-	        if (this.worldForceNeedsUpdate) {
-	            this.bodies.forEach(function (body) {
-	                body.addForce(_this3.worldForce.x, _this3.worldForce.y);
-	            });
-	            this.worldForceNeedsUpdate = false;
-	        }
+	        // Add bodies to collision grid
+	        this._populateGrid();
 	
-	        // Update each body with Verlet Integration
-	        // Put bodies into hash, check for boundary constraint if
-	        // necessary
-	        this.bodies.forEach(function (body) {
-	            // And boundary collision constraint if needed
-	            if (_this3.collideBoundary) {
-	                var c = (0, _BoundaryConstraint2.default)(body, _this3);
-	                body.constraints.push(c);
-	            }
+	        // Get broadphase collision pairs
+	        this._getCollisionPairs();
 	
-	            // Update physics for each body
-	            body.update(dt);
-	        });
-	
-	        // Get broad collision pairs
-	        var pairs = this.broadphase.getCollisionPairs(this.bodies, this.hash);
-	        var collisions = void 0;
-	
-	        // Perform narrowphase detection on potential pairs
-	        if (pairs && Object.keys(pairs).length > 0) {
-	            collisions = this.narrowphase.checkForCollisions(pairs);
-	        }
-	
-	        // If we found actual collisions
-	        if (collisions && collisions.length > 0) {
-	            // Solve for collisions!
-	            collisions.forEach(function (coll) {
-	                _this3.solver.solveCollision(coll);
-	                // let {MTVAxis, overlap, body2} = coll;
-	                // body2.position.add(MTVAxis.multiply(overlap));
-	            });
-	        }
-	
-	        // Solve constraints
-	        this.bodies.forEach(function (body) {
-	            body.constraints.forEach(function (c) {
-	                _this3.solver.solveConstraint(c);
-	                // body.velocity.add(v.multiply(dt));
-	                // c.solve();
-	            });
-	        });
-	
-	        // After all velocities are resolved:
-	        this.bodies.forEach(function (body) {
-	            body.position.add(body.velocity);
-	        });
+	        // Solve collisions and constraints
+	        this.solver.solve(this.collisions, this.constraints, dt);
 	
 	        // Each ray needs a unique ID for collision checking
 	        // Reset currentRayID during each update loop so we can reuse these
@@ -1436,8 +1430,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Update each wave and loop through it's chilren
 	        this.waves.forEach(function (wave) {
-	            wave.update(_this3);
-	            _this3.traverseWaves(wave);
+	            wave.update(_this5);
+	            _this5.traverseWaves(wave);
 	        });
 	
 	        return this;
@@ -1450,7 +1444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Wave} wave - wave object to traverse
 	     */
 	    traverseWaves: function traverseWaves(wave) {
-	        var _this4 = this;
+	        var _this6 = this;
 	
 	        // If the wave has children
 	        // Add each child to the system,
@@ -1458,8 +1452,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Exit condition -> When children have no children
 	        if (wave.children.length !== 0) {
 	            wave.children.forEach(function (child) {
-	                _this4.addChildWave(child);
-	                _this4.traverseWaves(child);
+	                _this6.addChildWave(child);
+	                _this6.traverseWaves(child);
 	            });
 	        }
 	    },
@@ -1482,21 +1476,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this._gravityOn;
 	    },
 	    set: function set(isOn) {
-	        var _this5 = this;
+	        var _this7 = this;
 	
 	        if (this._gravityOn && !isOn) {
 	            // turn gravity off
 	            this._gravityOn = false;
 	            this.worldForce.y -= this.gravity;
 	            this.bodies.forEach(function (body) {
-	                body.addForce(0, -_this5.gravity);
+	                body.addForce(0, -_this7.gravity);
 	            });
 	        } else if (!this._gravityOn && isOn) {
 	            // turn gravity on
 	            this._gravityOn = true;
 	            this.worldForce.y += this.gravity;
 	            this.bodies.forEach(function (body) {
-	                body.addForce(0, _this5.gravity);
+	                body.addForce(0, _this7.gravity);
 	            });
 	        }
 	    }
@@ -1865,35 +1859,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return { min: min, max: max };
 	    } else if (b.type === 'circle') {
-	        var _p = b.interpolatedPosition.scalarProjectUnit(axis);
+	        var _p = b.position.scalarProjectUnit(axis);
 	        return { min: _p - b.scaledRadius, max: _p + b.scaledRadius };
 	    }
 	};
 	
 	/**
+	 * Line Overlap
+	 * Method to determine if two lines on the same axis have an overlap
 	 * @param {number} p1min - min point of 1st line
 	 * @param {number} p1max - max point of 1st line
 	 * @param {number} p2min - min point of 2nd line
 	 * @param {number} p2max - max point of 2nd line
 	 * @return {number} amount of overlap of these two lines
-	 *
 	 */
 	SAT.lineOverlap = function (p1min, p1max, p2min, p2max) {
 	    return Math.max(0, Math.min(p1max, p2max) - Math.max(p1min, p2min));
 	};
 	
 	/**
-	 * Rect-Rect intersection test
-	 * @param {Sci.Rect} b1 - first body
-	 * @param {Sci.Rect} b2 - second body
-	 * @return {bool} true or false, if intersection occurred
-	 * @todo optimize like crazy, we only need to do four axes, not eight
+	 * Entry point for SAT tests
+	 * @param {Sci.Body} b1 - first body
+	 * @param {Sci.Body} b2 - second body
+	 * @return {Sci.Collision} collision object
 	 * see here: https://gamedevelopment.tutsplus.com/tutorials/collision-detection-using-the-separating-axis-theorem--gamedev-169
-	 *
-	 * @todo should return collision data, not just true or false
 	 * see here: http://www.dyn4j.org/2010/01/sat/
 	 */
-	
 	SAT.intersect = function (b1, b2) {
 	    if (b1.type === 'rectangle' || b1.type === 'polygon') {
 	        if (b2.type === 'circle') {
@@ -1914,14 +1905,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 	SAT.circlecircle = function (c1, c2) {
-	    var v1 = _Vector.Vector.subtract(c2.interpolatedPosition, c1.interpolatedPosition);
+	    var v1 = _Vector.Vector.subtract(c2.position, c1.position);
 	    var d = v1.magnitude();
 	    var rplusr = c1.scaledRadius + c2.scaledRadius;
 	
 	    if (d < rplusr) {
-	        // return {MTVAxis: v1.normalize(), overlap: rplusr - d};
+	
+	        // Ensure mtv axis points from p2 to p1
+	        // TODO: Verify this with a few more tests...
+	        var c2toc1 = _Vector.Vector.subtract(c2.position, c1.position);
+	        if (v1.dot(c2toc1) >= 0) {
+	            v1.negate();
+	        }
+	
 	        return (0, _Collision2.default)(c1, c2, v1.normalize(), rplusr - d);
 	    }
+	
 	    return;
 	};
 	
@@ -1948,7 +1947,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < numVerts1; i++) {
 	        var v1 = p1.vertices[i];
 	        var v2 = p1.vertices[i + 1 === p1.vertices.length ? 0 : i + 1];
-	        var axis = _Vector.Vector.subtract(v2, v1);
+	        var axis = _Vector.Vector.subtract(v1, v2);
 	        axis.normalize().perp();
 	        axes.push(axis);
 	    }
@@ -1961,7 +1960,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var _i = 0; _i < numVerts2; _i++) {
 	        var _v = p2.vertices[_i];
 	        var _v2 = p2.vertices[_i + 1 === p2.vertices.length ? 0 : _i + 1];
-	        var _axis = _Vector.Vector.subtract(_v2, _v);
+	        var _axis = _Vector.Vector.subtract(_v, _v2);
 	        _axis.normalize().perp();
 	        axes.push(_axis);
 	    }
@@ -1994,6 +1993,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	
+	    // Ensure mtv axis points from p1 to p2
+	    // TODO: Verify this with a few more tests...
+	    var p2top1 = _Vector.Vector.subtract(p2.position, p1.position);
+	    if (MTVAxis.dot(p2top1) >= 0) {
+	        MTVAxis.negate();
+	    }
+	
+	    // TODO: Find support points to determine which points were involved in the
+	    // collision!?
+	
 	    // Will return true if overlap never equals 0, meaning all
 	    // projections overlap to some degree, so a collision is happening
 	    // return {MTV: {axis: MTVAxis, magnitude: smallestOverlap}};
@@ -2023,12 +2032,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < numVerts1; i++) {
 	        var v1 = p.vertices[i];
 	        var v2 = p.vertices[i + 1 === p.vertices.length ? 0 : i + 1];
-	        var axis = _Vector.Vector.subtract(v2, v1);
+	        var axis = _Vector.Vector.subtract(v1, v2);
 	        axis.normalize().perp();
 	        axes.push(axis);
 	
 	        // Get distance of vertex to circle center
-	        var vc = _Vector.Vector.subtract(c.interpolatedPosition, v1);
+	        var vc = _Vector.Vector.subtract(v1, c.position);
 	        if (d) {
 	            if (vc.magnitudeSq() < d.magnitudeSq()) {
 	                d = vc;
@@ -2068,6 +2077,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	
+	    // Ensure mtv axis points from p2 to p1
+	    // TODO: Verify this with a few more tests...
+	    var b2tob1 = _Vector.Vector.subtract(b2.position, b1.position);
+	    if (MTVAxis.dot(b2tob1) >= 0) {
+	        MTVAxis.negate();
+	    }
+	
 	    // Will return true if overlap never equals 0, meaning all
 	    // projections overlap to some degree, so a collision is happening
 	    return (0, _Collision2.default)(b1, b2, MTVAxis, smallestOverlap);
@@ -2091,6 +2107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.body2 = b2;
 	        this.mtvaxis = mtv;
 	        this.overlap = overlap;
+	        this.penetration = { x: mtv.x * overlap, y: mtv.y * overlap };
 	    }
 	};
 	
@@ -2145,99 +2162,69 @@ return /******/ (function(modules) { // webpackBootstrap
 	            mtvaxis = collision.mtvaxis,
 	            overlap = collision.overlap;
 	
-	        var xOverlap = Math.abs(mtvaxis.x * overlap);
-	        var yOverlap = Math.abs(mtvaxis.y * overlap);
-	        var resolutionVector = (0, _Vector2.default)(xOverlap, yOverlap);
-	        var collisionType = this.getCollisionType(body1, body2);
-	
-	        // SEE HERE:
-	        // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-basics-and-impulse-resolution--gamedev-6331
-	        // let b1Mass = body1.mass;
-	        // let b1InvMass = body1.invMass;
-	        // let b2Mass = body2.mass;
-	        // let b2InvMass = body2.invMass;
-	        // //
-	        // // Vec2 rv = B.velocity - A.velocity
-	        // let relVel = Vector.subtract(body2.velocity, body1.velocity);
-	        //
-	        // // Calculate relative velocity in terms of the normal direction
-	        // // float velAlongNormal = DotProduct( rv, normal )
-	        // let velAlongNormal = Vector.dot(relVel, mtvaxis);
-	        //
-	        // if (velAlongNormal > 0) {
-	        //     return;
-	        // }
-	        //
-	        // // Min restitution
-	        // let e = Math.min(body1.restitution, body2.restitution);
-	        //
-	        // let j = -(1 + e) * velAlongNormal;
-	        // j /= body1.invMass + body2.invMass;
-	        //
-	        // // impulse vector
-	        // let impulse = Vector.multiply(mtvaxis, j);
-	        //
-	        // // Apply impulse
-	        // body1.velocity.x -= impulse.x * body1.invMass;
-	        // body1.velocity.y -= impulse.y * body1.invMass;
-	        // body2.velocity.x += impulse.x * body2.invMass;
-	        // body2.velocity.y += impulse.y * body2.invMass;
-	
-	        // body2.velocity.add()
-	
-	
-	        // // Calculate impulse scalar
-	        // float j = -(1 + e) * velAlongNormal
-	        // j /= 1 / A.mass + 1 / B.mass
-	        //
-	        // // Apply impulse
-	        // Vec2 impulse = j * normal
-	        // A.velocity -= 1 / A.mass * impulse
-	        // B.velocity += 1 / B.mass * impulse
-	
+	        var resolutionVector = (0, _Vector2.default)(mtvaxis.x * overlap, mtvaxis.y * overlap);
+	        // let collisionType = this.getCollisionType(body1, body2);
 	
 	        // if there is an xOverlap
-	        if (xOverlap !== 0) {
-	            var xDir = 1;
-	            if (body1.aabb.min.x < body2.aabb.min.x) {
-	                // Move body1 to the left and body2 to the right
-	                xDir = -1;
-	            }
+	        var damping = 1;
 	
-	            if (!body1.static) {
-	                body1.interpolatedPosition.x += resolutionVector.x / 2 * xDir;
-	            }
-	            if (!body2.static) {
-	                body2.interpolatedPosition.x -= resolutionVector.x / 2 * xDir;
-	            }
-	        }
+	        // First resolve position entirely (i.e. move it out of collision)
+	        body1.position.x += resolutionVector.x / 2 + .001;
+	        body1.position.y += resolutionVector.y / 2 + .001;
+	        body2.position.x -= resolutionVector.x / 2 + .001;
+	        body2.position.y -= resolutionVector.y / 2 + .001;
 	
-	        // If there's a y overlap
-	        if (yOverlap !== 0) {
-	            var yDir = 1;
-	            // And body1 is lower on screen than body 2
-	            if (body1.aabb.min.y < body2.aabb.min.y) {
-	                // Move body 1 up and body 2 down
-	                yDir = -1;
-	            }
+	        // Set previous position (so it's velocity is zero)
+	        body1.positionPrev = body1.position.clone();
+	        body2.positionPrev = body2.position.clone();
 	
-	            if (!body1.static) {
-	                body1.interpolatedPosition.y += resolutionVector.y / 2 * yDir;
-	            }
-	            if (!body2.static) {
-	                body2.interpolatedPosition.y -= resolutionVector.y / 2 * yDir;
-	            }
-	        }
+	        var e = Math.max(body1.restitution, body2.restitution);
 	
-	        // body1.constraints.forEach(constraint => {
-	        //     constraint.solve();
-	        // });
-	        // body2.constraints.forEach(constraint => {
-	        //     constraint.solve();
-	        // });
+	        // Give it some velocity based on coefficient of restitution and some
+	        // arbitrary damping (this needs to be tuned so the collision feels
+	        // realistic!) TODO: Figure out how to make them more realistic
+	        body1.positionPrev.x -= resolutionVector.x / 2 * e * damping;
+	        body1.positionPrev.y -= resolutionVector.y / 2 * e * damping;
+	        body2.positionPrev.x += resolutionVector.x / 2 * e * damping;
+	        body2.positionPrev.y += resolutionVector.y / 2 * e * damping;
+	
+	        // Preserve impulse? See here: http://codeflow.org/entries/2010/nov/29/verlet-collision-with-impulse-preservation/
+	        // let damping = 0.5;
+	        // let f1 = (damping*(resolutionVector.x * body1.velocity.x + resolutionVector.y * body1.velocity.y))/resolutionVector.magnitudeSq();
+	        // // var f2 = (damping*(resolutionVector.x*v2x+y*v2y))/slength;
+	        // let f2 = (damping*(resolutionVector.x * body2.velocity.x + resolutionVector.y * body2.velocity.y))/resolutionVector.magnitudeSq();
+	
+	        // Swap the projected components
+	        // let v1x = body1.velocity.x + f2 * resolutionVector.x - f1 * resolutionVector.x;
+	        // let v2x = body2.velocity.x + f1 * resolutionVector.x - f2 * resolutionVector.x;
+	        // let v1y = body1.velocity.y + f2 * resolutionVector.y - f1 * resolutionVector.y;
+	        // let v2y = body2.velocity.y + f1 * resolutionVector.y - f2 * resolutionVector.y;
+	        //
+	        // body1.positionPrev.x = body1.position.x - v1x;
+	        // body1.positionPrev.y = body1.position.y - v1y;
+	        // body2.positionPrev.x = body2.position.x - v2x;
+	        // body2.positionPrev.y = body2.position.y - v2y;
+	
+	        // update vertices and aabb's
+	        body1.updateVertices();
+	        body2.updateVertices();
 	    },
-	    solveConstraint: function solveConstraint(constraint) {
-	        constraint.solve();
+	    solveCollisions: function solveCollisions(collisions) {
+	        var _this = this;
+	
+	        collisions.forEach(function (c) {
+	            return _this.solveCollision(c);
+	        });
+	    },
+	    solveConstraints: function solveConstraints(constraints) {
+	        constraints.forEach(function (c) {
+	            return c.solve();
+	        });
+	    },
+	    solve: function solve(collisions, constraints, dt) {
+	        this.dt = dt;
+	        this.solveConstraints(constraints);
+	        this.solveCollisions(collisions);
 	    }
 	};
 	
@@ -2251,6 +2238,57 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	// import {Vector} from '../math/Vector';
+	
+	var Constraint = {
+	    init: function init(body1, body2, bounds, distance, forces) {
+	        this.body1 = body1;
+	        this.body2 = body2;
+	        this.bounds = bounds;
+	        this.distance = distance;
+	        this.forces = forces;
+	    }
+	    // enable: function() {
+	    //     if (this.body1) {
+	    //         this.body1.constraints.push(this);
+	    //     }
+	    //     if (this.body2) {
+	    //         this.body2.constraints.push(this);
+	    //     }
+	    // }
+	};
+	
+	var constraint = function constraint() {
+	    var type = arguments.length <= 0 ? undefined : arguments[0];
+	    var c = Object.create(Constraint);
+	    c.type = arguments.length <= 0 ? undefined : arguments[0];
+	
+	    switch (type) {
+	        case 'boundary':
+	            c.init(arguments.length <= 1 ? undefined : arguments[1], null, arguments.length <= 3 ? undefined : arguments[3], null, null);
+	            break;
+	        case 'link':
+	            c.init(arguments.length <= 1 ? undefined : arguments[1], arguments.length <= 2 ? undefined : arguments[2], null, arguments.length <= 3 ? undefined : arguments[3], null);
+	            break;
+	        default:
+	            throw new Error('I don\'t know how to handle that kind of constraint!');
+	    }
+	
+	    return c;
+	};
+	
+	exports.default = constraint;
+	module.exports = exports['default'];
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2259,7 +2297,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Constraint = __webpack_require__(16);
+	var _Constraint = __webpack_require__(15);
 	
 	var _Constraint2 = _interopRequireDefault(_Constraint);
 	
@@ -2348,108 +2386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 16 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	// import {Vector} from '../math/Vector';
-	
-	var Constraint = {
-	    init: function init(body1, body2, bounds, distance, forces) {
-	        this.body1 = body1;
-	        this.body2 = body2;
-	        this.bounds = bounds;
-	        this.distance = distance;
-	        this.forces = forces;
-	    },
-	    enable: function enable() {
-	        if (this.body1) {
-	            this.body1.constraints.push(this);
-	        }
-	        if (this.body2) {
-	            this.body2.constraints.push(this);
-	        }
-	    }
-	};
-	
-	var constraint = function constraint() {
-	    var type = arguments.length <= 0 ? undefined : arguments[0];
-	    var c = Object.create(Constraint);
-	    c.type = arguments.length <= 0 ? undefined : arguments[0];
-	
-	    switch (type) {
-	        case 'boundary':
-	            c.init(arguments.length <= 1 ? undefined : arguments[1], null, arguments.length <= 3 ? undefined : arguments[3], null, null);
-	            break;
-	        case 'link':
-	            c.init(arguments.length <= 1 ? undefined : arguments[1], arguments.length <= 2 ? undefined : arguments[2], null, arguments.length <= 3 ? undefined : arguments[3], null);
-	            break;
-	        default:
-	            throw new Error('I don\'t know how to handle that kind of constraint!');
-	    }
-	
-	    return c;
-	};
-	
-	exports.default = constraint;
-	module.exports = exports['default'];
-
-/***/ },
 /* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _Constraint = __webpack_require__(16);
-	
-	var _Constraint2 = _interopRequireDefault(_Constraint);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var linkConstraint = function linkConstraint(body1, body2, dist) {
-	    var C = (0, _Constraint2.default)('link', body1, body2, dist);
-	    C.type = 'link';
-	
-	    C.solve = function () {
-	        // Just try and solve this one constraint
-	        if (body2.type === 'point') {
-	            // let fc = {x: 0, y: 0};
-	            var p = body2.position.clone();
-	            p.subtract(body1.interpolatedPosition);
-	            var v = body1.velocity;
-	            var fext = body1.force;
-	            var mass = body1.mass;
-	
-	            var lambda = (p.dot(fext) - v.dot(v) * mass) / p.dot(p);
-	            // let lambda = -(p.x * v.x + p.y * v.y + 1)*mass / (2 * (p.x * p.x + p.y * p.y));
-	
-	            var pc = {
-	                x: p.x * lambda,
-	                y: p.y * lambda
-	            };
-	
-	            // let la
-	            body1.velocity.add(pc);
-	            console.log(p.magnitude());
-	        }
-	    };
-	
-	    return C;
-	};
-	
-	exports.default = linkConstraint;
-	module.exports = exports['default'];
-
-/***/ },
-/* 18 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -2477,7 +2414,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.GRAVITY = GRAVITY;
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2562,13 +2499,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.ctx.lineWidth = 1;
 	        this.ctx.stroke();
 	    },
+	    drawConstraints: function drawConstraints(constraints) {
+	        var _this = this;
+	
+	        constraints.forEach(function (c) {
+	            return _this.drawConstraint(c);
+	        });
+	    },
+	    drawConstraint: function drawConstraint(constraint) {
+	        switch (constraint.type) {
+	            case 'link':
+	                this.ctx.beginPath();
+	                this.ctx.moveTo(constraint.body1.centroid.x, constraint.body1.centroid.y);
+	                this.ctx.lineTo(constraint.body2.centroid.x, constraint.body2.centroid.y);
+	                this.ctx.stroke();
+	        }
+	    },
+	    drawBodies: function drawBodies(bodies) {
+	        var _this2 = this;
+	
+	        bodies.forEach(function (b) {
+	            return _this2.drawBody(b);
+	        });
+	    },
 	    /**
 	     * Draw a body object
 	     * @private
 	     * @param {Body} body - phys.system object containing all objects
 	     */
 	    drawBody: function drawBody(body, pct) {
-	        var _this = this;
+	        var _this3 = this;
 	
 	        if (body.debug) {
 	            if (body.type === 'circle') {
@@ -2609,11 +2569,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            if (body.vertices) {
 	                body.vertices.forEach(function (vert) {
-	                    _this.ctx.beginPath();
-	                    _this.ctx.strokeStyle = 'magenta';
-	                    _this.ctx.lineWidth = 2;
-	                    _this.ctx.ellipse(vert.x, vert.y, 4, 4, 0, 0, Math.PI * 2);
-	                    _this.ctx.stroke();
+	                    _this3.ctx.beginPath();
+	                    _this3.ctx.strokeStyle = 'magenta';
+	                    _this3.ctx.lineWidth = 2;
+	                    _this3.ctx.ellipse(vert.x, vert.y, 4, 4, 0, 0, Math.PI * 2);
+	                    _this3.ctx.stroke();
 	                });
 	            }
 	            if (body.centroid) {
@@ -2748,15 +2708,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // and this tutorial:
 	    // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-core-engine--gamedev-7493#timestepping
 	    run: function run() {
-	        var _this2 = this;
+	        var _this4 = this;
 	
 	        var self = this;
 	        this.lastTick = 0;
 	        var animate = function animate(time) {
-	            _this2._requestID = window.requestAnimationFrame(animate);
+	            _this4._requestID = window.requestAnimationFrame(animate);
 	
 	            if (time) {
-	                _this2.tick(time);
+	                _this4.tick(time);
 	            }
 	        };
 	        animate();
@@ -2805,75 +2765,71 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.render(pct);
 	    },
 	
+	    drawBackground: function drawBackground() {
+	        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	        // Draw background
+	        this.ctx.beginPath();
+	        this.ctx.globalAlpha = 1;
+	        this.ctx.lineWidth = 1;
+	        this.ctx.fillStyle = this.background;
+	        this.ctx.strokeStyle = this.borderColor;
+	        this.ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+	        this.ctx.fill();
+	        this.ctx.stroke();
+	    },
+	
 	    render: function render(pct) {
-	        var _this3 = this;
+	        var _this5 = this;
 	
 	        // Clear background
 	        if (this.clearBackground) {
-	            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	
-	            // Draw background
-	            this.ctx.beginPath();
-	            this.ctx.globalAlpha = 1;
-	            this.ctx.lineWidth = 1;
-	            this.ctx.fillStyle = this.background;
-	            this.ctx.strokeStyle = this.borderColor;
-	            this.ctx.rect(0, 0, this.canvas.width, this.canvas.height);
-	            this.ctx.fill();
-	            this.ctx.stroke();
+	            this.drawBackground();
 	        }
 	
-	        // Update the system
-	        // FIXME: this.laststate isn't doing anything right now
-	        // this.lastState = this.system.update(this.timing);
-	
-	        // Draw all objects + waves
-	        this.system.bodies.forEach(function (body) {
-	
-	            _this3.drawBody(body, pct);
-	        });
-	
+	        // Draw all objects
+	        this.drawBodies(this.system.bodies);
+	        this.drawConstraints(this.system.constraints);
 	        if (this.debug) {
-	            this.system.points.forEach(function (point) {
-	                _this3.drawPoint(point);
+	            this.system.anchors.forEach(function (point) {
+	                _this5.drawPoint(point);
 	            });
 	        }
 	
 	        // Update all waves
 	        this.system.waves.forEach(function (wave) {
-	            _this3.drawWave(wave, pct);
+	            _this5.drawWave(wave, pct);
 	        });
 	
 	        // Update all child waves
 	        this.system.childWaves.forEach(function (wave) {
-	            _this3.drawWave(wave, pct);
+	            _this5.drawWave(wave, pct);
 	        });
 	
 	        // If in debug mode, draw spatial hash
 	        // and highlight nodes that contain items in red
 	        if (this.debug === true) {
 	            (function () {
-	                var cellSize = _this3.system.hash.cellSize;
-	                _this3.ctx.globalAlpha = 1;
-	                _this3.ctx.lineWidth = 1;
-	                for (var i = 0; i < _this3.system.hash.width; i += cellSize) {
-	                    for (var j = 0; j < _this3.system.hash.height; j += cellSize) {
-	                        _this3.ctx.beginPath();
-	                        _this3.ctx.strokeStyle = 'green';
-	                        _this3.ctx.rect(i, j, cellSize, cellSize);
-	                        _this3.ctx.stroke();
+	                var cellSize = _this5.system.hash.cellSize;
+	                _this5.ctx.globalAlpha = 1;
+	                _this5.ctx.lineWidth = 1;
+	                for (var i = 0; i < _this5.system.hash.width; i += cellSize) {
+	                    for (var j = 0; j < _this5.system.hash.height; j += cellSize) {
+	                        _this5.ctx.beginPath();
+	                        _this5.ctx.strokeStyle = 'green';
+	                        _this5.ctx.rect(i, j, cellSize, cellSize);
+	                        _this5.ctx.stroke();
 	                    }
 	                }
-	                Object.keys(_this3.system.hash.contents).forEach(function (row) {
-	                    Object.keys(_this3.system.hash.contents[row]).forEach(function (col) {
+	                Object.keys(_this5.system.hash.contents).forEach(function (row) {
+	                    Object.keys(_this5.system.hash.contents[row]).forEach(function (col) {
 	                        // Draw all squares
 	                        // this.ctx.strokeStyle = 'green';
-	                        if (_this3.system.hash.contents[row][col].length !== 0) {
-	                            _this3.ctx.beginPath();
-	                            _this3.ctx.strokeStyle = 'red';
-	                            _this3.ctx.lineWidth = 1;
-	                            _this3.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
-	                            _this3.ctx.stroke();
+	                        if (_this5.system.hash.contents[row][col].length !== 0) {
+	                            _this5.ctx.beginPath();
+	                            _this5.ctx.strokeStyle = 'red';
+	                            _this5.ctx.lineWidth = 1;
+	                            _this5.ctx.rect(col * cellSize, row * cellSize, cellSize, cellSize);
+	                            _this5.ctx.stroke();
 	                        }
 	                    });
 	                });
@@ -2915,7 +2871,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2924,11 +2880,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(21);
+	var _Body = __webpack_require__(20);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
-	var _AABB = __webpack_require__(23);
+	var _AABB = __webpack_require__(22);
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
@@ -3040,7 +2996,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3055,7 +3011,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// 2. Respond to forces (spring, friction)
 	// 3. Move according to velocity and acceleration
 	
-	var _materials = __webpack_require__(22);
+	var _materials = __webpack_require__(21);
 	
 	var _materials2 = _interopRequireDefault(_materials);
 	
@@ -3104,6 +3060,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // shape files
 	
 	        // MOTION Properties //
+	        this.positionImpulse = { x: 0, y: 0 };
 	        this.position = (0, _Vector2.default)(options.x || 0, options.y || 0);
 	        this.positionPrev = this.position.clone();
 	        this.interpolatedPosition = this.position.clone();
@@ -3116,6 +3073,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.torque = options.torque === undefined ? 0 : options.torque;
 	        this._scale = 1;
 	        this._rotation = options.rotation === undefined ? 0 : options.rotation; // <-- Private prop - DO NOT SET THIS DIRECTLY, use getter and setter for
+	        this.interpolatedRotation = this.rotation;
 	        this.rotationPrev = this._rotation;
 	        this.angularVelocity = options.angularVelocity === undefined ? 0 : options.angularVelocity;
 	
@@ -3124,7 +3082,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.canCollide = options.canCollide !== false;
 	        this.collisionType = options.collisionType || 'elastic';
 	        this.colliderList = [];
-	        this.restitution = 0.1;
+	        this.restitution = 1;
 	
 	        // OPTICAL Properties //
 	        this.refractiveIndex = options.refractiveIndex || 1;
@@ -3213,8 +3171,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                {
 	                    var w = this.width,
 	                        h = this.height,
-	                        x = this.interpolatedPosition.x,
-	                        y = this.interpolatedPosition.y;
+	                        x = this.position.x,
+	                        y = this.position.y;
 	                    switch (this._mode) {
 	                        case 'CENTER':
 	                            x -= w / 2;
@@ -3245,33 +3203,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            case 'polygon':
 	                {
-	                    this.updateVertices = function () {
-	                        var _this2 = this;
+	                    this.centroid = { x: 0, y: 0 };
+	                    this.vertices.forEach(function (vert, index) {
+	                        var relVert = _this._relativeVertices[index];
+	                        vert.x = relVert.x + _this.position.x;
+	                        vert.y = relVert.y + _this.position.y;
 	
-	                        this.centroid = { x: 0, y: 0 };
-	                        this.vertices.forEach(function (vert, index) {
-	                            var relVert = _this2._relativeVertices[index];
-	                            vert.x = relVert.x + _this2.interpolatedPosition.x;
-	                            vert.y = relVert.y + _this2.interpolatedPosition.y;
+	                        _this.centroid.x += vert.x;
+	                        _this.centroid.y += vert.y;
+	                    });
 	
-	                            _this2.centroid.x += vert.x;
-	                            _this2.centroid.y += vert.y;
+	                    this.centroid.x /= this.vertices.length;
+	                    this.centroid.y /= this.vertices.length;
+	
+	                    // Update rotate vertices if necessary
+	                    if (this.angularVelocity !== 0 || this._rotation !== 0 || this._scale !== 0) {
+	                        this.vertices.forEach(function (vert) {
+	                            vert.translate(-_this.centroid.x, -_this.centroid.y).rotate(_this._rotation).multiply(_this._scale).translate(_this.centroid.x, _this.centroid.y);
 	                        });
-	
-	                        this.centroid.x /= this.vertices.length;
-	                        this.centroid.y /= this.vertices.length;
-	
-	                        // Update rotate vertices if necessary
-	                        if (this.angularVelocity !== 0 || this._rotation !== 0 || this._scale !== 0) {
-	                            this.vertices.forEach(function (vert) {
-	                                vert.translate(-_this2.centroid.x, -_this2.centroid.y).rotate(_this2._rotation).multiply(_this2._scale).translate(_this2.centroid.x, _this2.centroid.y);
-	                            });
-	                        }
-	                    };
+	                    }
 	                    break;
 	                }
+	            case 'circle':
+	                this.centroid = { x: this.position.x, y: this.position.y };
+	                break;
 	            default:
-	                return;
+	                break;
+	        }
+	        if (this.aabb) {
+	            this.aabb.update();
 	        }
 	    },
 	
@@ -3316,6 +3276,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // var frictionAir = 1 - body.frictionAir * timeScale * body.timeScale,
 	        var deltaTimeSquared = dt * dt;
 	
+	        // Verlet integration
+	        if (this.colliderList.length > 0) {}
+	
 	        // Calculate previous velocity using change in position during one step
 	        var velocityPrevX = this.position.x - this.positionPrev.x,
 	            velocityPrevY = this.position.y - this.positionPrev.y;
@@ -3323,20 +3286,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // update velocity with Verlet integration
 	        this.velocity.x = velocityPrevX + this.force.x * this.invMass * deltaTimeSquared;
 	        this.velocity.y = velocityPrevY + this.force.y * this.invMass * deltaTimeSquared;
+	        this.angularVelocity = this.rotation - this.rotationPrev + this.torque * this.invInertia * deltaTimeSquared;
 	
+	        // Save previous position
 	        this.positionPrev.x = this.position.x;
 	        this.positionPrev.y = this.position.y;
 	
-	        // Don't apply velocity just yet, we need to change it using collisions
-	        // and constraints before we actually apply it to the body
-	        this.interpolatedPosition = this.position.clone();
-	        this.interpolatedPosition.add(this.velocity);
-	        // this.position.add(this.velocity);
-	
-	        // Verlet integration
-	        this.angularVelocity = this.rotation - this.rotationPrev + this.torque * this.invInertia * deltaTimeSquared;
+	        // Update position with calculated velocity
+	        this.position.add(this.velocity);
 	        this.rotationPrev = this.rotation;
-	        this.rotation += this.angularVelocity;
+	        this.rotation += this.angularVelocity * deltaTimeSquared;
 	
 	        if (this.updateVertices) {
 	            this.updateVertices();
@@ -3347,7 +3306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.intersectionPoints = {};
 	
 	        this.colliderList = [];
-	        this.aabb.update();
+	        // this.aabb.update();
 	        return this;
 	    }
 	};
@@ -3392,7 +3351,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 22 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -3405,7 +3364,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 23 */
+/* 22 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -3495,8 +3454,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
 	        } else {
 	            // Assume it's a circle
-	            var cx = this.body.interpolatedPosition.x,
-	                cy = this.body.interpolatedPosition.y,
+	            var cx = this.body.position.x,
+	                cy = this.body.position.y,
 	                r = this.body.scaledRadius;
 	            return {
 	                max: {
@@ -3570,7 +3529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3862,7 +3821,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3871,11 +3830,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(21);
+	var _Body = __webpack_require__(20);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
-	var _AABB = __webpack_require__(23);
+	var _AABB = __webpack_require__(22);
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
@@ -3912,7 +3871,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3921,11 +3880,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(21);
+	var _Body = __webpack_require__(20);
 	
 	var _Body2 = _interopRequireDefault(_Body);
 	
-	var _AABB = __webpack_require__(23);
+	var _AABB = __webpack_require__(22);
 	
 	var _AABB2 = _interopRequireDefault(_AABB);
 	
@@ -3992,7 +3951,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4007,21 +3966,72 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var Point = {
+	var Anchor = {
 	    init: function init(x, y) {
 	        this.position = (0, _Vector2.default)(x, y);
-	        this.type = 'point';
-	        this.constraints = [];
+	        this.type = 'anchor';
+	        this.static = true;
+	        this.centroid = { x: this.position.x, y: this.position.y };
 	    }
 	};
 	
-	var point = function point(x, y) {
-	    var p = Object.create(Point);
+	var anchor = function anchor(x, y) {
+	    var p = Object.create(Anchor);
 	    p.init(x, y);
 	    return p;
 	};
 	
-	exports.default = point;
+	exports.default = anchor;
+	module.exports = exports['default'];
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _Constraint = __webpack_require__(15);
+	
+	var _Constraint2 = _interopRequireDefault(_Constraint);
+	
+	var _Vector = __webpack_require__(4);
+	
+	var _Vector2 = _interopRequireDefault(_Vector);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var linkConstraint = function linkConstraint(body1, body2, dist) {
+	    var C = (0, _Constraint2.default)('link', body1, body2, dist);
+	    C.type = 'link';
+	
+	    C.solve = function () {
+	        // Just try and solve this one constraint
+	        if (body2.type === 'point') {
+	            // let fc = {x: 0, y: 0};
+	            var p = body2.position.clone();
+	            p.subtract(body1.interpolatedPosition);
+	            var v = body1.velocity;
+	            var fext = body1.force;
+	            var mass = body1.mass;
+	
+	            var lambda = (p.dot(fext) - v.dot(v) * mass) / p.dot(p);
+	            // let lambda = -(p.x * v.x + p.y * v.y + 1)*mass / (2 * (p.x * p.x + p.y * p.y));
+	
+	            var pc = {
+	                x: p.x * lambda,
+	                y: p.y * lambda
+	            };
+	        };
+	    };
+	
+	    return C;
+	};
+	
+	exports.default = linkConstraint;
 	module.exports = exports['default'];
 
 /***/ },
@@ -4037,6 +4047,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _Vector = __webpack_require__(4);
 	
 	var _Vector2 = _interopRequireDefault(_Vector);
+	
+	var _Simplex = __webpack_require__(29);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -4081,23 +4093,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Steps
 	
 	        // Create a simplex and query point
-	        var simplex = Object.create(Simplex);
+	        var simplex = Object.create(_Simplex.Simplex);
 	        var q = (0, _Vector2.default)(x, y);
 	        var vertices = body.vertices;
 	
 	        // 1. Pick a random vertex on the body
 	        var randVertex = Math.floor(Math.random() * vertices.length);
-	        simplex.vertexA = vertices[randVertex].clone();
+	
+	        // Evolve the simplex for the first time
+	        simplex.evolve(vertices[randVertex]);
 	
 	        // 2. Build a search vector from vertex to point
-	        var searchVector = _Vector.Vector.subtract(q, simplex.vertexA);
+	        var searchVector = simplex.getSearchDirection();
 	
 	        // 3. Determine support point by taking dot product with each vertex
 	        //    and search vector, and take the largest one
-	        var support = this.calculateSupportPoint(searchVector, vertices);
+	        var supportIndex = simplex.calculateSupportPoint(searchVector, vertices);
 	
 	        // 4. Evolve the simplex
-	        simplex.vertexB = support.clone();
+	        simplex.evolve(vertices[supportIndex]);
 	
 	        // 5. Find the closest point on the 1-simplex (i.e. straight line
 	        //    between 0-simplex and support point
@@ -4131,93 +4145,227 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 	
-	var Simplex = {
-	    init: function init(vertexA, vertexB, vertexC) {
-	        this.vertexA = vertexA;
-	        this.vertexB = vertexB;
-	        this.vertexC = vertexC;
-	    },
+	// const Simplex = {
+	//     init: function(vertexA, vertexB, vertexC) {
+	//         this.vertexA = vertexA;
+	//         this.vertexB = vertexB;
+	//         this.vertexC = vertexC;
+	//     },
+	//
+	//     point: function(x, y) {
+	//         if (this.vertexA) {
+	//             return this.vertexA;
+	//         }
+	//     },
 	
-	    point: function point(x, y) {
-	        if (this.vertexA) {
-	            return this.vertexA;
-	        }
-	    },
+	//     line: function(x, y) {
+	//         if (this.vertexA && this.vertexB) {
+	//             // Return the closest point on the line
+	// //             First, we compute the barycentric coordinates.
+	// // From those we determine the Voronoi region and the closest point P.
+	//
+	//             // v = (q - a) dot n / (B - A).mag
+	//             // u = (b - q) dot n / (B - A).mag
+	//             let q = vector(x, y);
+	//             let diff = Vector.subtract(this.vertexB, this.vertexA);
+	//             let diffMag = diff.magnitude();
+	//             let n = diff.clone();
+	//             n.normalize();
+	//             let v = (Vector.subtract(q, this.vertexA)).dot(n) / diffMag;
+	//             let u = (Vector.subtract(this.vertexB, q)).dot(n) / diffMag;
+	//
+	//             if (u <= 0) {
+	//                 return this.vertexB;
+	//             }
+	//             else if (v <= 0) {
+	//                 return this.vertexA;
+	//             }
+	//             else {
+	//                 let g1 = Vector.multiply(this.vertexA, u)
+	//                 let g2 = Vector.multiply(this.vertexB, v);
+	//
+	//                 return Vector.add(g1, g2);
+	//             }
+	//
+	//             debugger;
+	//         }
+	//     },
 	
-	    line: function line(x, y) {
-	        if (this.vertexA && this.vertexB) {
-	            // Return the closest point on the line
-	            //             First, we compute the barycentric coordinates.
-	            // From those we determine the Voronoi region and the closest point P.
-	
-	            // v = (q - a) dot n / (B - A).mag
-	            // u = (b - q) dot n / (B - A).mag
-	            var q = (0, _Vector2.default)(x, y);
-	            var diff = _Vector.Vector.subtract(this.vertexB, this.vertexA);
-	            var diffMag = diff.magnitude();
-	            var n = diff.clone();
-	            n.normalize();
-	            var v = _Vector.Vector.subtract(q, this.vertexA).dot(n) / diffMag;
-	            var u = _Vector.Vector.subtract(this.vertexB, q).dot(n) / diffMag;
-	
-	            if (u <= 0) {
-	                return this.vertexB;
-	            } else if (v <= 0) {
-	                return this.vertexA;
-	            } else {
-	                var g1 = _Vector.Vector.multiply(this.vertexA, u);
-	                var g2 = _Vector.Vector.multiply(this.vertexB, v);
-	
-	                return _Vector.Vector.add(g1, g2);
-	            }
-	
-	            debugger;
-	        }
-	    },
-	
-	    // Voronoi regions A, B, C, AB, BC, CA, ABC
-	    triangle: function triangle(x, y) {
-	        var q = (0, _Vector2.default)(x, y);
-	
-	        var A = this.vertexA,
-	            B = this.vertexB,
-	            C = this.vertexC;
-	
-	        var qb = _Vector.Vector.subtract(q, B),
-	            qa = _Vector.Vector.subtract(q, A),
-	            qc = _Vector.Vector.subtract(q, C),
-	            ab = _Vector.Vector.subtract(A, B),
-	            ba = _Vector.Vector.subtract(B, A),
-	            bc = _Vector.Vector.subtract(B, C),
-	            cb = _Vector.Vector.subtract(C, B),
-	            ca = _Vector.Vector.subtract(C, A),
-	            ac = _Vector.Vector.subtract(A, C);
-	
-	        // Compute edge barycentric coordinates (pre-division)
-	        // float uAB = Dot(Q - B, A - B);
-	        // float vAB = Dot(Q - A, B - A);
-	        //
-	        // float uBC = Dot(Q - C, B - C);
-	        // float vBC = Dot(Q - B, C - B);
-	        //
-	        // float uCA = Dot(Q - A, C - A);
-	        // float vCA = Dot(Q - C, A - C);
-	        var uAB = _Vector.Vector.dot(qb, ab),
-	            vAB = _Vector.Vector.dot(qa, ba);
-	
-	        var uBC = _Vector.Vector.dot(qc, bc),
-	            vBC = _Vector.Vector.dot(qb, cb);
-	
-	        var uCA = _Vector.Vector.dot(qa, ca),
-	            vCA = _Vector.Vector.dot(qc, ac);
-	    }
-	};
+	// Voronoi regions A, B, C, AB, BC, CA, ABC
+	//     triangle: function(x, y) {
+	//         let q = vector(x, y);
+	//
+	//         let A = this.vertexA,
+	//             B = this.vertexB,
+	//             C = this.vertexC;
+	//
+	//         let qb = Vector.subtract(q, B),
+	//             qa = Vector.subtract(q, A),
+	//             qc = Vector.subtract(q, C),
+	//             ab = Vector.subtract(A, B),
+	//             ba = Vector.subtract(B, A),
+	//             bc = Vector.subtract(B, C),
+	//             cb = Vector.subtract(C, B),
+	//             ca = Vector.subtract(C, A),
+	//             ac = Vector.subtract(A, C);
+	//
+	//         // Compute edge barycentric coordinates (pre-division)
+	//         // float uAB = Dot(Q - B, A - B);
+	//         // float vAB = Dot(Q - A, B - A);
+	//         //
+	//         // float uBC = Dot(Q - C, B - C);
+	//         // float vBC = Dot(Q - B, C - B);
+	//         //
+	//         // float uCA = Dot(Q - A, C - A);
+	//         // float vCA = Dot(Q - C, A - C);
+	//         let uAB = Vector.dot(qb, ab),
+	//             vAB = Vector.dot(qa, ba);
+	//
+	//         let uBC = Vector.dot(qc, bc),
+	//             vBC = Vector.dot(qb, cb);
+	//
+	//         let uCA = Vector.dot(qa, ca),
+	//             vCA = Vector.dot(qc, ac);
+	//
+	//         // Region A
+	//     if (vAB <= 0 && uCA <= 0) {
+	//     {
+	//         m_vertexA.u = 1.0f;
+	//         m_divisor = 1.0f;
+	//         m_count = 1;
+	//         return;
+	//     }
+	//
+	//     // Region B
+	//     if (uAB <= 0 && vBC <= 0) {
+	//         // m_vertexA = m_vertexB;
+	//         // m_vertexA.u = 1.0f;
+	//         // m_divisor = 1.0f;
+	//         // m_count = 1;
+	//         return;
+	//     }
+	//
+	//     // Region C
+	//     if (uBC <= 0.0f && vCA <= 0.0f)
+	//     {
+	//         m_vertexA = m_vertexC;
+	//         m_vertexA.u = 1.0f;
+	//         m_divisor = 1.0f;
+	//         m_count = 1;
+	//         return;
+	//     }
+	//     }
+	// };
 	
 	exports.default = GJK;
 	module.exports = exports['default'];
 
 /***/ },
 /* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.Simplex = undefined;
+	
+	var _Vector = __webpack_require__(4);
+	
+	var _Vector2 = _interopRequireDefault(_Vector);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var calculateSupportPoint = function calculateSupportPoint(d, vertices) {};
+	
+	/// Simplex used by the GJK algorithm.
+	/*
+	 * Simplex.js
+	 * Copyright (C) 2017 jamiecharry <jamiecharry@Jamies-Air-2.home>
+	 *
+	 * Distributed under terms of the MIT license.
+	 */
+	var Simplex = exports.Simplex = {
+	    evolve: function evolve(point) {
+	        debugger;
+	        // We can only put three points onto the simplex
+	        if (this.count < 2) {
+	            if (this.vertexA === undefined) {
+	                this.vertexA = simplexVertex(point);
+	            } else if (this.vertexB === undefined) {
+	                this.vertexB = simplexVertex(point);
+	            } else if (this.vertexC === undefined) {
+	                this.vertexC = simplexVertex(point);
+	            }
+	            this.count++;
+	        } else {
+	            throw new Error('cannot evolve a simplex beyond 3 points');
+	        }
+	    },
+	
+	    getSupportPoint: function getSupportPoint(d, vertices) {
+	        var index = 0;
+	        var maxValue = vertices[index].dot(d);
+	        for (var i = 1; i < vertices.length; i++) {
+	            var value = vertices[i].dot(d);
+	            if (value > maxValue) {
+	                index = i;
+	                maxValue = value;
+	            }
+	        }
+	        return index;
+	    },
+	
+	    getSearchDirection: function getSearchDirection() {
+	        switch (this.count) {
+	            case 1:
+	                return _Vector.Vector.negate(this.vertexA);
+	            case 2:
+	                var edgeAB = _Vector.Vector.subtract(vertexB.point, vertexA.point);
+	            // let sgn = edgeAb.cross()
+	        }
+	        // return vector
+	    },
+	    getClosestPoint: function getClosestPoint() {
+	        // return vector
+	    },
+	    getWitnessPoints: function getWitnessPoints(point1, point2) {},
+	    solve2: function solve2(P) {},
+	    solve3: function solve3(P) {},
+	    divisor: 0,
+	    count: 0
+	};
+	
+	var simplexVertex = function simplexVertex(point1, point2, u, index1, index2) {
+	    return {
+	        point1: point1,
+	        point2: point2,
+	        point: _Vector.Vector.subtract(point1, point2),
+	        index1: index1,
+	        index2: index2
+	    };
+	};
+	
+	/// Output for the distance function.
+	// struct Output
+	// {
+	//     enum
+	//     {
+	//         e_maxSimplices = 20
+	//     };
+	//
+	//     Vec2 point1;		///< closest point on polygon 1
+	//     Vec2 point2;		///< closest point on polygon 2
+	//     float distance;
+	//     int iterations;		///< number of GJK iterations used
+	//
+	//     Simplex simplices[e_maxSimplices];
+	//     int simplexCount;
+	// };
+
+/***/ },
+/* 30 */
 /***/ function(module, exports) {
 
 	'use strict';

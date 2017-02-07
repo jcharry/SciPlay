@@ -47,19 +47,14 @@ SAT.lineOverlap = function(p1min, p1max, p2min, p2max) {
 };
 
 /**
- * Rect-Rect intersection test
- * @param {Sci.Rect} b1 - first body
- * @param {Sci.Rect} b2 - second body
- * @return {bool} true or false, if intersection occurred
- * @todo optimize like crazy, we only need to do four axes, not eight
+ * Entry point for SAT tests
+ * @param {Sci.Body} b1 - first body
+ * @param {Sci.Body} b2 - second body
+ * @return {Sci.Collision} collision object
  * see here: https://gamedevelopment.tutsplus.com/tutorials/collision-detection-using-the-separating-axis-theorem--gamedev-169
- *
- * @todo should return collision data, not just true or false
  * see here: http://www.dyn4j.org/2010/01/sat/
  */
-
 SAT.intersect = function(b1, b2) {
-    // FIXME: Make sure normal mtv is facing from b1 to b2
     if (b1.type === 'rectangle' || b1.type === 'polygon') {
         if (b2.type === 'circle') {
             return SAT.polycircle(b1, b2);
@@ -168,7 +163,7 @@ SAT.polypoly = function(p1, p2) {
         }
     }
 
-    // Ensure mtv axis points from p2 to p1
+    // Ensure mtv axis points from p1 to p2
     // TODO: Verify this with a few more tests...
     let p2top1 = Vector.subtract(p2.position, p1.position);
     if (MTVAxis.dot(p2top1) >= 0) {
