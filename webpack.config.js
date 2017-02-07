@@ -20,7 +20,7 @@ var config = {
     },
     output: {
         path: path.resolve('./dist'),
-        filename: env === 'production' ? 'sciplay.min.js' : 'sciplay.js',
+        filename: 'sciplay.js',
         library: 'sciplay',
         libraryTarget: 'umd',
         umdNamedDefine: true
@@ -49,10 +49,10 @@ var config = {
                 loader: 'json-loader'
             }
         ]
-    },
-    plugins: env === 'production' ?
-        [new webpack.optimize.UglifyJsPlugin({minimize: true})] :
-        []
+    }
+    // plugins: env === 'production' ?
+    //     [new webpack.optimize.UglifyJsPlugin({minimize: true})] :
+    //     []
 };
 
 module.exports = config;
