@@ -2,7 +2,7 @@
   "name": "sci-play",
   "version": "1.0.2",
   "description": "",
-  "main": "dist/sciplay.js",
+  "main": "src/sciplay.js",
   "scripts": {
     "build": "BUILD_ENV=production webpack && BUILD_ENV=dev webpack",
     "dev": "open http://localhost:1234 && webpack-dev-server --progress --colors --inline --hot --port 1234 --content-base . --module-bind",
