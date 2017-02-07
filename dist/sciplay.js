@@ -11,41 +11,41 @@
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-/******/
+
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/
+
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-/******/
+
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
+
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-/******/
+
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
-/******/
+
+
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-/******/
+
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
+
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
+
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -55,85 +55,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	__webpack_require__(2);
-	module.exports = __webpack_require__(3);
+	module.exports = __webpack_require__(2);
 
 
 /***/ },
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	/*globals window __webpack_hash__ */
-	if(false) {
-		var lastData;
-		var upToDate = function upToDate() {
-			return lastData.indexOf(__webpack_hash__) >= 0;
-		};
-		var check = function check() {
-			module.hot.check(true, function(err, updatedModules) {
-				if(err) {
-					if(module.hot.status() in {
-							abort: 1,
-							fail: 1
-						}) {
-						console.warn("[HMR] Cannot apply update. Need to do a full reload!");
-						console.warn("[HMR] " + err.stack || err.message);
-						window.location.reload();
-					} else {
-						console.warn("[HMR] Update failed: " + err.stack || err.message);
-					}
-					return;
-				}
-	
-				if(!updatedModules) {
-					console.warn("[HMR] Cannot find update. Need to do a full reload!");
-					console.warn("[HMR] (Probably because of restarting the webpack-dev-server)");
-					window.location.reload();
-					return;
-				}
-	
-				if(!upToDate()) {
-					check();
-				}
-	
-				require("./log-apply-result")(updatedModules, updatedModules);
-	
-				if(upToDate()) {
-					console.log("[HMR] App is up to date.");
-				}
-	
-			});
-		};
-		var addEventListener = window.addEventListener ? function(eventName, listener) {
-			window.addEventListener(eventName, listener, false);
-		} : function(eventName, listener) {
-			window.attachEvent("on" + eventName, listener);
-		};
-		addEventListener("message", function(event) {
-			if(typeof event.data === "string" && event.data.indexOf("webpackHotUpdate") === 0) {
-				lastData = event.data;
-				if(!upToDate() && module.hot.status() === "idle") {
-					console.log("[HMR] Checking for updates on the server...");
-					check();
-				}
-			}
-		});
-		console.log("[HMR] Waiting for update signal from WDS...");
-	} else {
-		throw new Error("[HMR] Hot Module Replacement is disabled.");
-	}
-
-
-/***/ },
-/* 2 */
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	/* eslint "max-len": "off" */
 	// Request animation frame shim
 	(function () {
@@ -143,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
 	        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
 	    }
-	
+
 	    if (!window.requestAnimationFrame) {
 	        window.requestAnimationFrame = function (callback, element) {
 	            var currTime = new Date().getTime();
@@ -155,7 +85,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return id;
 	        };
 	    }
-	
+
 	    if (!window.cancelAnimationFrame) {
 	        window.cancelAnimationFrame = function (id) {
 	            clearTimeout(id);
@@ -164,81 +94,81 @@ return /******/ (function(modules) { // webpackBootstrap
 	})();
 
 /***/ },
-/* 3 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
-	var _Ray = __webpack_require__(6);
-	
+
+	var _Ray = __webpack_require__(5);
+
 	var _Ray2 = _interopRequireDefault(_Ray);
-	
-	var _System = __webpack_require__(7);
-	
+
+	var _System = __webpack_require__(6);
+
 	var _System2 = _interopRequireDefault(_System);
-	
-	var _Renderer = __webpack_require__(18);
-	
+
+	var _Renderer = __webpack_require__(17);
+
 	var _Renderer2 = _interopRequireDefault(_Renderer);
-	
-	var _Rect = __webpack_require__(19);
-	
+
+	var _Rect = __webpack_require__(18);
+
 	var _Rect2 = _interopRequireDefault(_Rect);
-	
-	var _Wave = __webpack_require__(23);
-	
+
+	var _Wave = __webpack_require__(22);
+
 	var _Wave2 = _interopRequireDefault(_Wave);
-	
-	var _Circle = __webpack_require__(24);
-	
+
+	var _Circle = __webpack_require__(23);
+
 	var _Circle2 = _interopRequireDefault(_Circle);
-	
-	var _Polygon = __webpack_require__(25);
-	
+
+	var _Polygon = __webpack_require__(24);
+
 	var _Polygon2 = _interopRequireDefault(_Polygon);
-	
-	var _Anchor = __webpack_require__(26);
-	
+
+	var _Anchor = __webpack_require__(25);
+
 	var _Anchor2 = _interopRequireDefault(_Anchor);
-	
-	var _CONSTANTS = __webpack_require__(17);
-	
+
+	var _CONSTANTS = __webpack_require__(16);
+
 	var constants = _interopRequireWildcard(_CONSTANTS);
-	
-	var _BoundaryConstraint = __webpack_require__(16);
-	
+
+	var _BoundaryConstraint = __webpack_require__(15);
+
 	var _BoundaryConstraint2 = _interopRequireDefault(_BoundaryConstraint);
-	
-	var _LinkConstraint = __webpack_require__(27);
-	
+
+	var _LinkConstraint = __webpack_require__(26);
+
 	var _LinkConstraint2 = _interopRequireDefault(_LinkConstraint);
-	
-	var _GJK = __webpack_require__(28);
-	
+
+	var _GJK = __webpack_require__(27);
+
 	var _GJK2 = _interopRequireDefault(_GJK);
-	
-	var _collisionTypes = __webpack_require__(30);
-	
+
+	var _collisionTypes = __webpack_require__(29);
+
 	var _collisionTypes2 = _interopRequireDefault(_collisionTypes);
-	
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	/* Constraints */
-	
-	
+
+
 	/* BODIES */
-	
-	
+
+
 	/* CORE OBJECTS */
 	/* MATH OBJECTS */
 	var sciplay = function sciplay() {
@@ -262,22 +192,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	};
-	
+
 	/* CONSTANTS */
 	exports.default = sciplay;
 	module.exports = exports['default'];
 
 /***/ },
-/* 4 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Vector = undefined;
-	
+
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
 	                                                                                                                                                                                                                                                                               * Generic Vector class
 	                                                                                                                                                                                                                                                                               *
@@ -309,9 +239,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                                                                                                                                                                                                                                                               * and vec3.x = 10 and vec3.y = 20
 	                                                                                                                                                                                                                                                                               *
 	                                                                                                                                                                                                                                                                               */
-	
-	var _math = __webpack_require__(5);
-	
+
+	var _math = __webpack_require__(4);
+
 	/**
 	 * Base Vector constructor
 	 * @constructor
@@ -322,7 +252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.x = x || 0;
 	    this.y = y || 0;
 	};
-	
+
 	/**
 	 * Prototype object for all Vectors
 	 */
@@ -335,7 +265,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    clone: function clone() {
 	        return new Vector(this.x, this.y);
 	    },
-	
+
 	    /**
 	     * Generic Setter
 	     * @method
@@ -351,7 +281,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return this;
 	    },
-	
+
 	    /**
 	     * Add another vector to this vector, modifying internal
 	     * properties
@@ -374,13 +304,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                y = arguments.length <= 1 ? undefined : arguments[1];
 	            }
 	        }
-	
+
 	        this.x += x;
 	        this.y += y;
-	
+
 	        return this;
 	    },
-	
+
 	    /**
 	     * Subtract another vector from this vector
 	     * @method
@@ -392,7 +322,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.y -= vec.y;
 	        return this;
 	    },
-	
+
 	    /**
 	     * Multiply another vector by this vector or scalar
 	     * modifies internal properties
@@ -407,10 +337,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.x *= vec;
 	            this.y *= vec;
 	        }
-	
+
 	        return this;
 	    },
-	
+
 	    /**
 	     * Gives the magnitude (length, essentially) of the vector
 	     * @method
@@ -419,7 +349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    magnitude: function magnitude() {
 	        return Math.sqrt(this.x * this.x + this.y * this.y);
 	    },
-	
+
 	    /**
 	     * Magnitude squared - useful when trying to save on computation
 	     * @method
@@ -428,7 +358,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    magnitudeSq: function magnitudeSq() {
 	        return this.x * this.x + this.y * this.y;
 	    },
-	
+
 	    /**
 	     * Negate both x and y values (essentially rotate vector 180 degrees)
 	     * @method
@@ -439,7 +369,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.y = -this.y;
 	        return this;
 	    },
-	
+
 	    /**
 	     * Translate to specified x and y points
 	     * @param {number} x - amount to move in the x
@@ -452,7 +382,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    //     this.y += y;
 	    //     return this;
 	    // },
-	
+
 	    /**
 	     * Rotate vector around specified point of rotation
 	     * Note: Will rotate around origin
@@ -468,7 +398,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.y = y;
 	        return this;
 	    },
-	
+
 	    /**
 	     * Dot product between two vectors
 	     * Does NOT modify internal state
@@ -478,7 +408,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    dot: function dot(vec) {
 	        return this.x * vec.x + this.y * vec.y;
 	    },
-	
+
 	    /**
 	     * Cross product between two vectors
 	     * Does NOT modify internal state
@@ -489,7 +419,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    cross: function cross(vec) {
 	        return this.x * vec.y - this.y * vec.x;
 	    },
-	
+
 	    /**
 	     * Return angle between two vectors in radians
 	     * @param {Vector} vec - vector to find angle to
@@ -499,11 +429,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var a = this.magnitude();
 	        var b = vec.magnitude();
 	        var d = this.dot(vec);
-	
+
 	        var theta = Math.acos(d / (a * b));
 	        return theta;
 	    },
-	
+
 	    /**
 	     * Return angle from 0 of this vector
 	     * @method
@@ -520,7 +450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //return a;
 	        return a < 0 ? Math.PI * 2 + a : a;
 	    },
-	
+
 	    /**
 	     * Convert to a unit vector
 	     * i.e. change length of vector to 1
@@ -533,7 +463,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.y /= mag;
 	        return this;
 	    },
-	
+
 	    /**
 	     * Create normal vector based on current vector
 	     * Modifies internal state!
@@ -552,7 +482,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return this;
 	    },
-	
+
 	    /**
 	     * Calculate euclidian distance between two vectors
 	     * @param {Vector} vec - vector to find distance to
@@ -561,7 +491,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    distanceTo: function distanceTo(vec) {
 	        return Math.sqrt((vec.x - this.x) * (vec.x - this.x) + (vec.y - this.y) * (vec.y - this.y));
 	    },
-	
+
 	    /**
 	     * Scalar Projection of A onto B assuming B is NOT a unit vector
 	     * @param {Vector} vec - the vector to project onto
@@ -570,7 +500,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    scalarProject: function scalarProject(vec) {
 	        return this.dot(vec) / vec.magnitude();
 	    },
-	
+
 	    /**
 	     * Calculate Scalar projection of A onto B assuming that B is a unit vector
 	     * This is more efficient assuming we already have a unit vector
@@ -580,7 +510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    scalarProjectUnit: function scalarProjectUnit(vec) {
 	        return this.dot(vec);
 	    },
-	
+
 	    /**
 	     * Vector Projection of A onto B assuming B is NOT a unit vector
 	     * @param {Vector} vec - vector to project onto
@@ -592,7 +522,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.y = vec.y * scalarComp;
 	        return this;
 	    },
-	
+
 	    /**
 	     * Vector Projection of A onto B assuming B IS a unit vector
 	     * @param {Vector} vec - vector to project onto
@@ -605,9 +535,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this;
 	    }
 	};
-	
+
 	Vector.prototype.translate = Vector.prototype.add;
-	
+
 	/**
 	 * Convenience function so we can ignore the 'new' keyword
 	 * @param {number} x - initial x value
@@ -617,7 +547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var vector = function vector(x, y) {
 	    return new Vector(x, y);
 	};
-	
+
 	// ---------- Static Methods -----------//
 	/**
 	 * @static
@@ -637,15 +567,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (typeof v1 === 'number' && typeof v2 === 'number') {
 	        return v1 * v2;
 	    }
-	
+
 	    if ((typeof v1 === 'undefined' ? 'undefined' : _typeof(v1)) === 'object' && typeof v2 === 'number') {
 	        return new Vector(v1.x * v2, v1.y * v2);
 	    }
-	
+
 	    if ((typeof v2 === 'undefined' ? 'undefined' : _typeof(v2)) === 'object' && typeof v1 === 'number') {
 	        return new Vector(v1 * v2.x, v1 * v2.y);
 	    }
-	
+
 	    return new Vector(v1.x * v2.x, v1.y * v2.y);
 	};
 	Vector.dot = function (v1, v2) {
@@ -655,7 +585,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var a = v1.magnitude();
 	    var b = v2.magnitude();
 	    var d = v1.dot(v2);
-	
+
 	    var theta = Math.acos(d / (a * b));
 	    return theta;
 	};
@@ -670,52 +600,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	Vector.negate = function (v) {
 	    return new Vector(-v.x, -v.y);
 	};
-	
+
 	exports.default = vector;
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports) {
 
 	"use strict";
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	var degToRad = exports.degToRad = function degToRad(angle) {
 	    return angle * Math.PI / 180;
 	};
-	
+
 	var radToDeg = exports.radToDeg = function radToDeg(angle) {
 	    return angle * 180 / Math.PI;
 	};
-	
+
 	var distance = exports.distance = function distance(x1, y1, x2, y2) {
 	    return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 	};
-	
+
 	var map = exports.map = function map(value, low1, high1, low2, high2) {
 	    return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
 	};
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _math = __webpack_require__(5);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _math = __webpack_require__(4);
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	/* eslint
 	    "no-unused-vars": "off",
 	 */
@@ -734,7 +664,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (degrees) {
 	            dir = (0, _math.degToRad)(dir);
 	        }
-	
+
 	        this.origin = (0, _Vector2.default)(x, y);
 	        this.direction = (0, _Vector2.default)(Math.cos(dir), Math.sin(dir));
 	        this.invDirection = (0, _Vector2.default)(1 / this.direction.x, 1 / this.direction.y);
@@ -748,12 +678,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // TODO: Figure out a way to give each ray a unique ID
 	        this.numTests = 0;
 	    },
-	
+
 	    /**
 	     * Return the objects from spatial hash to perform collision detection on
 	     * @param {SpatialHash} hash - hash from the System
 	     */
-	
+
 	    trace: function trace(system) {
 	        // Always use radians, regardless of mode
 	        // Also angle should be in range 0 <= angle <= 2PI
@@ -761,19 +691,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.intersectionPoint = null;
 	        this.intersectingBody = null;
 	        this.intersectingSegment = null;
-	
+
 	        // Iterate the rayID to ensure no duplicates
 	        this.rayID = system.currentRayId++;
 	        this.numTests = 0; // debugging param - how many tests are run
 	        this.intersectHash(system.hash);
-	
+
 	        // After going through all bodies and segments,
 	        // if an intersection point was found...
 	        if (this.intersectionPoint) {
 	            return true;
 	        }
 	    },
-	
+
 	    /**
 	     * Detect if ray intersects circle
 	     * http://stackoverflow.com/questions/1073336/circle-line-segment-collision-detection-algorithm
@@ -805,18 +735,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    intersectCircle: function intersectCircle(circle) {
 	        this.numTests += 1;
 	        var radius = circle.radius;
-	
+
 	        var d = (0, _Vector2.default)(this.direction.x * this.t, this.direction.y * this.t);
 	        var f = _Vector.Vector.subtract(this.origin, circle.position); //this.origin.clone();
-	
+
 	        // Solve the quadratic equation
 	        var a = d.dot(d);
 	        var b = 2 * f.dot(d);
 	        var c = f.dot(f) - radius * radius;
-	
+
 	        // Descriminant b^2 - 4ac
 	        var desc = b * b - 4 * a * c;
-	
+
 	        if (desc < 0) {
 	            // No intersection
 	        } else {
@@ -827,7 +757,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var t2 = (-b + desc) / (2 * a);
 	            var ix = void 0,
 	                iy = void 0;
-	
+
 	            // If t1 intersected the circle...
 	            // Note: t1 is always closer than t2
 	            if (t1 >= 0 && t1 <= 1) {
@@ -836,7 +766,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.updateIntersectionPoint({ x: ix, y: iy }, null, circle);
 	                return true;
 	            }
-	
+
 	            // If t1 doesn't intersect, check t2
 	            if (t2 >= 0 && t2 <= 1) {
 	                ix = this.origin.x + d.x * t2;
@@ -845,10 +775,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return true;
 	            }
 	        }
-	
+
 	        return false;
 	    },
-	
+
 	    /**
 	     * Handles case of ray-polygon intersection
 	     * If an intersecting segment is found,
@@ -859,7 +789,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    intersectPolygon: function intersectPolygon(poly) {
 	        var _this = this;
-	
+
 	        this.numTests += 1;
 	        if (poly.isPointInterior(this.origin)) {
 	            this.outerBodies.push(poly);
@@ -874,13 +804,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            } else {
 	                seg2 = verts[index + 1];
 	            }
-	
+
 	            intersection = _this.intersectSegment([vert, seg2]);
 	            if (intersection) {
 	                _this.updateIntersectionPoint(intersection.intPoint, intersection.segVec, poly);
 	            }
 	        });
-	
+
 	        return typeof intersection !== 'undefined';
 	    },
 	    /**
@@ -896,7 +826,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var p = (0, _Vector2.default)(this.origin.x, this.origin.y); // Ray origin
 	        var q = (0, _Vector2.default)(seg[0].x, seg[0].y); // Segment start point
 	        var s = (0, _Vector2.default)(seg[1].x - seg[0].x, seg[1].y - seg[0].y); // Segment vector
-	
+
 	        // check for intersection
 	        // t = (q − p) x s / (r x s)
 	        // u = (q − p) x r / (r x s)
@@ -904,7 +834,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var tmp = _Vector.Vector.subtract(q, p);
 	        var tNum = tmp.cross(s),
 	            uNum = tmp.cross(r);
-	
+
 	        // t, u are distances traveled along vector
 	        var t = void 0,
 	            u = void 0;
@@ -912,7 +842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            t = tNum / rxs;
 	            u = uNum / rxs;
 	        }
-	
+
 	        // TODO: handle collinear case
 	        if (rxs === 0 && uNum === 0) {
 	            // lines are collinear
@@ -930,20 +860,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                ry = r.y,
 	                ix = px + t * rx,
 	                iy = py + t * ry;
-	
+
 	            return {
 	                intPoint: (0, _Vector2.default)(ix, iy),
 	                segVec: s,
 	                t: t
 	            };
 	        }
-	
+
 	        // Line segments do not intersect
 	        // if we've gone through all the segments of the body,
 	        //intersectionPoint = null;
 	        return false;
 	    },
-	
+
 	    /**
 	     * Test for Ray-Hash bucket intersections
 	     * @param {SpatialHash} hash - system.hash object
@@ -954,15 +884,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    intersectHash: function intersectHash(hash) {
 	        var _this2 = this;
-	
+
 	        // TODO: Handle case where ray starts outside bounds
-	
+
 	        // Initialize variables
 	        // Step 1. Initialization - determine starting voxel
 	        var bucket = hash.hash(this.origin);
 	        var row = bucket.row,
 	            col = bucket.col;
-	
+
 	        var X = col,
 	            Y = row;
 	        var tMaxX = void 0,
@@ -972,15 +902,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var stepX = this.direction.x < 0 ? -1 : 1,
 	            stepY = this.direction.y < 0 ? -1 : 1;
 	        var cellSize = hash.cellSize;
-	
+
 	        // Row and Col offset for picking which horizontal or veritcal segments
 	        // to use for intersection tests
 	        // let rowOffset = stepY < 1 ? 0 : 1,
 	        //     colOffset = stepX < 1 ? 0 : 1;
-	
+
 	        tDeltaX = cellSize / Math.abs(this.direction.x);
 	        tDeltaY = cellSize / Math.abs(this.direction.y);
-	
+
 	        tMaxX = X * cellSize - this.origin.x;
 	        tMaxY = Y * cellSize - this.origin.y;
 	        if (this.direction.x >= 0) {
@@ -989,10 +919,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.direction.y >= 0) {
 	            tMaxY += cellSize;
 	        }
-	
+
 	        tMaxX /= this.direction.x;
 	        tMaxY /= this.direction.y;
-	
+
 	        while (Y < hash.numRows && Y > -1 && X < hash.numCols && X > -1) {
 	            // In debug mode - Draw buckets that ray overlaps
 	            if (window.renderer.debug) {
@@ -1002,7 +932,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                window.ctx.lineWidth = 3;
 	                window.ctx.strokeRect(X * cellSize, Y * cellSize, cellSize, cellSize);
 	            }
-	
+
 	            // If we've found some contents in that hash bucket...
 	            if (hash.contents[Y] && hash.contents[Y][X] && hash.contents[Y][X].length !== 0) {
 	                // TODO: Here's where we need to check if the object is
@@ -1017,11 +947,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            _this2.updateIntersectionPoint(body.intersectionPoints[_this2.rayID].intPoint, body.intersectionPoints[_this2.rayID].segVec, body);
 	                            return;
 	                        }
-	
+
 	                        // It missed, so do nothing;
 	                        return;
 	                    }
-	
+
 	                    // If ray and body haven't been tested, then test
 	                    // If it hits the AABB, then perform
 	                    // actual intersection tests
@@ -1039,7 +969,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                                break;
 	                        }
 	                    }
-	
+
 	                    // Flag body to know we've already tested this ray-body
 	                    // combo
 	                    if (_this2.intersectionPoint) {
@@ -1055,7 +985,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 	                });
 	            }
-	
+
 	            // Increment X or Y step
 	            if (tMaxX === undefined && tMaxY === undefined) {
 	                break;
@@ -1073,7 +1003,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                Y += stepY;
 	            }
 	        }
-	
+
 	        return {
 	            hashCoordinates: {
 	                x: X,
@@ -1082,7 +1012,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            intPoint: this.intersectionPoint
 	        };
 	    },
-	
+
 	    /**
 	     * Axis-Aligned Bounding Box Intersection test
 	     * @param {AABB} aabb - the box to test
@@ -1091,19 +1021,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    intersectAABB: function intersectAABB(aabb) {
 	        var tx1 = (aabb.min.x - this.origin.x) * this.invDirection.x;
 	        var tx2 = (aabb.max.x - this.origin.x) * this.invDirection.x;
-	
+
 	        var tmin = Math.min(tx1, tx2);
 	        var tmax = Math.max(tx1, tx2);
-	
+
 	        var ty1 = (aabb.min.y - this.origin.y) * this.invDirection.y;
 	        var ty2 = (aabb.max.y - this.origin.y) * this.invDirection.y;
-	
+
 	        tmin = Math.max(tmin, Math.min(ty1, ty2));
 	        tmax = Math.min(tmax, Math.max(ty1, ty2));
 	        var didHit = tmax >= tmin && tmax >= 0;
 	        return didHit;
 	    },
-	
+
 	    /**
 	     * Internally used to update point of intersection property
 	     * @private
@@ -1117,7 +1047,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var py = this.origin.y;
 	        var ix = intPoint.x;
 	        var iy = intPoint.y;
-	
+
 	        // If there was a previously stored intersection point,
 	        // check if this one is closer,
 	        // and if so update it's values
@@ -1136,7 +1066,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	};
-	
+
 	/**
 	 * 'Constructor' function
 	 * @public
@@ -1154,52 +1084,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	    R.init(x, y, dir, degrees);
 	    return R;
 	};
-	
+
 	exports.default = ray;
 	module.exports = exports['default'];
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
+
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	// import linkConstraint from '../constraints/LinkConstraint';
-	
-	
-	var _SpatialHash = __webpack_require__(8);
-	
+
+
+	var _SpatialHash = __webpack_require__(7);
+
 	var _SpatialHash2 = _interopRequireDefault(_SpatialHash);
-	
-	var _Broadphase = __webpack_require__(9);
-	
+
+	var _Broadphase = __webpack_require__(8);
+
 	var _Broadphase2 = _interopRequireDefault(_Broadphase);
-	
-	var _Narrowphase = __webpack_require__(11);
-	
+
+	var _Narrowphase = __webpack_require__(10);
+
 	var _Narrowphase2 = _interopRequireDefault(_Narrowphase);
-	
-	var _Solver = __webpack_require__(14);
-	
+
+	var _Solver = __webpack_require__(13);
+
 	var _Solver2 = _interopRequireDefault(_Solver);
-	
-	var _Constraint = __webpack_require__(15);
-	
+
+	var _Constraint = __webpack_require__(14);
+
 	var _Constraint2 = _interopRequireDefault(_Constraint);
-	
-	var _BoundaryConstraint = __webpack_require__(16);
-	
+
+	var _BoundaryConstraint = __webpack_require__(15);
+
 	var _BoundaryConstraint2 = _interopRequireDefault(_BoundaryConstraint);
-	
-	var _CONSTANTS = __webpack_require__(17);
-	
+
+	var _CONSTANTS = __webpack_require__(16);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	// const System = {};
 	// TODO: rename params to options to be consistent with other objects
 	var System = {
@@ -1210,7 +1140,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	            params = loop;
 	        }
-	
+
 	        this._gravityOn = true;
 	        this.frames = [];
 	        this.waves = [];
@@ -1224,17 +1154,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.nextBodyId = 0;
 	        this.collisions = [];
 	        this.constraints = [];
-	
+
 	        this.collideBoundary = params.collideBoundary === undefined ? true : params.collideBoundary;
 	        console.log('can collide with boundary', this.collideBoundary);
-	
+
 	        // Cell size will adjust to fit world precisely
 	        // May not be exaclty what user initialized
 	        // let divisor = params.cellSize ? params.cellSize : 100;
 	        this.cellSize = this.calculateCellSize(params.cellSize || 100);
 	        // Initialize spatial hash
 	        this.hash = this.initializeHash(this.cellSize, this.width, this.height);
-	
+
 	        //
 	        this._gravity = params.gravity === undefined ? _CONSTANTS.GRAVITY.LIGHT : params.gravity;
 	        // Initialize Collision objects
@@ -1245,24 +1175,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	            x: 0,
 	            y: 0
 	        };
-	
+
 	        // Ray ID Counter
 	        this.currentRayId = 0;
 	    },
-	
+
 	    calculateCellSize: function calculateCellSize(cellSize) {
 	        var divisor = cellSize ? cellSize : 100;
 	        return this.width / Math.floor(this.width / divisor);
 	    },
-	
+
 	    initializeHash: function initializeHash(cellSize, width, height) {
 	        return (0, _SpatialHash2.default)(cellSize, width, height);
 	    },
-	
+
 	    addChildWave: function addChildWave(wave) {
 	        this.childWaves.push(wave);
 	    },
-	
+
 	    addObject: function addObject(obj) {
 	        switch (obj.type) {
 	            case 'rectangle':
@@ -1271,7 +1201,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                // Initialize new bodies with an ID use for ray intersection
 	                // tests
 	                obj.id = this.nextBodyId++;
-	
+
 	                if (this._gravityOn) {
 	                    obj.addForce(0, this.gravity);
 	                }
@@ -1297,7 +1227,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                throw new Error('tried to add something that you\'re totally not allowed to add');
 	        }
 	    },
-	
+
 	    /**
 	     * Add objects to the system
 	     * Objects not added will not be rendered
@@ -1307,7 +1237,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    add: function add(obj) {
 	        var _this = this;
-	
+
 	        if ((typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && obj.length !== undefined) {
 	            // We have an array
 	            obj.forEach(function (o) {
@@ -1317,7 +1247,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.addObject(obj);
 	        }
 	    },
-	
+
 	    /**
 	     * Remove an object from the system
 	     * @param {Body} b - the body object to remove
@@ -1325,7 +1255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    remove: function remove(b) {
 	        var _this2 = this;
-	
+
 	        if ((typeof b === 'undefined' ? 'undefined' : _typeof(b)) === 'object' && b.length !== undefined) {
 	            // We have an array of things to remove
 	            b.forEach(function (body) {
@@ -1340,10 +1270,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.bodies.splice(idx, 1);
 	            }
 	        }
-	
+
 	        return this;
 	    },
-	
+
 	    _integratePosition: function _integratePosition(dt) {
 	        this.bodies.forEach(function (body) {
 	            if (!body.static) {
@@ -1351,18 +1281,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        });
 	    },
-	
+
 	    _populateGrid: function _populateGrid(bodies) {
 	        var _this3 = this;
-	
+
 	        this.bodies.forEach(function (body) {
 	            _this3.hash.insertBody(body);
 	        });
 	    },
-	
+
 	    _updateWorldForces: function _updateWorldForces() {
 	        var _this4 = this;
-	
+
 	        // Update forces if need be
 	        if (this.worldForceNeedsSet) {
 	            this.bodies.forEach(function (body) {
@@ -1380,7 +1310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _getCollisionPairs: function _getCollisionPairs() {
 	        // Perform broadphase
 	        this.pairs = this.broadphase.getCollisionPairs(this.bodies, this.hash);
-	
+
 	        // Perform narrowphase detection on potential pairs
 	        if (this.pairs && Object.keys(this.pairs).length > 0) {
 	            this.collisions = this.narrowphase.checkForCollisions(this.pairs);
@@ -1395,48 +1325,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    update: function update(dt) {
 	        var _this5 = this;
-	
+
 	        // 1. Reset State for next loop
 	        this.hash.clear();
-	
+
 	        // Update world forces, if necessary
 	        this._updateWorldForces();
-	
+
 	        // Update bodies with verlet integration
 	        // And insert into hash
 	        this._integratePosition(dt);
-	
+
 	        // Run User Loop (they may want to change position somehow)
 	        if (this.loop) {
 	            this.loop();
 	        }
-	
+
 	        // Add bodies to collision grid
 	        this._populateGrid();
-	
+
 	        // Get broadphase collision pairs
 	        this._getCollisionPairs();
-	
+
 	        // Solve collisions and constraints
 	        this.solver.solve(this.collisions, this.constraints, dt);
-	
+
 	        // Each ray needs a unique ID for collision checking
 	        // Reset currentRayID during each update loop so we can reuse these
 	        // ID's
 	        this.currentRayId = 0;
-	
+
 	        // Remove all child waves
 	        this.childWaves = [];
-	
+
 	        // Update each wave and loop through it's chilren
 	        this.waves.forEach(function (wave) {
 	            wave.update(_this5);
 	            _this5.traverseWaves(wave);
 	        });
-	
+
 	        return this;
 	    },
-	
+
 	    /**
 	     * Recursively loop through child waves
 	     * and add them to the system
@@ -1445,7 +1375,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    traverseWaves: function traverseWaves(wave) {
 	        var _this6 = this;
-	
+
 	        // If the wave has children
 	        // Add each child to the system,
 	        // then repeat for each child
@@ -1457,27 +1387,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }
 	    },
-	
+
 	    addWorldForce: function addWorldForce(x, y) {
 	        this.worldForce.x += x;
 	        this.worldForce.y += y;
 	        this.worldForceNeedsUpdate = true;
 	    },
-	
+
 	    setWorldForce: function setWorldForce(x, y) {
 	        this.worldForce.x = x;
 	        this.worldForce.y = y;
 	        this.worldForceNeedsSet = true;
 	    }
 	};
-	
+
 	Object.defineProperty(System, 'gravityOn', {
 	    get: function get() {
 	        return this._gravityOn;
 	    },
 	    set: function set(isOn) {
 	        var _this7 = this;
-	
+
 	        if (this._gravityOn && !isOn) {
 	            // turn gravity off
 	            this._gravityOn = false;
@@ -1495,7 +1425,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	});
-	
+
 	Object.defineProperty(System, 'gravity', {
 	    get: function get() {
 	        return this._gravity;
@@ -1510,11 +1440,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        });
 	    }
 	});
-	
+
 	// const CONSTANTS = {
 	//     GRAVITY: 0.00004
 	// };
-	
+
 	/**
 	 * @public
 	 * @param {function} loop - your update loop - used to update body states
@@ -1532,16 +1462,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    s.init(loop, params);
 	    return s;
 	};
-	
+
 	exports.default = system;
 	module.exports = exports['default'];
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports) {
 
 	"use strict";
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -1554,7 +1484,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.numCols = width / cellSize;
 	        this.contents = {};
 	    },
-	
+
 	    /**
 	     * Return location that should store this point
 	     * @param {object} point - object with x and y properties
@@ -1567,7 +1497,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Hash the vertices of the AABB
 	        var min = this.hash(body.aabb.min);
 	        var max = this.hash(body.aabb.max);
-	
+
 	        // Iterate over rectangular region
 	        // And put the object in all buckets that
 	        // it hits
@@ -1593,7 +1523,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    removeBody: function removeBody(body) {
 	        var min = this.hash(body.aabb.min);
 	        var max = this.hash(body.aabb.max);
-	
+
 	        // Iterate over rectangular region
 	        // And remove the object from all found buckets
 	        for (var r = min.row; r < max.row + 1; r++) {
@@ -1609,7 +1539,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var min = this.hash(body.aabb.min);
 	        var max = this.hash(body.aabb.max);
 	        var nearby = [];
-	
+
 	        // Iterate over rectangular region
 	        // And put the object in all buckets that
 	        // it hits
@@ -1632,32 +1562,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.contents = {};
 	    }
 	};
-	
+
 	var hash = function hash(cellSize, width, height) {
 	    var h = Object.create(SpatialHash);
 	    h.init(cellSize, width, height);
 	    return h;
 	};
-	
+
 	exports.default = hash;
 	module.exports = exports["default"];
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Pair = __webpack_require__(10);
-	
+
+	var _Pair = __webpack_require__(9);
+
 	var _Pair2 = _interopRequireDefault(_Pair);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var Broadphase = {
 	    // init: function(system) {
 	    //     this.system = system;
@@ -1673,7 +1603,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return false;
 	    },
-	
+
 	    /**
 	     * Get all potential collision pairs -
 	     *  1. They are within the same spatial bucket
@@ -1689,7 +1619,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        for (var i = 0; i < bodies.length; i++) {
 	            var body = bodies[i];
 	            var nearby = hash.queryBody(body);
-	
+
 	            for (var j = 0; j < nearby.length; j++) {
 	                var otherBody = nearby[j];
 	                if (this.canCollide(body, otherBody)) {
@@ -1700,7 +1630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        } else {
 	                            id = otherBody.id + '-' + body.id;
 	                        }
-	
+
 	                        var p = (0, _Pair2.default)(body, otherBody, id);
 	                        // collisionPairs.push(p);
 	                        if (!collisionPairs[id]) {
@@ -1713,22 +1643,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return collisionPairs;
 	    }
 	};
-	
+
 	var broadphase = function broadphase(system) {
 	    var b = Object.create(Broadphase);
 	    // b.init(system);
 	    return b;
 	};
-	
+
 	exports.default = broadphase;
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -1738,34 +1668,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.index = index;
 	    }
 	};
-	
+
 	var pair = function pair(b1, b2, index) {
 	    var p = Object.create(Pair);
 	    p.init(b1, b2, index);
 	    return p;
 	};
-	
+
 	exports.default = pair;
 	module.exports = exports["default"];
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
+
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
-	var _SAT = __webpack_require__(12);
-	
+
+	var _SAT = __webpack_require__(11);
+
 	var _SAT2 = _interopRequireDefault(_SAT);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var Narrowphase = {
 	    // init: function(hash) {
 	    //     this.hash = hash;
@@ -1780,7 +1710,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var b1 = pair.bodies[0];
 	                var b2 = pair.bodies[1];
 	                var collision = _SAT2.default.intersect(b1, b2);
-	
+
 	                if (collision) {
 	                    b1.colliderList.push(collision);
 	                    b2.colliderList.push(collision);
@@ -1794,7 +1724,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var _b = _pair.bodies[0];
 	                var _b2 = _pair.bodies[1];
 	                var _collision = _SAT2.default.intersect(_b, _b2);
-	
+
 	                if (_collision) {
 	                    _b.colliderList.push(_collision);
 	                    collisions.push(_collision);
@@ -1804,36 +1734,36 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return collisions;
 	    }
 	};
-	
+
 	var narrowphase = function narrowphase() {
 	    var n = Object.create(Narrowphase);
 	    // n.init(hash);
 	    return n;
 	};
-	
+
 	exports.default = narrowphase;
 	module.exports = exports['default'];
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Vector = __webpack_require__(4);
-	
-	var _Collision = __webpack_require__(13);
-	
+
+	var _Vector = __webpack_require__(3);
+
+	var _Collision = __webpack_require__(12);
+
 	var _Collision2 = _interopRequireDefault(_Collision);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var SAT = {};
-	
+
 	/**
 	 * Determine min and max projection components along a
 	 * given axis
@@ -1847,7 +1777,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (b.type === 'rectangle' || b.type === 'polygon') {
 	        var min = b.vertices[0].scalarProjectUnit(axis);
 	        var max = min;
-	
+
 	        for (var i = 0; i < b.vertices.length; i++) {
 	            var v = b.vertices[i];
 	            var p = v.scalarProjectUnit(axis);
@@ -1863,7 +1793,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return { min: _p - b.scaledRadius, max: _p + b.scaledRadius };
 	    }
 	};
-	
+
 	/**
 	 * Line Overlap
 	 * Method to determine if two lines on the same axis have an overlap
@@ -1876,7 +1806,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	SAT.lineOverlap = function (p1min, p1max, p2min, p2max) {
 	    return Math.max(0, Math.min(p1max, p2max) - Math.max(p1min, p2min));
 	};
-	
+
 	/**
 	 * Entry point for SAT tests
 	 * @param {Sci.Body} b1 - first body
@@ -1890,16 +1820,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (b2.type === 'circle') {
 	            return SAT.polycircle(b1, b2);
 	        }
-	
+
 	        // b2 must then be a Polygon (or a rectangle)
 	        return SAT.polypoly(b1, b2);
 	    }
-	
+
 	    if (b1.type === 'circle') {
 	        if (b2.type === 'circle') {
 	            return SAT.circlecircle(b1, b2);
 	        }
-	
+
 	        // b2 Must be a polygon or a rectangle
 	        return SAT.polycircle(b1, b2);
 	    }
@@ -1908,22 +1838,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var v1 = _Vector.Vector.subtract(c2.position, c1.position);
 	    var d = v1.magnitude();
 	    var rplusr = c1.scaledRadius + c2.scaledRadius;
-	
+
 	    if (d < rplusr) {
-	
+
 	        // Ensure mtv axis points from p2 to p1
 	        // TODO: Verify this with a few more tests...
 	        var c2toc1 = _Vector.Vector.subtract(c2.position, c1.position);
 	        if (v1.dot(c2toc1) >= 0) {
 	            v1.negate();
 	        }
-	
+
 	        return (0, _Collision2.default)(c1, c2, v1.normalize(), rplusr - d);
 	    }
-	
+
 	    return;
 	};
-	
+
 	/**
 	 * @param {Polygon} p1 - first poly
 	 * @param {Polygon} p2 - second poly
@@ -1938,7 +1868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        MTVAxis = void 0,
 	        numVerts1 = p1.vertices.length,
 	        numVerts2 = p2.vertices.length;
-	
+
 	    // Get axes for rect
 	    // Only need two sides for testing
 	    if (p1.type === 'rectangle') {
@@ -1951,7 +1881,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        axis.normalize().perp();
 	        axes.push(axis);
 	    }
-	
+
 	    if (p2.type === 'rectangle') {
 	        numVerts2 = 2;
 	    }
@@ -1964,24 +1894,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _axis.normalize().perp();
 	        axes.push(_axis);
 	    }
-	
+
 	    // Perform intersection test along all axes
 	    for (var _i2 = 0; _i2 < axes.length; _i2++) {
 	        var _axis2 = axes[_i2];
-	
+
 	        // Get min and max projectsion
 	        var p1Projection = this.projectBody(p1, _axis2);
 	        var p2Projection = this.projectBody(p2, _axis2);
-	
+
 	        // Test for overlap of projections
 	        var overlap = this.lineOverlap(p1Projection.min, p1Projection.max, p2Projection.min, p2Projection.max);
-	
+
 	        // If at any point the overlap is zero, then we're guarenteed
 	        // to have no collision, so exit the test
 	        if (overlap === 0) {
 	            return;
 	        }
-	
+
 	        if (smallestOverlap) {
 	            if (overlap < smallestOverlap) {
 	                smallestOverlap = overlap;
@@ -1992,23 +1922,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            MTVAxis = _axis2;
 	        }
 	    }
-	
+
 	    // Ensure mtv axis points from p1 to p2
 	    // TODO: Verify this with a few more tests...
 	    var p2top1 = _Vector.Vector.subtract(p2.position, p1.position);
 	    if (MTVAxis.dot(p2top1) >= 0) {
 	        MTVAxis.negate();
 	    }
-	
+
 	    // TODO: Find support points to determine which points were involved in the
 	    // collision!?
-	
+
 	    // Will return true if overlap never equals 0, meaning all
 	    // projections overlap to some degree, so a collision is happening
 	    // return {MTV: {axis: MTVAxis, magnitude: smallestOverlap}};
 	    return (0, _Collision2.default)(p1, p2, MTVAxis, smallestOverlap);
 	};
-	
+
 	SAT.polycircle = function (b1, b2) {
 	    var p = void 0,
 	        c = void 0;
@@ -2019,23 +1949,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        c = b2;
 	        p = b1;
 	    }
-	
+
 	    // Gather all axes to test
 	    var axes = [],
 	        smallestOverlap = void 0,
 	        MTVAxis = void 0,
 	        numVerts1 = p.vertices.length;
-	
+
 	    // smallest distance vector from polygon vertex to circle center
 	    var d = void 0;
-	
+
 	    for (var i = 0; i < numVerts1; i++) {
 	        var v1 = p.vertices[i];
 	        var v2 = p.vertices[i + 1 === p.vertices.length ? 0 : i + 1];
 	        var axis = _Vector.Vector.subtract(v1, v2);
 	        axis.normalize().perp();
 	        axes.push(axis);
-	
+
 	        // Get distance of vertex to circle center
 	        var vc = _Vector.Vector.subtract(v1, c.position);
 	        if (d) {
@@ -2046,26 +1976,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	            d = vc;
 	        }
 	    }
-	
+
 	    axes.push(d.normalize());
-	
+
 	    // Perform intersection test along all axes
 	    for (var _i3 = 0; _i3 < axes.length; _i3++) {
 	        var _axis3 = axes[_i3];
-	
+
 	        // Get min and max projectsion
 	        var pProjection = this.projectBody(p, _axis3);
 	        var cProjection = this.projectBody(c, _axis3);
-	
+
 	        // Test for overlap of projections
 	        var overlap = this.lineOverlap(pProjection.min, pProjection.max, cProjection.min, cProjection.max);
-	
+
 	        // If at any point the overlap is zero, then we're guarenteed
 	        // to have no collision, so exit the test
 	        if (overlap === 0) {
 	            return;
 	        }
-	
+
 	        if (smallestOverlap) {
 	            if (overlap < smallestOverlap) {
 	                smallestOverlap = overlap;
@@ -2076,28 +2006,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	            MTVAxis = _axis3;
 	        }
 	    }
-	
+
 	    // Ensure mtv axis points from p2 to p1
 	    // TODO: Verify this with a few more tests...
 	    var b2tob1 = _Vector.Vector.subtract(b2.position, b1.position);
 	    if (MTVAxis.dot(b2tob1) >= 0) {
 	        MTVAxis.negate();
 	    }
-	
+
 	    // Will return true if overlap never equals 0, meaning all
 	    // projections overlap to some degree, so a collision is happening
 	    return (0, _Collision2.default)(b1, b2, MTVAxis, smallestOverlap);
 	};
-	
+
 	exports.default = SAT;
 	module.exports = exports['default'];
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports) {
 
 	"use strict";
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -2110,44 +2040,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.penetration = { x: mtv.x * overlap, y: mtv.y * overlap };
 	    }
 	};
-	
+
 	var collision = function collision(b1, b2, mtv, overlap) {
 	    var c = Object.create(Collision);
 	    c.init(b1, b2, mtv, overlap);
 	    return c;
 	};
-	
+
 	exports.default = collision;
 	module.exports = exports["default"];
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var Solver = {
 	    // Collision Types
 	    INELASTIC: 'inelastic',
 	    ELASTIC: 'elastic',
-	
+
 	    getCollisionType: function getCollisionType(b1, b2) {
 	        if (b1.collisionType === 'inelastic' || b2.collisionType === 'inelastic') {
 	            return this.INELASTIC;
 	        }
 	        return this.ELASTIC;
 	    },
-	
+
 	    /**
 	     * Resolve collision
 	     * @param {Collision} collision - collision object to resolve
@@ -2161,25 +2091,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	            body2 = collision.body2,
 	            mtvaxis = collision.mtvaxis,
 	            overlap = collision.overlap;
-	
+
 	        var resolutionVector = (0, _Vector2.default)(mtvaxis.x * overlap, mtvaxis.y * overlap);
 	        // let collisionType = this.getCollisionType(body1, body2);
-	
+
 	        // if there is an xOverlap
 	        var damping = 1;
-	
+
 	        // First resolve position entirely (i.e. move it out of collision)
 	        body1.position.x += resolutionVector.x / 2 + .001;
 	        body1.position.y += resolutionVector.y / 2 + .001;
 	        body2.position.x -= resolutionVector.x / 2 + .001;
 	        body2.position.y -= resolutionVector.y / 2 + .001;
-	
+
 	        // Set previous position (so it's velocity is zero)
 	        body1.positionPrev = body1.position.clone();
 	        body2.positionPrev = body2.position.clone();
-	
+
 	        var e = Math.max(body1.restitution, body2.restitution);
-	
+
 	        // Give it some velocity based on coefficient of restitution and some
 	        // arbitrary damping (this needs to be tuned so the collision feels
 	        // realistic!) TODO: Figure out how to make them more realistic
@@ -2187,13 +2117,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        body1.positionPrev.y -= resolutionVector.y / 2 * e * damping;
 	        body2.positionPrev.x += resolutionVector.x / 2 * e * damping;
 	        body2.positionPrev.y += resolutionVector.y / 2 * e * damping;
-	
+
 	        // Preserve impulse? See here: http://codeflow.org/entries/2010/nov/29/verlet-collision-with-impulse-preservation/
 	        // let damping = 0.5;
 	        // let f1 = (damping*(resolutionVector.x * body1.velocity.x + resolutionVector.y * body1.velocity.y))/resolutionVector.magnitudeSq();
 	        // // var f2 = (damping*(resolutionVector.x*v2x+y*v2y))/slength;
 	        // let f2 = (damping*(resolutionVector.x * body2.velocity.x + resolutionVector.y * body2.velocity.y))/resolutionVector.magnitudeSq();
-	
+
 	        // Swap the projected components
 	        // let v1x = body1.velocity.x + f2 * resolutionVector.x - f1 * resolutionVector.x;
 	        // let v2x = body2.velocity.x + f1 * resolutionVector.x - f2 * resolutionVector.x;
@@ -2204,14 +2134,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // body1.positionPrev.y = body1.position.y - v1y;
 	        // body2.positionPrev.x = body2.position.x - v2x;
 	        // body2.positionPrev.y = body2.position.y - v2y;
-	
+
 	        // update vertices and aabb's
 	        body1.updateVertices();
 	        body2.updateVertices();
 	    },
 	    solveCollisions: function solveCollisions(collisions) {
 	        var _this = this;
-	
+
 	        collisions.forEach(function (c) {
 	            return _this.solveCollision(c);
 	        });
@@ -2227,26 +2157,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.solveCollisions(collisions);
 	    }
 	};
-	
+
 	var solver = function solver() {
 	    var s = Object.create(Solver);
 	    return s;
 	};
-	
+
 	exports.default = solver;
 	module.exports = exports['default'];
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	// import {Vector} from '../math/Vector';
-	
+
 	var Constraint = {
 	    init: function init(body1, body2, bounds, distance, forces) {
 	        this.body1 = body1;
@@ -2264,12 +2194,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    //     }
 	    // }
 	};
-	
+
 	var constraint = function constraint() {
 	    var type = arguments.length <= 0 ? undefined : arguments[0];
 	    var c = Object.create(Constraint);
 	    c.type = arguments.length <= 0 ? undefined : arguments[0];
-	
+
 	    switch (type) {
 	        case 'boundary':
 	            c.init(arguments.length <= 1 ? undefined : arguments[1], null, arguments.length <= 3 ? undefined : arguments[3], null, null);
@@ -2280,34 +2210,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	        default:
 	            throw new Error('I don\'t know how to handle that kind of constraint!');
 	    }
-	
+
 	    return c;
 	};
-	
+
 	exports.default = constraint;
 	module.exports = exports['default'];
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Constraint = __webpack_require__(15);
-	
+
+	var _Constraint = __webpack_require__(14);
+
 	var _Constraint2 = _interopRequireDefault(_Constraint);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var boundaryConstraint = function boundaryConstraint(body, bounds, distance) {
 	    var C = (0, _Constraint2.default)('boundary', body, null, bounds, distance);
-	
+
 	    C.solve = function () {
 	        var minX = body.aabb.min.x;
 	        var minY = body.aabb.min.y;
@@ -2381,16 +2311,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	    return C;
 	};
-	
+
 	exports.default = boundaryConstraint;
 	module.exports = exports['default'];
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports) {
 
 	"use strict";
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -2409,26 +2339,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	    Pillow: { density: 0.1, restitution: 0.2 },
 	    Static: { density: 0.0, restitution: 0.4 }
 	};
-	
+
 	exports.MATERIALS = MATERIALS;
 	exports.GRAVITY = GRAVITY;
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _math = __webpack_require__(5);
-	
+
+	var _math = __webpack_require__(4);
+
 	var math = _interopRequireWildcard(_math);
-	
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
+
 	// TODO: rename params to options to be consistent with other objects
 	var Renderer = {
 	    init: function init(system, params) {
@@ -2438,7 +2368,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.borderColor = params.borderColor;
 	        this.system = system;
 	        // this.loop = loop;
-	
+
 	        // Initialize Canvas element
 	        // Pardon the ugly ternary...
 	        this.canvas = typeof params.canvas === 'undefined' ? function () {
@@ -2452,12 +2382,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var c = document.getElementById(params.canvas);
 	            return c;
 	        }();
-	
+
 	        // Set canvas based on system size
 	        this.canvas.width = this.system.width;
 	        this.canvas.height = this.system.height;
 	        this.ctx = this.canvas.getContext('2d');
-	
+
 	        // Draw background
 	        this.ctx.beginPath();
 	        this.ctx.globalAlpha = 1;
@@ -2467,7 +2397,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.frameTimestep = 0;
 	        this.fps = 60;
 	        this.dt = 1000 / this.fps;
-	
+
 	        // Debug Params
 	        this.debug = params.debug === undefined ? false : params.debug;
 	        if (this.debug) {
@@ -2475,7 +2405,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            window.ctx = this.canvas.getContext('2d');
 	        }
 	    },
-	
+
 	    /**
 	     * Resize the canvas
 	     * @param {number} width - new width of canvas
@@ -2491,7 +2421,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.system.cellSize = this.system.calculateCellSize(cellSize || this.system.cellSize);
 	        this.system.hash = this.system.initializeHash(this.system.cellSize, width, height);
 	    },
-	
+
 	    drawPoint: function drawPoint(point) {
 	        this.ctx.beginPath();
 	        this.ctx.ellipse(point.position.x, point.position.y, 3, 3, 0, 0, Math.PI * 2);
@@ -2501,7 +2431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    drawConstraints: function drawConstraints(constraints) {
 	        var _this = this;
-	
+
 	        constraints.forEach(function (c) {
 	            return _this.drawConstraint(c);
 	        });
@@ -2517,7 +2447,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    drawBodies: function drawBodies(bodies) {
 	        var _this2 = this;
-	
+
 	        bodies.forEach(function (b) {
 	            return _this2.drawBody(b);
 	        });
@@ -2529,7 +2459,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    drawBody: function drawBody(body, pct) {
 	        var _this3 = this;
-	
+
 	        if (body.debug) {
 	            if (body.type === 'circle') {
 	                this.ctx.beginPath();
@@ -2558,7 +2488,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.ctx.globalAlpha = 1;
 	            this.ctx.strokeStyle = 'red';
 	            this.ctx.lineWidth = 1;
-	
+
 	            var _aabb = body.aabb;
 	            var _x = _aabb.min.x;
 	            var _y = _aabb.min.y;
@@ -2566,7 +2496,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _h = _aabb.max.y - _y;
 	            this.ctx.rect(_x, _y, _w, _h);
 	            this.ctx.stroke();
-	
+
 	            if (body.vertices) {
 	                body.vertices.forEach(function (vert) {
 	                    _this3.ctx.beginPath();
@@ -2584,7 +2514,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.ctx.stroke();
 	            }
 	        }
-	
+
 	        // Start a new path for each body
 	        this.ctx.beginPath();
 	        this.ctx.globalAlpha = 1;
@@ -2617,7 +2547,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    this.ctx.fillStyle = body.style.fillStyle;
 	                    this.ctx.lineWidth = body.style.lineWidth;
 	                    this.ctx.strokeStyle = body.style.strokeStyle;
-	
+
 	                    if (body.debug) {
 	                        if (body.colliderList.length > 0) {
 	                            this.ctx.strokeStyle = 'green';
@@ -2625,7 +2555,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            this.ctx.strokeStyle = 'white';
 	                        }
 	                    }
-	
+
 	                    this.ctx.ellipse(body.position.x, body.position.y, body.scaledRadius, body.scaledRadius, 0, 0, Math.PI * 2);
 	                    // this.ctx.closePath();
 	                    this.ctx.stroke();
@@ -2655,13 +2585,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    drawWave: function drawWave(wave) {
 	        // No matter what the angle mode, always use radians
 	        var angle = wave.mode === 'DEGREES' ? math.degToRad(wave.direction) : wave.direction;
-	
+
 	        // Set wave style properties
 	        this.ctx.fillStyle = wave.style.fillStyle;
 	        this.ctx.lineWidth = wave.style.lineWidth;
 	        this.ctx.strokeStyle = wave.style.strokeStyle;
 	        this.ctx.globalAlpha = math.map(wave.intensity, 0, 1, 0.1, 1);
-	
+
 	        // If debug == true, draw waves in certain colors
 	        if (this.debug) {
 	            if (wave.type === 'incident') {
@@ -2678,16 +2608,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.ctx.strokeStyle = 'orange';
 	            }
 	        }
-	
+
 	        this.ctx.beginPath();
 	        this.ctx.moveTo(wave.position.x, wave.position.y);
-	
+
 	        // If the wave intersects an object ahead, then
 	        // only draw to that object. Otherwise draw an arbitrary length
 	        if (wave.ray.intersectionPoint) {
 	            this.ctx.lineTo(wave.ray.intersectionPoint.x, wave.ray.intersectionPoint.y);
 	            this.ctx.stroke();
-	
+
 	            // Draw intersection points as circles
 	            // when in debug mode
 	            if (this.debug) {
@@ -2702,37 +2632,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.ctx.stroke();
 	        }
 	    },
-	
+
 	    // Combined Patterns from Matter.js
 	    // - https://github.com/liabru/matter-js/blob/master/src/core/Runner.js
 	    // and this tutorial:
 	    // https://gamedevelopment.tutsplus.com/tutorials/how-to-create-a-custom-2d-physics-engine-the-core-engine--gamedev-7493#timestepping
 	    run: function run() {
 	        var _this4 = this;
-	
+
 	        var self = this;
 	        this.lastTick = 0;
 	        var animate = function animate(time) {
 	            _this4._requestID = window.requestAnimationFrame(animate);
-	
+
 	            if (time) {
 	                _this4.tick(time);
 	            }
 	        };
 	        animate();
 	    },
-	
+
 	    // Clamping frameTimestep make a gigantic difference
 	    tick: function tick(time) {
 	        // Get time between this and the previous ticks
 	        var elapsedTime = time - this.lastTick;
-	
+
 	        // Add the time to a counter
 	        this.frameTimestep += elapsedTime;
-	
+
 	        // Update previous tick time
 	        this.lastTick = time;
-	
+
 	        // Magic happens here
 	        // if the elapsed time between this tick and the last tick is large
 	        // (because the update or render code took a long time), then the
@@ -2742,7 +2672,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this.frameTimestep > 50) {
 	            this.frameTimestep = 50;
 	        }
-	
+
 	        // If there's a large difference between the time of this frame and the
 	        // previous frame, then this code will run a bunch of times,
 	        // essentially stalling the renderer.  The engine can't render while
@@ -2753,7 +2683,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.system.update(this.dt);
 	            this.frameTimestep -= this.dt;
 	        }
-	
+
 	        // In the case where the frameTimestep is some in between value between
 	        // 0 and dt, we can linearly interpolate rendered values of the bodies
 	        // this won't actually effect the physics, but it'll make things look
@@ -2764,7 +2694,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // Render the system
 	        this.render(pct);
 	    },
-	
+
 	    drawBackground: function drawBackground() {
 	        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	        // Draw background
@@ -2777,15 +2707,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.ctx.fill();
 	        this.ctx.stroke();
 	    },
-	
+
 	    render: function render(pct) {
 	        var _this5 = this;
-	
+
 	        // Clear background
 	        if (this.clearBackground) {
 	            this.drawBackground();
 	        }
-	
+
 	        // Draw all objects
 	        this.drawBodies(this.system.bodies);
 	        this.drawConstraints(this.system.constraints);
@@ -2794,17 +2724,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this5.drawPoint(point);
 	            });
 	        }
-	
+
 	        // Update all waves
 	        this.system.waves.forEach(function (wave) {
 	            _this5.drawWave(wave, pct);
 	        });
-	
+
 	        // Update all child waves
 	        this.system.childWaves.forEach(function (wave) {
 	            _this5.drawWave(wave, pct);
 	        });
-	
+
 	        // If in debug mode, draw spatial hash
 	        // and highlight nodes that contain items in red
 	        if (this.debug === true) {
@@ -2836,7 +2766,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            })();
 	        }
 	    },
-	
+
 	    /**
 	     * Set's size of renderers canvas
 	     * @param {number} width - width of canvas
@@ -2852,7 +2782,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    stop: function stop() {
 	        cancelAnimationFrame(this._requestID);
 	    },
-	
+
 	    /**
 	     * Restart animation cycle
 	     */
@@ -2860,51 +2790,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.render(this.system);
 	    }
 	};
-	
+
 	var renderer = function renderer(system, params) {
 	    var R = Object.create(Renderer);
 	    R.init(system, params);
 	    return R;
 	};
-	
+
 	exports.default = renderer;
 	module.exports = exports['default'];
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Body = __webpack_require__(20);
-	
+
+	var _Body = __webpack_require__(19);
+
 	var _Body2 = _interopRequireDefault(_Body);
-	
-	var _AABB = __webpack_require__(22);
-	
+
+	var _AABB = __webpack_require__(21);
+
 	var _AABB2 = _interopRequireDefault(_AABB);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var rect = function rect(options) {
 	    options = options || {};
-	
+
 	    var B = Object.create(_Body2.default);
 	    B.init(options);
 	    B.type = 'rectangle';
 	    B._mode = options.mode || 'LEFT';
-	
+
 	    B.inertia = B.mass / 12 * (B.height * B.height + B.width * B.width);
 	    B.invInertia = 1 / B.inertia;
-	
+
 	    // Define getters and setters for mode
 	    Object.defineProperty(B, 'mode', {
 	        get: function get() {
@@ -2928,7 +2858,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    });
-	
+
 	    /**
 	     * Update location of vertices - used in update loop
 	     * @todo Move this onto the Body
@@ -2975,17 +2905,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    //         });
 	    //     }
 	    // };
-	
+
 	    B.isPointInterior = function (x, y) {
 	        var bx = B.position.x,
 	            by = B.position.y;
-	
+
 	        if (x >= bx && x <= bx + B.width && y >= by && y <= by + B.height) {
 	            return true;
 	        }
 	        return false;
 	    };
-	
+
 	    B.updateVertices();
 	    B.aabb = (0, _AABB2.default)(B);
 	    return B;
@@ -2996,53 +2926,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
+
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /* eslint "no-unused-vars": "off" */
 	// What should a body be able to do?
 	// 1. Attach to other bodies or surfaces
 	// 2. Respond to forces (spring, friction)
 	// 3. Move according to velocity and acceleration
-	
-	var _materials = __webpack_require__(21);
-	
+
+	var _materials = __webpack_require__(20);
+
 	var _materials2 = _interopRequireDefault(_materials);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
-	var _math = __webpack_require__(5);
-	
+
+	var _math = __webpack_require__(4);
+
 	var math = _interopRequireWildcard(_math);
-	
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	/**
 	 * Convenience Function so user doesn't have use 'new' keyword
 	 * @param {object} options - initialization options
 	 * @return {Body} instance of Body
 	 */
-	
+
 	var Body = {
 	    init: function init(options) {
 	        options = options || {};
-	
+
 	        // Warn user if a body object is initialized with nothing or an empty
 	        // object
 	        if (Object.keys(options).length === 0 && options.constructor === Object) {
 	            console.warn('You probably should initialize body objects with some values...just sayin');
 	        }
-	
+
 	        // STYLE //
 	        this.style = {
 	            fillStyle: options.fillStyle || 'rgba(0,0,0,0)',
@@ -3051,14 +2981,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        };
 	        this.height = options.height || 10;
 	        this.width = options.width || 10;
-	
+
 	        // PHYSICAL Properties //
 	        // Mass = density * volume;
 	        this._mass = options.mass || 1;
 	        this.invMass = 1 / this._mass;
 	        // Inertial is calculated on a shape by shape basis, check specific
 	        // shape files
-	
+
 	        // MOTION Properties //
 	        this.positionImpulse = { x: 0, y: 0 };
 	        this.position = (0, _Vector2.default)(options.x || 0, options.y || 0);
@@ -3076,24 +3006,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.interpolatedRotation = this.rotation;
 	        this.rotationPrev = this._rotation;
 	        this.angularVelocity = options.angularVelocity === undefined ? 0 : options.angularVelocity;
-	
+
 	        // COLLISION Properties //
 	        this.static = options.static === true;
 	        this.canCollide = options.canCollide !== false;
 	        this.collisionType = options.collisionType || 'elastic';
 	        this.colliderList = [];
 	        this.restitution = 1;
-	
+
 	        // OPTICAL Properties //
 	        this.refractiveIndex = options.refractiveIndex || 1;
 	        this.material = options.material || 'GLASS';
 	        this.materialColor = options.fillStyle || 'black';
 	        this.mirror = options.mirror || false;
 	        this.intersectionPoints = {};
-	
+
 	        // If debug = true, bounding box will be drawn
 	        this.debug = options.debug === undefined ? false : options.debug;
-	
+
 	        // If the material is provided, set refractive index based on materials
 	        // database
 	        // TODO: Make setting either refractive index or material possible!!!
@@ -3118,7 +3048,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return this;
 	    },
-	
+
 	    freeze: function freeze() {
 	        this.setPosition(this.position.x, this.position.y);
 	        // this.static = true;
@@ -3127,7 +3057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // this.velocity.y = 0;
 	        return this;
 	    },
-	
+
 	    unfreeze: function unfreeze() {
 	        this.static = false;
 	        // if (this._cachedVelocity) {
@@ -3138,7 +3068,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        // }
 	        return this;
 	    },
-	
+
 	    translate: function translate() {
 	        if (arguments.length === 1) {
 	            if (_typeof(arguments.length <= 0 ? undefined : arguments[0]) === 'object') {
@@ -3151,21 +3081,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.position.y += arguments.length <= 1 ? undefined : arguments[1];
 	            }
 	        }
-	
+
 	        if (this.updateVertices) {
 	            this.updateVertices();
 	        }
 	        return this;
 	    },
-	
+
 	    rotate: function rotate(angle) {
 	        this.rotation += angle;
 	        return this;
 	    },
-	
+
 	    updateVertices: function updateVertices() {
 	        var _this = this;
-	
+
 	        switch (this.type) {
 	            case 'rectangle':
 	                {
@@ -3184,14 +3114,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        default:
 	                            break;
 	                    }
-	
+
 	                    //Get centroid
 	                    this.centroid = (0, _Vector2.default)((x + (x + w)) / 2, // <-- x value
 	                    (y + (y + h)) / 2 // <-- y value
 	                    );
-	
+
 	                    this.vertices = [(0, _Vector2.default)(x, y), (0, _Vector2.default)(x + w, y), (0, _Vector2.default)(x + w, y + h), (0, _Vector2.default)(x, y + h)];
-	
+
 	                    // To perform a rotation, we have to first translate to the origin,
 	                    // then rotate, then translate back to the centroid
 	                    if (this.angularVelocity !== 0 || this._rotation !== 0 || this._scale !== 0) {
@@ -3208,14 +3138,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        var relVert = _this._relativeVertices[index];
 	                        vert.x = relVert.x + _this.position.x;
 	                        vert.y = relVert.y + _this.position.y;
-	
+
 	                        _this.centroid.x += vert.x;
 	                        _this.centroid.y += vert.y;
 	                    });
-	
+
 	                    this.centroid.x /= this.vertices.length;
 	                    this.centroid.y /= this.vertices.length;
-	
+
 	                    // Update rotate vertices if necessary
 	                    if (this.angularVelocity !== 0 || this._rotation !== 0 || this._scale !== 0) {
 	                        this.vertices.forEach(function (vert) {
@@ -3234,17 +3164,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.aabb.update();
 	        }
 	    },
-	
+
 	    addForce: function addForce(x, y) {
 	        this.force.x += x;
 	        this.force.y += y;
 	    },
-	
+
 	    setForce: function setForce(x, y) {
 	        this.force.x = x;
 	        this.force.y = y;
 	    },
-	
+
 	    // Instantaneously set position without verlet integration
 	    setPosition: function setPosition(x, y) {
 	        this.position.x = x;
@@ -3252,7 +3182,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.positionPrev.x = x;
 	        this.positionPrev.y = y;
 	    },
-	
+
 	    // Instantaneously set x position without verlet integration
 	    setX: function setX(x) {
 	        this.position.x = x;
@@ -3266,7 +3196,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.rotation = angle;
 	        this.rotationPrev = angle;
 	    },
-	
+
 	    // TODO: 1/4 Fix the update loop -> body is accelerating WAY too fast.
 	    update: function update(dt) {
 	        // if (!this.static) {
@@ -3275,42 +3205,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //     this.rotation += this.angularVelocity;
 	        // var frictionAir = 1 - body.frictionAir * timeScale * body.timeScale,
 	        var deltaTimeSquared = dt * dt;
-	
+
 	        // Verlet integration
 	        if (this.colliderList.length > 0) {}
-	
+
 	        // Calculate previous velocity using change in position during one step
 	        var velocityPrevX = this.position.x - this.positionPrev.x,
 	            velocityPrevY = this.position.y - this.positionPrev.y;
-	
+
 	        // update velocity with Verlet integration
 	        this.velocity.x = velocityPrevX + this.force.x * this.invMass * deltaTimeSquared;
 	        this.velocity.y = velocityPrevY + this.force.y * this.invMass * deltaTimeSquared;
 	        this.angularVelocity = this.rotation - this.rotationPrev + this.torque * this.invInertia * deltaTimeSquared;
-	
+
 	        // Save previous position
 	        this.positionPrev.x = this.position.x;
 	        this.positionPrev.y = this.position.y;
-	
+
 	        // Update position with calculated velocity
 	        this.position.add(this.velocity);
 	        this.rotationPrev = this.rotation;
 	        this.rotation += this.angularVelocity * deltaTimeSquared;
-	
+
 	        if (this.updateVertices) {
 	            this.updateVertices();
 	        }
-	
+
 	        // For each update loop, reset intersection points to zero
 	        // These are used for wave intersections, not collisions
 	        this.intersectionPoints = {};
-	
+
 	        this.colliderList = [];
 	        // this.aabb.update();
 	        return this;
 	    }
 	};
-	
+
 	Object.defineProperty(Body, 'rotation', {
 	    get: function get() {
 	        return this._rotation;
@@ -3322,7 +3252,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	});
-	
+
 	Object.defineProperty(Body, 'scale', {
 	    get: function get() {
 	        return this._scale;
@@ -3336,7 +3266,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	});
-	
+
 	Object.defineProperty(Body, 'mass', {
 	    get: function get() {
 	        return this._mass;
@@ -3346,12 +3276,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.invMass = 1 / m;
 	    }
 	});
-	
+
 	exports.default = Body;
 	module.exports = exports['default'];
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -3364,28 +3294,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 22 */
+/* 21 */
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
+
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
+
 	/* eslint
 	    "no-else-return": "off"
 	 */
 	var AABB = {
 	    init: function init(body) {
 	        this.body = body;
-	
+
 	        var _findMinMax = this.findMinMax(body),
 	            min = _findMinMax.min,
 	            max = _findMinMax.max;
-	
+
 	        this.max = max;
 	        this.min = min;
 	    },
@@ -3397,7 +3327,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     */
 	    findMinMax: function findMinMax() {
 	        var _this = this;
-	
+
 	        // Only deal with two types of bodies...Those with vertices, and
 	        // circles
 	        if (this.body.vertices) {
@@ -3409,7 +3339,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this.body.vertices.forEach(function (v) {
 	                    var x = v.x,
 	                        y = v.y;
-	
+
 	                    // If nothing has been set, then set it
 	                    if (typeof minx === 'undefined') {
 	                        minx = x;
@@ -3417,26 +3347,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        // Something's already there, only update if x < minx
 	                        minx = x;
 	                    }
-	
+
 	                    if (typeof miny === 'undefined') {
 	                        miny = y;
 	                    } else if (typeof miny !== 'undefined' && y < miny) {
 	                        miny = y;
 	                    }
-	
+
 	                    if (typeof maxx === 'undefined') {
 	                        maxx = x;
 	                    } else if (typeof maxx !== 'undefined' && x > maxx) {
 	                        maxx = x;
 	                    }
-	
+
 	                    if (typeof maxy === 'undefined') {
 	                        maxy = y;
 	                    } else if (typeof maxy !== 'undefined' && y > maxy) {
 	                        maxy = y;
 	                    }
 	                });
-	
+
 	                return {
 	                    v: {
 	                        max: {
@@ -3450,7 +3380,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 	                };
 	            }();
-	
+
 	            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
 	        } else {
 	            // Assume it's a circle
@@ -3469,7 +3399,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }
 	    },
-	
+
 	    /**
 	     * Returns true of point is inside AABB
 	     * @param {Point} point - must contain x and y props
@@ -3481,10 +3411,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (x >= this.min.x && x <= this.max.x && y >= this.min.y && y <= this.max.y) {
 	            return true;
 	        }
-	
+
 	        return false;
 	    },
-	
+
 	    /**
 	     * Check if two AABB's intersect
 	     * @param {AABB} aabb - other bounding box
@@ -3505,7 +3435,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } // a is below b
 	        return true; // boxes overlap
 	    },
-	
+
 	    /**
 	     * Updates the AABB
 	     */
@@ -3513,43 +3443,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var _findMinMax2 = this.findMinMax(),
 	            max = _findMinMax2.max,
 	            min = _findMinMax2.min;
-	
+
 	        this.max = max;
 	        this.min = min;
 	    }
 	};
-	
+
 	var aabb = function aabb(body) {
 	    var ab = Object.create(AABB);
 	    ab.init(body);
 	    return ab;
 	};
-	
+
 	exports.default = aabb;
 	module.exports = exports['default'];
 
 /***/ },
-/* 23 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _math = __webpack_require__(5);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _math = __webpack_require__(4);
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
-	var _Ray = __webpack_require__(6);
-	
+
+	var _Ray = __webpack_require__(5);
+
 	var _Ray2 = _interopRequireDefault(_Ray);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var Wave = {
 	    init: function init(options) {
 	        options = options || {};
@@ -3561,7 +3491,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            strokeStyle: options.strokeStyle || '#456abc',
 	            opacity: options.opacity || 1.0
 	        };
-	
+
 	        this.x = options.x || 10;
 	        this.y = options.y || 10;
 	        this.position = (0, _Vector2.default)(options.x, options.y);
@@ -3577,21 +3507,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.n1 = options.n1 || 1;
 	        this.n2 = options.n2 || 1;
 	        this.lastIntersection = {};
-	
+
 	        // create ray for detecting body intersections
 	        this.ray = (0, _Ray2.default)(this.position.x, this.y, this.direction, this.mode === 'DEGREES' || null);
 	    },
-	
+
 	    update: function update(system) {
 	        this.ray.trace(system);
-	
+
 	        // Remove children on every update
 	        this.children = [];
 	        // If the ray intersected a point...
 	        if (this.ray.intersectionPoint) {
 	            this.lastIntersection = this.ray.intersectionPoint;
 	            this.children = this.createChildren();
-	
+
 	            this.children.forEach(function (child) {
 	                child.update(system);
 	            });
@@ -3599,29 +3529,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	    createChildren: function createChildren() {
 	        var _this = this;
-	
+
 	        //Vector implementation of reflected and refracted waves here:
 	        //http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
 	        //Normalize ray vector = this.ray.direction
-	
+
 	        // Find the normal vector (method of which depends on type of body)
 	        // There are two possible normal vectors, but
 	        // which one do we want?
 	        // one which dot product with ray vector < 0 is what we want
 	        // http://gamedev.stackexchange.com/questions/85850/collision-intersection-of-2d-ray-to-line-segment
 	        var normal = void 0;
-	
+
 	        //selectNormal();
 	        // TODO: Wrap this in it's own function (i.e. findNormal function)
 	        var bType = this.ray.intersectingBody.type;
 	        if (bType === 'rectangle' || bType === 'polygon') {
 	            (function () {
 	                var intSeg = _this.ray.intersectingSegment;
-	
+
 	                intSeg.normalize();
 	                var dot = intSeg.dot(_this.ray.direction);
 	                var normals = [(0, _Vector2.default)(-intSeg.y, intSeg.x), (0, _Vector2.default)(intSeg.y, -intSeg.x)];
-	
+
 	                var that = _this;
 	                normals.forEach(function (n) {
 	                    if (n.dot(that.ray.direction) < 0) {
@@ -3654,7 +3584,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            })();
 	        }
-	
+
 	        // child waves - reflected and refracted
 	        // Calculate reflected vector
 	        // https://en.wikipedia.org/wiki/Snell%27s_law#Vector_form
@@ -3666,7 +3596,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        tmpVec.multiply(2 * this.ray.direction.dot(normal));
 	        var rVec = this.ray.direction.clone();
 	        rVec.subtract(tmpVec);
-	
+
 	        // Refracted vector
 	        // Are we inside a body?
 	        // get origin points of wave, check if they are interior to the
@@ -3678,7 +3608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            //Grab the last one (the body on top)
 	            this.n1 = this.ray.outerBodies[this.ray.outerBodies.length - 1].refractiveIndex;
 	        }
-	
+
 	        // TODO: Figure out how to handle picking proper refractive index
 	        // values
 	        // for child rays
@@ -3716,15 +3646,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // If the ray won't intersect another body,
 	            // then it must be outside of a body
 	            //n2 = 1;
-	
+
 	            // n1 must take on the index of where the parent ray currently
 	            // exists
 	            //n1 = props.parent.intersectingBody.refractiveIndex;
 	        }
-	
+
 	        var theta1 = Math.PI - this.ray.direction.angleTo(normal);
 	        var theta2 = Math.asin(this.n1 * Math.sin(theta1) / this.n2);
-	
+
 	        // Vector formulation for refracted wave
 	        // t = n1/n2 * rayVector + (n1/n2 * cos(theta1) - sqrt(1
 	        // - sin2(theta2))) * normal
@@ -3732,14 +3662,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var tVec = _Vector.Vector.multiply(this.n1 / this.n2, this.ray.direction);
 	        var normCopy = _Vector.Vector.multiply(normal, this.n1 / this.n2 * Math.cos(theta1) - Math.sqrt(1 - sin2theta2));
 	        tVec.add(normCopy);
-	
+
 	        // Reflection Coefficient
 	        // R = R0 + (1 - R0) * (1 - cos(theta1))^5 where R0 = (n1 - n2 / n1
 	        // + n2)^2
 	        var _r0 = (this.n1 - this.n2) / (this.n1 + this.n2);
 	        var R0 = _r0 * _r0;
 	        var _r0tmp = void 0;
-	
+
 	        // Angles must be positive, so if we get a negative value for an
 	        // angle, just flip it
 	        if (this.n1 <= this.n2) {
@@ -3747,7 +3677,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else if (this.n1 > this.n2) {
 	            _r0tmp = 1 - (Math.cos(theta2) < 0 ? -Math.cos(theta2) : Math.cos(theta2));
 	        }
-	
+
 	        // TODO: Refactor this to eliminate some checks if body is a mirror
 	        var R = R0 + (1 - R0) * Math.pow(_r0tmp, 5);
 	        var T = 1 - R; // Refracion Coefficient
@@ -3756,16 +3686,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            R = 0.95;
 	            T = 0;
 	        }
-	
+
 	        // If the material should be treated as a mirror
 	        if (this.ray.intersectingBody.mirror === true) {
 	            R = 0.9;
 	            T = 0;
 	        }
-	
+
 	        var RI = this.intensity * R;
 	        var TI = this.intensity * T;
-	
+
 	        // Add 2 child waves - reflected and refracted
 	        // Trace reflected wave
 	        // Have to offset the waves by at least a pixel,
@@ -3790,7 +3720,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	            children.push(reflectedWave);
 	        }
-	
+
 	        if (TI > 0.01) {
 	            var refractedWave = wave({ // eslint-disable-line
 	                x: this.ray.intersectionPoint.x - normal.x,
@@ -3809,52 +3739,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return children;
 	    }
 	}; /* eslint "no-unused-vars": "off" */
-	
-	
+
+
 	var wave = function wave(options) {
 	    var W = Object.create(Wave);
 	    W.init(options);
 	    return W;
 	};
-	
+
 	exports.default = wave;
 	module.exports = exports['default'];
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Body = __webpack_require__(20);
-	
+
+	var _Body = __webpack_require__(19);
+
 	var _Body2 = _interopRequireDefault(_Body);
-	
-	var _AABB = __webpack_require__(22);
-	
+
+	var _AABB = __webpack_require__(21);
+
 	var _AABB2 = _interopRequireDefault(_AABB);
-	
-	var _math = __webpack_require__(5);
-	
+
+	var _math = __webpack_require__(4);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var circle = function circle(options) {
 	    options = options || {};
 	    var B = Object.create(_Body2.default);
 	    B.init(options);
-	
+
 	    B.radius = options.radius || 10;
 	    B.scaledRadius = B.radius;
 	    B.type = 'circle';
 	    B.aabb = (0, _AABB2.default)(B);
-	
+
 	    B.inertia = B.mass * B.radius * B.radius / 2;
 	    B.invInertia = 1 / B.inertia;
-	
+
 	    B.isPointInterior = function (x, y) {
 	        var bx = B.position.x,
 	            by = B.position.y;
@@ -3863,46 +3793,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return false;
 	    };
-	
+
 	    return B;
 	};
-	
+
 	exports.default = circle;
 	module.exports = exports['default'];
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Body = __webpack_require__(20);
-	
+
+	var _Body = __webpack_require__(19);
+
 	var _Body2 = _interopRequireDefault(_Body);
-	
-	var _AABB = __webpack_require__(22);
-	
+
+	var _AABB = __webpack_require__(21);
+
 	var _AABB2 = _interopRequireDefault(_AABB);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var polygon = function polygon(options) {
 	    options = options || {};
-	
+
 	    var B = Object.create(_Body2.default);
 	    if (!options.vertices) {
 	        throw new Error('Polygons MUST be initialized with vertices. See docs.');
 	    }
 	    B.init(options);
-	
+
 	    // Set type
 	    B.type = 'polygon';
 	    // TODO: Find one of the (many) algorithms for subdividing a convex polygon
@@ -3910,19 +3840,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // of each triangle. Add them all up.
 	    B.inertia = 1;
 	    B.invInertia = 1 / B.inertia;
-	
+
 	    //Initialize vetices as vectors
 	    // private vertices, relative to x and y
 	    B._relativeVertices = [];
-	
+
 	    // public vertices, (contain world coords);
 	    B.vertices = [];
-	
+
 	    options.vertices.forEach(function (vert) {
 	        B._relativeVertices.push((0, _Vector2.default)(vert.x, vert.y));
 	        B.vertices.push((0, _Vector2.default)(options.x + vert.x, options.y + vert.y));
 	    });
-	
+
 	    B.isPointInterior = function (x, y) {
 	        var inside = false;
 	        for (var i = 0, j = B.vertices.length - 1; i < B.vertices.length; j = i++) {
@@ -3932,7 +3862,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                yi = vi.y;
 	            var xj = vj.x,
 	                yj = vj.y;
-	
+
 	            var intersect = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
 	            if (intersect) {
 	                inside = !inside;
@@ -3940,32 +3870,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return inside;
 	    };
-	
+
 	    // Initialize...
 	    B.updateVertices();
 	    B.aabb = (0, _AABB2.default)(B);
 	    return B;
 	};
-	
+
 	exports.default = polygon;
 	module.exports = exports['default'];
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var Anchor = {
 	    init: function init(x, y) {
 	        this.position = (0, _Vector2.default)(x, y);
@@ -3974,40 +3904,40 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.centroid = { x: this.position.x, y: this.position.y };
 	    }
 	};
-	
+
 	var anchor = function anchor(x, y) {
 	    var p = Object.create(Anchor);
 	    p.init(x, y);
 	    return p;
 	};
-	
+
 	exports.default = anchor;
 	module.exports = exports['default'];
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Constraint = __webpack_require__(15);
-	
+
+	var _Constraint = __webpack_require__(14);
+
 	var _Constraint2 = _interopRequireDefault(_Constraint);
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var linkConstraint = function linkConstraint(body1, body2, dist) {
 	    var C = (0, _Constraint2.default)('link', body1, body2, dist);
 	    C.type = 'link';
-	
+
 	    C.solve = function () {
 	        // Just try and solve this one constraint
 	        if (body2.type === 'point') {
@@ -4017,41 +3947,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var v = body1.velocity;
 	            var fext = body1.force;
 	            var mass = body1.mass;
-	
+
 	            var lambda = (p.dot(fext) - v.dot(v) * mass) / p.dot(p);
 	            // let lambda = -(p.x * v.x + p.y * v.y + 1)*mass / (2 * (p.x * p.x + p.y * p.y));
-	
+
 	            var pc = {
 	                x: p.x * lambda,
 	                y: p.y * lambda
 	            };
 	        };
 	    };
-	
+
 	    return C;
 	};
-	
+
 	exports.default = linkConstraint;
 	module.exports = exports['default'];
 
 /***/ },
-/* 28 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
-	var _Simplex = __webpack_require__(29);
-	
+
+	var _Simplex = __webpack_require__(28);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var GJK = {
 	    intersect: function intersect(body1, body2) {
 	        if (body1.type === 'rectangle') {
@@ -4062,7 +3992,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return this.polycircle(body1, body2);
 	            }
 	        }
-	
+
 	        if (body1.type === 'circle') {
 	            if (body2.type === 'rectangle' || body2.type === 'polygon') {
 	                return this.polycircle(body2, body1);
@@ -4071,7 +4001,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return this.circlecircle(body1, body2);
 	            }
 	        }
-	
+
 	        if (body1.type === 'polygon') {
 	            if (body2.type === 'rect' || body2.type === 'polygon') {
 	                return polypoly(body1, body2);
@@ -4081,52 +4011,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }
 	    },
-	
+
 	    polypoly: function polypoly(b1, b2) {},
-	
+
 	    polycircle: function polycircle(b1, b2) {},
-	
+
 	    circlecircle: function circlecircle(b1, b2) {},
-	
+
 	    pointPoly: function pointPoly(body, x, y) {
 	        debugger;
 	        // Steps
-	
+
 	        // Create a simplex and query point
 	        var simplex = Object.create(_Simplex.Simplex);
 	        var q = (0, _Vector2.default)(x, y);
 	        var vertices = body.vertices;
-	
+
 	        // 1. Pick a random vertex on the body
 	        var randVertex = Math.floor(Math.random() * vertices.length);
-	
+
 	        // Evolve the simplex for the first time
 	        simplex.evolve(vertices[randVertex]);
-	
+
 	        // 2. Build a search vector from vertex to point
 	        var searchVector = simplex.getSearchDirection();
-	
+
 	        // 3. Determine support point by taking dot product with each vertex
 	        //    and search vector, and take the largest one
 	        var supportIndex = simplex.calculateSupportPoint(searchVector, vertices);
-	
+
 	        // 4. Evolve the simplex
 	        simplex.evolve(vertices[supportIndex]);
-	
+
 	        // 5. Find the closest point on the 1-simplex (i.e. straight line
 	        //    between 0-simplex and support point
 	        var p = simplex.line(x, y);
-	
+
 	        // 6. Build a line from p to q
 	        searchVector = _Vector.Vector.subtract(q, p);
-	
+
 	        // 7. Get new support point and evolve the simplex to a 2-simplex
 	        support = this.calculateSupportPoint(searchVector, vertices);
 	        simplex.vertexC = support.clone();
-	
+
 	        debugger;
 	    },
-	
+
 	    calculateSupportPoint: function calculateSupportPoint(d, vertices) {
 	        var index = 0;
 	        var maxValue = vertices[index].dot(d);
@@ -4139,12 +4069,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return vertices[index];
 	    },
-	
+
 	    getVoronoiRegions: function getVoronoiRegions(b) {
 	        // Implementation
 	    }
 	};
-	
+
 	// const Simplex = {
 	//     init: function(vertexA, vertexB, vertexC) {
 	//         this.vertexA = vertexA;
@@ -4157,7 +4087,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//             return this.vertexA;
 	//         }
 	//     },
-	
+
 	//     line: function(x, y) {
 	//         if (this.vertexA && this.vertexB) {
 	//             // Return the closest point on the line
@@ -4190,7 +4120,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	//             debugger;
 	//         }
 	//     },
-	
+
 	// Voronoi regions A, B, C, AB, BC, CA, ABC
 	//     triangle: function(x, y) {
 	//         let q = vector(x, y);
@@ -4256,29 +4186,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	//     }
 	//     }
 	// };
-	
+
 	exports.default = GJK;
 	module.exports = exports['default'];
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	exports.Simplex = undefined;
-	
-	var _Vector = __webpack_require__(4);
-	
+
+	var _Vector = __webpack_require__(3);
+
 	var _Vector2 = _interopRequireDefault(_Vector);
-	
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
+
 	var calculateSupportPoint = function calculateSupportPoint(d, vertices) {};
-	
+
 	/// Simplex used by the GJK algorithm.
 	/*
 	 * Simplex.js
@@ -4303,7 +4233,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            throw new Error('cannot evolve a simplex beyond 3 points');
 	        }
 	    },
-	
+
 	    getSupportPoint: function getSupportPoint(d, vertices) {
 	        var index = 0;
 	        var maxValue = vertices[index].dot(d);
@@ -4316,7 +4246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return index;
 	    },
-	
+
 	    getSearchDirection: function getSearchDirection() {
 	        switch (this.count) {
 	            case 1:
@@ -4336,7 +4266,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    divisor: 0,
 	    count: 0
 	};
-	
+
 	var simplexVertex = function simplexVertex(point1, point2, u, index1, index2) {
 	    return {
 	        point1: point1,
@@ -4346,7 +4276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        index2: index2
 	    };
 	};
-	
+
 	/// Output for the distance function.
 	// struct Output
 	// {
@@ -4365,11 +4295,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	// };
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports) {
 
 	'use strict';
-	
+
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
@@ -4384,4 +4314,3 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
-//# sourceMappingURL=sciplay.js.map
