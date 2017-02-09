@@ -20,7 +20,7 @@ var config = {
     },
     output: {
         path: path.resolve('./dist'),
-        filename: 'sciplay.js',
+        filename: env === 'production' ? 'sciplay.js' : 'sciplay.dev.js',
         library: 'sciplay',
         libraryTarget: 'umd',
         umdNamedDefine: true
