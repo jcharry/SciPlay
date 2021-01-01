@@ -1,74 +1,74 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <title>Vector2D</title>
-                <style>
-            html, body {
-                margin: 0;
-                padding: 0;
-            }
+  <head>
+    <meta charset="utf-8" />
+    <title>Vector2D</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
 
-            #sidebar {
-                position: fixed;
-                left: 0;
-                bottom: 0;
-                width: 100vw;
-                height: 100px;
-                background-color: darkgrey;
-                display: flex;
-                flex-direction: row;
-            }
+      #sidebar {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100px;
+        background-color: darkgrey;
+        display: flex;
+        flex-direction: row;
+      }
 
-            .object {
-                width: 100px;
-                height: 100px;
-                border: 1px solid green;
-                position: static;
-                top: 0;
-                left: 0;
-            }
+      .object {
+        width: 100px;
+        height: 100px;
+        border: 1px solid green;
+        position: static;
+        top: 0;
+        left: 0;
+      }
 
-            #circle {
-                border-radius: 50%;
-            }
-            .object p {
-                pointer-events: none;
-                -webkit-user-select: none; /* Chrome/Safari */
-                -moz-user-select: none; /* Firefox */
-                -ms-user-select: none; /* IE10+ */
+      #circle {
+        border-radius: 50%;
+      }
+      .object p {
+        pointer-events: none;
+        -webkit-user-select: none; /* Chrome/Safari */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+ */
 
-                /* Rules below not implemented in browsers yet */
-                -o-user-select: none;
-                user-select: none;
-            }
+        /* Rules below not implemented in browsers yet */
+        -o-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script src="../../dist/sciplay.js"></script>
+    <div id="sidebar">
+      <div id="rectangle" class="object">
+        <p>Rectangle</p>
+      </div>
+      <div id="circle" class="object">
+        <p>Circle</p>
+      </div>
+      <div id="poly" class="object">
+        <p>Poly</p>
+      </div>
+      <div id="wave" class="object">
+        <p>Wave</p>
+      </div>
+      <div id="sun" class="object">
+        <p>Sun</p>
+      </div>
+      <div id="col" class="object">
+        <p>Column</p>
+      </div>
+    </div>
 
-        </style>
-    </head>
-    <body>
-        <canvas id='canvas'></canvas>
-        <script src='/sciplay.js'></script>
-        <div id='sidebar'>
-            <div id='rectangle' class='object'>
-                <p>Rectangle</p>
-            </div>
-            <div id='circle' class='object'>
-                <p>Circle</p>
-            </div>
-            <div id='poly' class='object'>
-                <p>Poly</p>
-            </div>
-            <div id='wave' class='object'>
-                <p>Wave</p>
-            </div>
-            <div id='sun' class='object'>
-                <p>Sun</p>
-            </div>
-            <div id='col' class='object'>
-                <p>Column</p>
-            </div>
-        </div>
-
-        <script src='demo.js'> </script>
-    </body>
+    <script src="demo.js"></script>
+  </body>
 </html>
